@@ -1,6 +1,7 @@
 from abstract.abstract_class_T import T
 from abstract.abstract_class_point import point
 import torch
+
 class T_unit_e(T):
     def __init__(self,metric,linkedV):
         self.metric = metric
