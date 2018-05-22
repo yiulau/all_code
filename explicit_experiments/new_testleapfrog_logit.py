@@ -37,7 +37,7 @@ data = dict(y=y_np,X=X_np,N=num_ob,p=dim)
 
 
 if stan_sampling:
-    recompile = False
+    recompile = False 
     if recompile:
         mod = pystan.StanModel(file="./alt_log_reg.stan")
         with open('model.pkl', 'wb') as f:

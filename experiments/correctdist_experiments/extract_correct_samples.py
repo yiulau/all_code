@@ -17,7 +17,7 @@ data = dict(y=y_np,X=X_np,N=num_ob,p=dim)
 
 stan_sampling = True
 if stan_sampling:
-    recompile = False
+    recompile = False 
     if recompile:
         address = os.environ["PYTHONPATH"] + "/stan_code/alt_log_reg.stan"
         mod = pystan.StanModel(file=address)
