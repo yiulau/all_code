@@ -10,7 +10,6 @@ from explicit.general_util import logsumexp_torch
 from torch.autograd import Variable
 
 from explicit.leapfrog_ult_util import leapfrog_ult
-
 #y_np= numpy.random.binomial(n=1,p=0.5,size=num_ob)
 #X_np = numpy.random.randn(num_ob,dim)
 seedid = 33

@@ -4,7 +4,6 @@ from explicit.general_util import logsumexp
 
 from all_code.general_util.time_diagnostics import time_diagnositcs
 
-
 def abstract_NUTS(q_init,epsilon,Ham,max_tdepth=5):
     # input and output are point objects
     Ham.diagnostics = time_diagnositcs()
