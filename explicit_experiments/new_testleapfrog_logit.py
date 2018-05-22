@@ -1,5 +1,5 @@
 import pickle
-import os
+import os,time
 import numpy
 import pandas as pd
 import pystan
@@ -76,6 +76,7 @@ def H(q,p,return_float):
 def generate_momentum(q):
     return(torch.randn(len(q)))
 store = torch.zeros((chain_l,dim))
+start_time = time.time()
 for i in range(chain_l):
     print("round {}".format(i))
     #out = HMC_alt_ult(0.1,10,q,leapfrog_ult,H,False)
@@ -83,6 +84,7 @@ for i in range(chain_l):
     store[i,]=out[0].data
     q.data = out[0].data
 
+end_time = time.time()
 
 store = store[burn_in:,]
 store = store.numpy()
@@ -91,6 +93,7 @@ emmean = numpy.mean(store,axis=0)
 print("length of chain is {}".format(chain_l))
 print("burn in is {}".format(burn_in))
 #print(empCov)
+print("total time is {}".format(end_time))
 print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
 

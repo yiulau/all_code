@@ -1,5 +1,5 @@
 import pickle
-import os
+import os,time
 import numpy
 import pandas as pd
 import pystan
@@ -68,7 +68,7 @@ def H(q,p,return_float):
     else:
         return((V(q)+T(p)))
 
-
+start_time = time.time()
 store = torch.zeros((chain_l,dim))
 for i in range(chain_l):
     print("round {}".format(i))
@@ -76,7 +76,7 @@ for i in range(chain_l):
     store[i,]=out.data
     q.data = out.data
 
-
+end_time = time.time()-start_time
 store = store[burn_in:,]
 store = store.numpy()
 empCov = numpy.cov(store,rowvar=False)
@@ -84,6 +84,7 @@ emmean = numpy.mean(store,axis=0)
 print("length of chain is {}".format(chain_l))
 print("burn in is {}".format(burn_in))
 #print(empCov)
+print("total time is {}".format(end_time))
 print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
 
