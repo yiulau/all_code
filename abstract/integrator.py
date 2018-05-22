@@ -6,7 +6,7 @@ from abstract.abstract_static_sampler import *
 from abstract.metric import metric
 from adapt_util.adapt_util import tuneable_param
 
-from all_code.general_util.pytorch_util import welford
+from general_util.pytorch_util import welford
 
 
 # this object is assumed to be initiated properly

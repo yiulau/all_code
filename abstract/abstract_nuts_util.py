@@ -3,7 +3,7 @@ import numpy
 import torch
 from explicit.general_util import logsumexp, stable_sum
 
-from all_code.general_util.time_diagnostics import time_diagnositcs
+from general_util.time_diagnostics import time_diagnositcs
 
 
 def abstract_NUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):

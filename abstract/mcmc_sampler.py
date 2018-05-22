@@ -13,7 +13,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import default_adapte
 from adapt_util.tune_param_classes.tuning_param_obj import tuning_param_states
 from general_util.memory_util import to_pickle_memory
 
-from all_code.adapt_util.tune_param_classes.tune_param_class import tune_param_objs_creator
+from adapt_util.tune_param_classes.tune_param_class import tune_param_objs_creator
 
 
 # number of samples

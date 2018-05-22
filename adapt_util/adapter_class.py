@@ -1,5 +1,5 @@
 from adapt_util.return_update_list import return_update_lists
-from all_code.adapt_util.tune_param_classes.tune_param_class import tune_param_creator
+from adapt_util.tune_param_classes.tune_param_class import tune_param_creator
 from adapt_util.tune_param_classes.tune_param_setting_util import default_adapter_setting
 class adapter_class(object):
     #

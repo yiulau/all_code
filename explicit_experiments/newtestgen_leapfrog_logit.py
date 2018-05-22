@@ -17,7 +17,7 @@ burn_in = 100
 alp =1e6
 dim = 8
 num_ob = 532
-stan_sampling = True
+stan_sampling = False
 
 #address = "/Users/patricklau/PycharmProjects/thesis_code/explain_hmc/input_data/pima_india.csv"
 address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
@@ -102,7 +102,10 @@ for i in range(chain_l):
     print("round {}".format(i))
     out = rmhmc_step(q,H,0.1,10,alp,0.1,V)
     store[i,]=out[0].data
+    print("accepted_rate {}".format(out[2]))
+    print("accepted {}".format(out[3]))
     q.data = out[0].data
+    print("q {}".format(q.data))
 totalt = time.time() - begin
 
 store = store[burn_in:,]

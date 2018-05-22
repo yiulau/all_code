@@ -111,7 +111,7 @@ def generalized_leapfrog(q,p,epsilon,Ham,delta=0.1,debug_dict=None):
 
     p.load_flatten()
     #print("yes")
-    debug_dict.update({"abstract": p.flattened_tensor.clone()})
+    #debug_dict.update({"abstract": p.flattened_tensor.clone()})
     return(q,p,stat)
 
 def generalized_leapfrog_softabsdiag(q,p,epsilon,Ham,delta=0.1):

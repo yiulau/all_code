@@ -1,7 +1,7 @@
 import math
 import numpy
 
-from all_code.general_util.time_diagnostics import time_diagnositcs
+from general_util.time_diagnostics import time_diagnositcs
 
 
 def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log_obj=None,alpha=None):

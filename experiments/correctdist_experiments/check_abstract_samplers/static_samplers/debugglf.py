@@ -8,8 +8,8 @@ from abstract.metric import metric
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from torch.autograd import Variable
 
-from all_code.explicit.genleapfrog_ult_util import generalized_leapfrog as explicit_generalized_leapfrog
-from all_code.explicit.genleapfrog_ult_util import getH, eigen, softabs_map
+from explicit.genleapfrog_ult_util import generalized_leapfrog as explicit_generalized_leapfrog
+from explicit.genleapfrog_ult_util import getH, eigen, softabs_map
 import os
 
 seedid = 33
@@ -17,10 +17,10 @@ numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 #y_np= numpy.random.binomial(n=1,p=0.5,size=num_ob)
 #X_np = numpy.random.randn(num_ob,dim)
-source_root = os.environ["PYTHONPATH"]
-print(source_root)
+#source_root = os.environ["PYTHONPATH"]
+#print(source_root)
 #address = source_root+"/input_data/pima_india.csv"
-address = ''
+address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
 #address = "/Users/patricklau/PycharmProjects/thesis_code/explain_hmc/input_data/pima_india.csv"
 df = pd.read_csv(address,header=0,sep=" ")
 #print(df)
