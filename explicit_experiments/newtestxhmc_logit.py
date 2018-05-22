@@ -1,6 +1,6 @@
 import pickle
 import time
-
+import os
 import numpy
 import pandas as pd
 import pystan
@@ -9,19 +9,21 @@ from explicit.general_util import logsumexp_torch
 from explicit.leapfrog_ult_util import leapfrog_ult
 from torch.autograd import Variable
 
-from all_code.explicit.nuts_util import NUTS_xhmc
-
+from explicit.nuts_util import NUTS_xhmc
+seedid = 33
+numpy.random.seed(seedid)
+torch.manual_seed(seedid)
 dim = 5
 num_ob = 100
 chain_l = 1000
-burn_in = 500
+burn_in = 100
 max_tdepth = 10
 
 stan_sampling = False
 y_np= numpy.random.binomial(n=1,p=0.5,size=num_ob)
 X_np = numpy.random.randn(num_ob,dim)
 address = "/Users/patricklau/PycharmProjects/thesis_code/explain_hmc/input_data/pima_india.csv"
-
+address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
 df = pd.read_csv(address,header=0,sep=" ")
 #print(df)
 dfm = df.as_matrix()
@@ -94,7 +96,7 @@ for i in range(chain_l):
     out = NUTS_xhmc(q,0.12,H,leapfrog_ult,10,dG_dt,0.1)
     store[i,] = out[0].data # turn this on when using Nuts
     q.data = out[0].data # turn this on when using nuts
-    print("q is {} tree length {}".format(q.data, out[1]))
+    #print("q is {} tree length {}".format(q.data, out[1]))
 total = time.time() - begin
 print("total time is {}".format(total))
 print("length of chain is {}".format(chain_l))

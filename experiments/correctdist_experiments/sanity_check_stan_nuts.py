@@ -1,12 +1,13 @@
-import numpy
+import numpy,os
 import pickle
 import pystan
 
 import pandas as pd
 
-from all_code.experiments.correctdist_experiments.prototype import check_mean_var
+from experiments.correctdist_experiments.prototype import check_mean_var
 
-address = "/home/yiulau/work/thesis_code/explain_hmc/input_data/pima_india.csv"
+#address = "/home/yiulau/work/thesis_code/explain_hmc/input_data/pima_india.csv"
+address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
 df = pd.read_csv(address,header=0,sep=" ")
 #print(df)
 dfm = df.as_matrix()
@@ -23,11 +24,14 @@ correct = pickle.load(open("result_from_long_chain.pkl", 'rb'))
 correct_mean = correct["correct_mean"]
 correct_cov = correct["correct_cov"]
 correct_diag_cov = correct_cov.diagonal()
+
 #print(correct_diag_cov.shape)
 #exit()
-#print(correct_mean)
-#print(correct_cov)
 
+print(correct_mean)
+print(correct_cov)
+print(correct_diag_cov)
+exit()
 stan_sampling = True
 if stan_sampling:
     recompile = False

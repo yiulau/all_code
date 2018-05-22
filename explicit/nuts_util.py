@@ -3,7 +3,7 @@ import numpy
 import torch
 from torch.autograd import Variable
 
-from all_code.explicit.general_util import logsumexp, stable_sum
+from explicit.general_util import logsumexp, stable_sum
 
 
 def NUTS_tensor(q_init,epsilon,H_fun,leapfrog,max_tdepth):

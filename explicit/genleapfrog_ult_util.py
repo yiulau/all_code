@@ -299,7 +299,7 @@ def generalized_leapfrog(q,p,epsilon,alpha,delta,V,debug_dict=None):
     #lam,Q = eigen(getH(q,V).data)
     p.data -= 0.5 * dtaudq(p.data,dH,Q,lam,alpha) * epsilon
     p.data -= 0.5 * dphidq(lam,alpha,dH,Q,dV.data) * epsilon
-    debug_dict.update({"explicit":p.data.clone()})
+    #debug_dict.update({"explicit":p.data.clone()})
     return(q,p)
 
 def generalized_leapfrog_tensor(q,p,epsilon,alpha,delta,V):

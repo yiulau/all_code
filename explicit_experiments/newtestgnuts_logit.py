@@ -1,6 +1,6 @@
 import pickle
 import time
-
+import os
 import numpy
 import pandas as pd
 import pystan
@@ -9,11 +9,13 @@ from explicit.general_util import logsumexp_torch
 from explicit.leapfrog_ult_util import leapfrog_ult as leapfrog
 from torch.autograd import Variable
 
-from all_code.explicit.nuts_util import GNUTS
-
+from explicit.nuts_util import GNUTS
+seedid = 33
+numpy.random.seed(seedid)
+torch.manual_seed(seedid)
 dim = 5
 num_ob = 100
-chain_l = 500
+chain_l = 1000
 burn_in = 100
 max_tdepth = 10
 stan_sampling = True
@@ -22,8 +24,8 @@ stan_sampling = True
 
 y_np= numpy.random.binomial(n=1,p=0.5,size=num_ob)
 X_np = numpy.random.randn(num_ob,dim)
-address = "/Users/patricklau/PycharmProjects/thesis_code/explain_hmc/input_data/pima_india.csv"
-
+#address = "/Users/patricklau/PycharmProjects/thesis_code/explain_hmc/input_data/pima_india.csv"
+address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
 df = pd.read_csv(address,header=0,sep=" ")
 #print(df)
 dfm = df.as_matrix()

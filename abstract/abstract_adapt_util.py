@@ -2,7 +2,7 @@ import math
 import numpy
 import torch
 
-from all_code.explicit.adapt_util import welford
+from explicit.adapt_util import welford
 
 
 def find_reasonable_ep(q,p,V,T,integrator):

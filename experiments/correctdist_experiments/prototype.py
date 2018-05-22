@@ -1,6 +1,6 @@
 import numpy
 
-from all_code.python2R.mcse_rpy2 import mcse_repy2 as mc_se
+from python2R.mcse_rpy2 import mcse_repy2 as mc_se
 
 
 def check_mean_var(mcmc_samples,correct_mean,correct_cov,diag_only=False):

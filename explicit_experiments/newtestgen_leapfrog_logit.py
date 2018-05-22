@@ -1,6 +1,6 @@
 import pickle
 import time
-
+import os
 import numpy as np
 import pandas as pd
 import pystan
@@ -8,8 +8,10 @@ import torch
 from torch.autograd import Variable
 
 # from genleapfrog_ult_util import getH, getdH, getdV, eigen, softabs_map, dphidq, dtaudp, dtaudq, generate_momentum
-from all_code.explicit.genleapfrog_ult_util import rmhmc_step, getH, eigen, softabs_map
-
+from explicit.genleapfrog_ult_util import rmhmc_step, getH, eigen, softabs_map
+seedid = 33
+np.random.seed(seedid)
+torch.manual_seed(seedid)
 chain_l = 500
 burn_in = 100
 alp =1e6
@@ -17,8 +19,8 @@ dim = 8
 num_ob = 532
 stan_sampling = True
 
-address = "/Users/patricklau/PycharmProjects/thesis_code/explain_hmc/input_data/pima_india.csv"
-
+#address = "/Users/patricklau/PycharmProjects/thesis_code/explain_hmc/input_data/pima_india.csv"
+address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
 df = pd.read_csv(address,header=0,sep=" ")
 #print(df)
 dfm = df.as_matrix()
@@ -54,7 +56,7 @@ if stan_sampling:
 
     fit = mod.sampling(data=data, refresh=0)
 
-exit()
+
 y = Variable(torch.from_numpy(y_np).float(),requires_grad=False)
 
 X = Variable(torch.from_numpy(X_np).float(),requires_grad=False)

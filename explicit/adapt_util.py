@@ -4,7 +4,7 @@ import torch
 
 from torch.autograd import Variable
 
-from all_code.explicit.generate_momentum_util import generate_momentum_wrap, H_fun_wrap, T_fun_wrap
+from explicit.generate_momentum_util import generate_momentum_wrap, H_fun_wrap, T_fun_wrap
 
 
 def find_reasonable_ep(q,p,H_fun,integrator):
@@ -61,9 +61,12 @@ def welford(next_sample,sample_counter,m_,m_2,diag):
         m_2 += (next_sample-m_) * delta
     else:
         m_2 += torch.ger((next_sample-m_),delta)
-    print("counter {}".format(sample_counter))
-    print((next_sample-m_))
-    print("m_2 in welford {}".format(m_2))
+    #print("cov counter {}".format(sample_counter))
+    #print("sample {}".format(next_sample))
+    #print("m_ {}".format(m_))
+    #print((next_sample-m_))
+    #print("m_2 in welford {}".format(m_2))
+    #print(diag)
     return(m_,m_2,sample_counter)
 
 
@@ -98,16 +101,24 @@ def full_adapt(metric,sampler_onestep,generate_momentum,H_fun,V,integrator,q,
         counter_cov = 0
         dim = len(q)
         update_metric_and_eplist = return_update_metric_ep_list(tune_l,ini_buffer,end_buffer,window_size)
+        print(update_metric_and_eplist)
         m_ = torch.zeros(dim)
         if metric == "dense_e":
             m_2 = torch.zeros((dim,dim))
+            is_diag = False
         elif metric =="diag_e":
             m_2 = torch.zeros(dim)
+            is_diag = True
         for i in range(tune_l):
+            #print("counter {}".format(i))
+            #print("q {}".format(q.data))
+
+            num_step = max(1, round(time / ep))
+            #print("ep {}".format(ep))
+            #print("L {}".format(num_step))
+            out = sampler_onestep(ep, num_step, q, integrator, H_fun, generate_momentum)
             # updates epsilon only in the beginning and at the end
             if i < ini_buffer or i >= tune_l - end_buffer:
-                num_step = max(1, round(time / ep))
-                out = sampler_onestep(ep, num_step, q, integrator, H_fun, generate_momentum)
                 alpha = out[3]
                 bar_ep_i, bar_H_i = adapt_ep(alpha, bar_H_i, t_0, counter_ep, target_delta, gamma, bar_ep_i, kappa, mu)
                 store_ep[i] = bar_ep_i
@@ -117,8 +128,6 @@ def full_adapt(metric,sampler_onestep,generate_momentum,H_fun,V,integrator,q,
             else:
                 if i in update_metric_and_eplist:
                     # update metric,H function and generate_momentum method. reset counter_cov, accumulators to zero for next window
-                    num_step = max(1, round(time / ep))
-                    out = sampler_onestep(ep, num_step, q, integrator, H_fun, generate_momentum)
                     alpha = out[3]
                     bar_ep_i, bar_H_i = adapt_ep(alpha, bar_H_i, t_0, counter_ep, target_delta, gamma, bar_ep_i, kappa,
                                                  mu)
@@ -126,15 +135,19 @@ def full_adapt(metric,sampler_onestep,generate_momentum,H_fun,V,integrator,q,
                     ep = bar_ep_i
                     counter_ep += 1
                     q.data = out[0].data
-                    m_, m_2, counter_cov = welford(q.data, counter_cov, m_, m_2, True)
-                    print("m_2 {}".format(m_2))
-                    generate_momentum,H_fun=update_metric(generate_momentum,V,m_2.clone(),metric)
+                    #print("q{}".format(q.data))
+                    m_, m_2, counter_cov = welford(q.data, counter_cov, m_, m_2, is_diag)
+                    print("Cov {}".format(m_2/(counter_cov-1)))
+                    print("m_ {}".format(m_))
+                    print("counter_cov{}".format(counter_cov))
+                    generate_momentum,H_fun=update_metric(generate_momentum,V,(m_2/(counter_cov-1)).clone(),metric)
                     if not i == tune_l - end_buffer-1:
-                        m_.zero()
-                        m_2.zero()
+                        m_.zero_()
+                        m_2.zero_()
                         counter_cov = 0
                 else:
-                    m_, m_2, counter_cov = welford(q.data, counter_cov, m_, m_2, True)
+                    q.data = out[0].data
+                    m_, m_2, counter_cov = welford(q.data, counter_cov, m_, m_2, is_diag)
 
     return(store_ep,q,generate_momentum,H_fun)
 
@@ -161,18 +174,20 @@ def return_update_GPyOpt_list(tune_l,ini_buffer=0,end_buffer=0,window_size=25,wi
     out = return_update_metric_ep_list(tune_l,ini_buffer,end_buffer,window_size,window_size_change_factor)
     return(out)
 
-def update_metric(generate_momentum,V,var,metric):
+def update_metric(generate_momentum,V,sample_var,metric):
     if metric == "diag_e":
+        var = 1/sample_var
         generate_momentum = generate_momentum_wrap(metric,var_vec=var)
-        T = T_fun_wrap(metric,var=var)
+        T = T_fun_wrap(metric,var=var,returns_float=False)
         H_fun = H_fun_wrap(V,T)
     elif metric == "dense_e":
+        var = torch.inv(sample_var)
         generate_momentum = generate_momentum_wrap(metric,Cov=var)
-        T = T_fun_wrap(metric,Cov=var)
+        T = T_fun_wrap(metric,Cov=var,returns_float=False)
         H_fun = H_fun_wrap(V,T)
     else:
         return("error")
-
+    return(generate_momentum,H_fun)
 def esjd(list_of_points,av_num_of_gradients):
     # av_num_of_gradients = L for HMC .
     # avergae number of gradient computation between each sample

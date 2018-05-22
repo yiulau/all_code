@@ -287,7 +287,7 @@ class adapt_cov_state(object):
         if iter == self.next_refresh_iter:
             self.update_cov(sample_dict)
             #self.tuning_obj.integrator.set_metric(self.m_2)
-            self.param_obj.set_val(self.m_2)
+            self.param_obj.set_val(self.m_2/(self.iter-1))
             # do not need to explore next point if we are on our last point
             if self.cur_in_iter_list==self.end_iter:
                 pass

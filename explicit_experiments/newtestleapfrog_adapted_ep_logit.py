@@ -1,5 +1,5 @@
 import pickle
-
+import os
 import numpy
 import pandas as pd
 import pystan
@@ -10,18 +10,20 @@ from explicit.leapfrog_ult_util import HMC_alt_ult
 from explicit.leapfrog_ult_util import leapfrog_ult as leapfrog
 from torch.autograd import Variable
 
-from all_code.explicit.generate_momentum_util import generate_momentum_wrap
-
+from explicit.generate_momentum_util import generate_momentum_wrap
+seedid = 33
+numpy.random.seed(seedid)
+torch.manual_seed(seedid)
 dim = 4
 num_ob = 25
-chain_l = 2000
-burn_in = 1000
+chain_l = 500
+burn_in = 100
 stan_sampling = False
 
 y_np= numpy.random.binomial(n=1,p=0.5,size=num_ob)
 X_np = numpy.random.randn(num_ob,dim)
-address = "/Users/patricklau/PycharmProjects/thesis_code/explain_hmc/input_data/pima_india.csv"
-
+#address = "/Users/patricklau/PycharmProjects/thesis_code/explain_hmc/input_data/pima_india.csv"
+address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
 df = pd.read_csv(address,header=0,sep=" ")
 #print(df)
 dfm = df.as_matrix()
@@ -45,7 +47,7 @@ if stan_sampling:
     else:
         mod = pickle.load(open('model.pkl', 'rb'))
 
-    fit = mod.sampling(data=data, refresh=0)
+    #fit = mod.sampling(data=data, refresh=0)
 
 y = Variable(torch.from_numpy(y_np).float(),requires_grad=False)
 
@@ -86,10 +88,10 @@ gamma = 0.05
 t_0 = 10
 kappa = 0.75
 target_delta = 0.65
-metrcs = "dense_e"
+metrics = "dense_e"
 covar = torch.eye(dim,dim)
-generate_momentum = generate_momentum_wrap(metric=metrcs,Cov=covar)
-store_ep,start_q = full_adapt(metric=metrcs,tune_l=250,time=1.4,gamma=0.05,t_0=10,kappa=0.75,
+generate_momentum = generate_momentum_wrap(metric=metrics,Cov=covar)
+store_ep,start_q = full_adapt(metric=metrics,tune_l=250,time=1.4,gamma=0.05,t_0=10,kappa=0.75,
                              target_delta=0.65,sampler_onestep=HMC_alt_ult,
                              generate_momentum=generate_momentum,H_fun=H,V=V,
                              integrator=leapfrog,q=q)
