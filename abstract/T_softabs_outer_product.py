@@ -82,7 +82,7 @@ class T_softabs_outer_product(T):
         #print(mH)
         exit()
         mHL = torch.potrf(mH,upper=False)
-        out = point(None, self)
+        out = point(list_tensor=self.list_tensor,pointtype="p",need_flatten=self.need_flatten)
         out.flattened_tensor.copy_(torch.mv(mHL, torch.randn(len(dV))))
         out.load_flatten()
         return (out)

@@ -52,7 +52,7 @@ class T_softabs_diag_outer_product_e(T):
             mlambda,_ = self.fcomputemetric()
           # computed by fcomputemetric
         #out = torch.randn(len(self.dim)) / torch.sqrt(mlambda)
-        out = point(None, self)
+        out = point(list_tensor=self.list_tensor,pointtype="p",need_flatten=self.need_flatten)
         out.flattened_tensor.copy_(torch.randn(len(self.dim)) / torch.sqrt(mlambda))
         out.load_flatten()
         return (out)

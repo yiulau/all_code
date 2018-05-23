@@ -30,7 +30,7 @@ class T(object):
             self.flattened_tensor = self.list_tensor[0]
             if self.metric.name=="unit_e":
                 self.flattened_gradient = self.flattened_tensor
-        self.p_point = point(T=self)
+        #self.p_point = point(T=self)
         #return()
     # def load_listp_to_flattened(self,list_tensor,target_tensor):
     #     cur = 0

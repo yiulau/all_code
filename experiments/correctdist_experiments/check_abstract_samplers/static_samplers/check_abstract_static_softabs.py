@@ -1,4 +1,4 @@
-import pickle,os
+import pickle,os,numpy,torch
 
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *
@@ -6,6 +6,9 @@ from distributions.logistic_regressions.pima_indian_logisitic_regression import 
 from experiments.experiment_obj import tuneinput_class
 
 from experiments.correctdist_experiments.prototype import check_mean_var
+seedid = 30
+numpy.random.seed(seedid)
+torch.manual_seed(seedid)
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=500,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=0,
                                    warmup_per_chain=100,is_float=False,isstore_to_disk=False)
@@ -27,6 +30,8 @@ sampler2 = mcmc_sampler(tune_dict=tune_dict2,mcmc_settings_dict=mcmc_meta,tune_s
 out = sampler1.start_sampling()
 
 mcmc_samples = sampler1.get_samples(permuted=True)
+print(mcmc_samples)
+
 address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"
 correct = pickle.load(open(address, 'rb'))
 correct_mean = correct["correct_mean"]
@@ -40,7 +45,7 @@ print(mean_check)
 print(cov_check)
 print(pc_mean)
 print(pc_cov)
-
+exit()
 out = sampler2.start_sampling()
 
 mcmc_samples = sampler2.get_samples(permuted=True)

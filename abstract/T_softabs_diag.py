@@ -36,7 +36,7 @@ class T_softabs_diag_e(T):
     def generate_momentum(self,q):
         _,mdiagH = self.linkedV.getdiagH_tensor(q)
         mlambda,_ = self.fcomputeMetric(mdiagH)
-        out = point(None,self)
+        out = point(list_tensor=self.list_tensor,pointtype="p",need_flatten=self.need_flatten)
         out.flattened_tensor.copy_(torch.randn(len(mlambda)) / torch.sqrt(mlambda))
         out.load_flatten()
         return (out)

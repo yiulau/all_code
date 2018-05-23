@@ -33,8 +33,8 @@ class T_softabs_e(T):
         #print("H_ {}".format(H_))
         #print("H_2 {}".format(torch.mm(torch.mm(Q, torch.diag(temp)), torch.t(Q))))
         #print("msoftabslambda {}".format(temp))
-        print("abstract tau {}".format(o))
-        print("abstract logdetmetric {}".format(temp2))
+        #print("abstract tau {}".format(o))
+        #print("abstract logdetmetric {}".format(temp2))
 
         output = o + temp2
         return (output)
@@ -85,7 +85,7 @@ class T_softabs_e(T):
         _, H_ = self.linkedV.getH_tensor(q)
         lam, Q = eigen(H_)
         temp = torch.mm(Q, torch.diag(torch.sqrt(softabs_map(lam, self.metric.msoftabsalpha))))
-        out = point(None,self)
+        out = point(list_tensor=self.list_tensor,pointtype="p",need_flatten=self.need_flatten)
         out.flattened_tensor.copy_(torch.mv(temp, torch.randn(len(lam))))
         out.load_flatten()
         return(out)

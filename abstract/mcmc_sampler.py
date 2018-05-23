@@ -12,7 +12,7 @@ from adapt_util.adapter_class import adapter_class
 from adapt_util.tune_param_classes.tune_param_setting_util import default_adapter_setting
 from adapt_util.tune_param_classes.tuning_param_obj import tuning_param_states
 from general_util.memory_util import to_pickle_memory
-
+from abstract.abstract_class_point import point
 from adapt_util.tune_param_classes.tune_param_class import tune_param_objs_creator
 
 
@@ -613,7 +613,7 @@ def default_init_q_point_list(v_fun,num_chains,same_init=False):
     init_q_point_list = [None]*num_chains
     if same_init:
         #print("yes")
-        temp_point = v_obj.q_point.point_clone()
+        temp_point = point(V=v_obj)
         temp_point.flattened_tensor.copy_(torch.randn(len(temp_point.flattened_tensor)))
         temp_point.load_flatten()
         #print(temp_point.flattened_tensor)
@@ -624,7 +624,8 @@ def default_init_q_point_list(v_fun,num_chains,same_init=False):
             #print(init_q_point_list[i].flattened_tensor)
     else:
         for i in range(num_chains):
-            temp_point = v_obj.q_point.point_clone()
+            #temp_point = v_obj.q_point.point_clone()
+            temp_point = point(V=v_obj)
             temp_point.flattened_tensor.copy_(torch.randn(len(temp_point.flattened_tensor)))
             temp_point.load_flatten()
             init_q_point_list[i] = temp_point

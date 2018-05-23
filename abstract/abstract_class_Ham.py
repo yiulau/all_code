@@ -55,8 +55,12 @@ class Hamiltonian(object):
         self.diagnostics.add_num_H_eval(1)
         return(out)
     def evaluate(self,q_point=None,p_point=None):
+        #print(q_point.flattened_tensor)
+        #print(p_point.flattened_tensor)
         self.V.load_point(q_point)
         self.T.load_point(p_point)
+        #print(self.V.flattened_tensor)
+        #print(self.T.flattened_tensor)
         out = self.V.evaluate_scalar() + self.T.evaluate_scalar()
         #self.diagnostics.add_num_H_eval(1)
         return(out)

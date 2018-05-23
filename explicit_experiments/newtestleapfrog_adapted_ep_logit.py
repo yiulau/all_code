@@ -11,7 +11,7 @@ from explicit.leapfrog_ult_util import leapfrog_ult as leapfrog
 from torch.autograd import Variable
 
 from explicit.generate_momentum_util import generate_momentum_wrap
-seedid = 33
+seedid = 30
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 dim = 4

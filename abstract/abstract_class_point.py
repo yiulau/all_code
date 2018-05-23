@@ -66,27 +66,31 @@ class point(object):
             self.store_shapes.append(shape)
             self.store_lens.append(length)
         self.dim = sum(self.store_lens)
-        if need_flatten:
+        #print(self.need_flatten)
+        if self.need_flatten:
             self.flattened_tensor = torch.zeros(self.dim)
             self.load_param_to_flatten()
         else:
             assert len(self.list_tensor[0])==self.dim
             self.flattened_tensor = self.list_tensor[0]
+            assert hex(id(self.flattened_tensor)) == hex(id(self.list_tensor[0]))
         self.syncro = self.assert_syncro()
     def load_flatten(self):
         if self.need_flatten:
             self.load_flattened_tensor_to_param()
         else:
-            pass
+            assert hex(id(self.flattened_tensor)) == hex(id(self.list_tensor[0]))
         return()
 
     def point_clone(self):
-        out = point(list_tensor=self.list_tensor,pointtype=self.pointtype)
+        out = point(list_tensor=self.list_tensor,pointtype=self.pointtype,need_flatten=self.need_flatten)
         return(out)
 
     def assert_syncro(self):
         # check that list_tensor and flattened_tensor hold the same value
+
         temp = self.flattened_tensor.clone()
+        #assert hex(id(self.flattened_tensor)) == hex(id(self.list_tensor[0]))
         cur = 0
         for i in range(self.num_var):
             temp[cur:(cur + self.store_lens[i])].copy_(self.list_tensor[i].view(self.store_shapes[i]))
@@ -96,15 +100,19 @@ class point(object):
             out = False
         else:
             out = True
+
+
         return (out)
 
     def load_flattened_tensor_to_param(self):
+        assert self.need_flatten==True
         cur = 0
         for i in range(self.num_var):
             self.list_tensor[i].copy_(self.flattened_tensor[cur:(cur + self.store_lens[i])].view(self.store_shapes[i]))
             cur = cur + self.store_lens[i]
 
     def load_param_to_flatten(self):
+        assert self.need_flatten==True
         cur = 0
         for i in range(self.num_var):
             self.flattened_tensor[cur:(cur + self.store_lens[i])].copy_(self.list_tensor[i].view(-1))

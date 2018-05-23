@@ -8,7 +8,7 @@ from explicit.general_util import logsumexp_torch
 from torch.autograd import Variable
 from explicit.leapfrog_ult_util import HMC_alt_ult, leapfrog_ult
 
-seedid = 33
+seedid = 30
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 

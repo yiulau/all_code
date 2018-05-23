@@ -29,7 +29,7 @@ class T_unit_e(T):
         raise ValueError("should not call this function")
 
     def generate_momentum(self,q):
-        out = point(None, self)
+        out = point(list_tensor=self.list_tensor,pointtype="p",need_flatten=self.need_flatten)
         out.flattened_tensor.copy_(torch.randn(self.dim))
         out.load_flatten()
         return(out)

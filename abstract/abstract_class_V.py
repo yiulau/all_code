@@ -22,7 +22,7 @@ class V(nn.Module):
         #################################################################################
         self.decides_if_flattened()
         self.V_higherorder_setup()
-        self.q_point = point(V=self)
+        #self.q_point = point(V=self)
         self.diagnostics = None
     #@abc.abstractmethod
     #def V_setup(self):
@@ -59,6 +59,8 @@ class V(nn.Module):
             out[cur:(cur + self.store_lens[i])] = g[i].data.view(self.store_lens[i])
             cur = cur + self.store_lens[i]
         return(out)
+
+
 
     def getdV(self,q=None):
         # return list of pytorch variables containing the gradient

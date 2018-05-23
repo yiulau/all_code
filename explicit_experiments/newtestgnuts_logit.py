@@ -10,7 +10,7 @@ from explicit.leapfrog_ult_util import leapfrog_ult as leapfrog
 from torch.autograd import Variable
 
 from explicit.nuts_util import GNUTS
-seedid = 33
+seedid = 30
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 dim = 5

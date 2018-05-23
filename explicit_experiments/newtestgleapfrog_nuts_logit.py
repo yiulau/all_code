@@ -10,7 +10,7 @@ from explicit.genleapfrog_ult_util import getH, eigen, softabs_map, dtaudp, gene
 from torch.autograd import Variable
 
 from explicit.nuts_util import GNUTS
-seedid = 33
+seedid = 30
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 dim = 5

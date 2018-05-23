@@ -556,14 +556,16 @@ def rmhmc_step(initq,H,epsilon,L,alpha,delta,V):
     lam, Q = eigen(H_.data)
     #lam,Q = eigen(getH(q,V).data)
     p = Variable(generate_momentum(alpha,lam,Q))
+    print("p {}".format(p.data))
     current_H = H(q,p,alpha)
-
+    #print(current_H)
     for _ in range(L):
         out = generalized_leapfrog(q,p,epsilon,alpha,delta,V)
         q.data = out[0].data
         p.data = out[1].data
 
     proposed_H = H(q,p,alpha)
+
     u = numpy.random.rand(1)
     diff = current_H - proposed_H
     if (abs(diff) > 1000):

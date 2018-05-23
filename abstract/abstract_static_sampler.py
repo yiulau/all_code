@@ -3,7 +3,6 @@ import numpy
 
 from general_util.time_diagnostics import time_diagnositcs
 
-
 def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log_obj=None,alpha=None):
     # Input:
     # current_q Pytorch Variable
@@ -14,7 +13,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     # accepted: Boolean - True if proposal is accepted, False otherwise
     # divergent: Boolean - True if the end of the trajectory results in a divergent transition
     # return_q  pytorch Variable (! not tensor)
-    #q = Variable(current_q.data.clone(),requires_grad=True)
+    # q = Variable(current_q.data.clone(),requires_grad=True)
     # evaluate gradient L*2 times
     # evluate H 1 time
 

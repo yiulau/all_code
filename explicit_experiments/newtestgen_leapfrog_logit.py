@@ -9,7 +9,7 @@ from torch.autograd import Variable
 
 # from genleapfrog_ult_util import getH, getdH, getdV, eigen, softabs_map, dphidq, dtaudp, dtaudq, generate_momentum
 from explicit.genleapfrog_ult_util import rmhmc_step, getH, eigen, softabs_map
-seedid = 33
+seedid = 30
 np.random.seed(seedid)
 torch.manual_seed(seedid)
 chain_l = 500
@@ -94,8 +94,8 @@ def H(q,p,alpha):
 
 store = torch.zeros((chain_l,dim))
 
-g,H_ = getH(q,V)
-lam,Q = eigen(H_.data)
+#g,H_ = getH(q,V)
+#lam,Q = eigen(H_.data)
 
 begin = time.time()
 for i in range(chain_l):
@@ -121,4 +121,4 @@ print("alpha is {}".format(alp))
 print("sd is {}".format(np.sqrt(np.diagonal(empCov))))
 print("mean is {}".format(emmean))
 
-print(fit)
+#print(fit)

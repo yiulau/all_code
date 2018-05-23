@@ -24,6 +24,7 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
     #with open('debugqp.pkl', 'wb') as f:
     #    pickle.dump(out, f)
     #exit()
+
     p.flattened_tensor -= Ham.V.dq(q.flattened_tensor) * 0.5 * epsilon
     #print("first p abstract{}".format(p.flattened_tensor))
     #print("first H abstract {}".format(Ham.evaluate(q,p)))
@@ -35,7 +36,9 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
     #print("final q abstract {}".format(q.flattened_tensor))
     p.load_flatten()
     q.load_flatten()
-    #print(Ham.evaluate(q,p))
+        #print(Ham.evaluate(q,p))
+
+
     #exit()
     return(q,p,gleapfrog_stat())
 

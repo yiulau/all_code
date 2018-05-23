@@ -36,13 +36,19 @@ class welford(object):
 def general_load_point(obj,point_obj):
     # obj = V_obj or T_obj
         #print("point syncro {}".format(q_point.assert_syncro()))
-    if obj.need_flatten:
-        obj.flattened_tensor.copy_(point_obj.flattened_tensor)
-        obj.load_param_to_flattened()
-    else:
-        #self.flattened_tensor.copy_(q_point.flattened_tensor)
-        for i in range(obj.num_var):
-            obj.list_tensor[i].copy_(point_obj.list_tensor[i])
+    #print(point_obj.flattened_tensor)
+    #print(obj.need_flatten)
+    #print(point_obj.need_flatten)
+    #print(point_obj.assert_syncro())
+    obj.flattened_tensor.copy_(point_obj.flattened_tensor)
+    obj.load_param_to_flattened()
+    #if obj.need_flatten:
+    #    obj.flattened_tensor.copy_(point_obj.flattened_tensor)
+    #    obj.load_param_to_flattened()
+    #else:
+    #    #obj.flattened_tensor.copy_(point_obj.flattened_tensor)
+    #    for i in range(obj.num_var):
+    #        obj.list_tensor[i].copy_(point_obj.list_tensor[i])
     #print("q_point syncro {}".format(q_point.assert_syncro()))
     #print("self syncro {}".format(self.assert_syncro()))
     return()
