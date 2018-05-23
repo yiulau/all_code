@@ -464,14 +464,15 @@ class log_class(object):
 class initialization(object):
     # should contain a point object
     def __init__(self,V_obj,q_point=None):
+        self.V_obj = V_obj
         if not q_point is None:
             V_obj.load_point(q_point)
         else:
             self.initialize()
 
     def initialize(self):
-        self.V_obj.q.flattened_tensor.copy_(torch.randn(len(self.V_obj.q.flattened_tensor))*1.41)
-        self.V_obj.q.load_flatten()
+        self.V_obj.q_point.flattened_tensor.copy_(torch.randn(len(self.V_obj.q.flattened_tensor))*1.41)
+        self.V_obj.q_point.load_flatten()
         return()
 
 # class one_chain_settings(object):

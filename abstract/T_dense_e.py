@@ -6,7 +6,12 @@ class T_dense_e(T):
         self.metric = metric
         super(T_dense_e, self).__init__(linkedV)
 
-    def evaluate_scalar(self):
+    def evaluate_scalar(self,q_point=None,p_point=None):
+        if not q_point is None:
+            print("should not pass q_point for this metric")
+            pass
+        if not p_point is None:
+            self.load_point(p_point)
         Lp = torch.mv(self.metric._flattened_covL, self.flattened_tensor)
         output = torch.dot(Lp, Lp)
         return(output)

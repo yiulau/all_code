@@ -11,14 +11,20 @@ class T_softabs_e(T):
         self.metric = metric
         super(T_softabs_e, self).__init__(linkedV)
 
-    def evaluate_scalar(self):
+    def evaluate_scalar(self,q_point=None,p_point=None):
+        if not q_point is None:
+            self.linkedV.load_point(q_point)
+        if not p_point is None:
+            self.load_point(p_point)
         _, H_ = self.linkedV.getH_tensor()
+        #debug_dict.update({"abstract":_.clone()})
+
         lam, Q = eigen(H_)
 
         temp = softabs_map(lam, self.metric.msoftabsalpha)
 
         inv_exp_H = torch.mm(torch.mm(Q, torch.diag(1/temp)), torch.t(Q))
-
+        #print("abstract p {}".format(self.flattened_tensor))
         #print("inv_exp_H {}".format(inv_exp_H))
         o = 0.5 * torch.dot(self.flattened_tensor, torch.mv(inv_exp_H, self.flattened_tensor))
         temp2 = 0.5 * torch.log((temp)).sum()
@@ -27,8 +33,8 @@ class T_softabs_e(T):
         #print("H_ {}".format(H_))
         #print("H_2 {}".format(torch.mm(torch.mm(Q, torch.diag(temp)), torch.t(Q))))
         #print("msoftabslambda {}".format(temp))
-        print("tau {}".format(o))
-        print("logdetmetric {}".format(temp2))
+        print("abstract tau {}".format(o))
+        print("abstract logdetmetric {}".format(temp2))
 
         output = o + temp2
         return (output)

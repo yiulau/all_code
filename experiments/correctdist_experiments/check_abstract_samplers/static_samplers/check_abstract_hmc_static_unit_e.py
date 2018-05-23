@@ -12,7 +12,7 @@ from experiments.correctdist_experiments.prototype import check_mean_var
 seedid = 33
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=500,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=0,
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=100,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=0,
                                    warmup_per_chain=0,is_float=False,isstore_to_disk=False)
 
 input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],

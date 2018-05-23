@@ -3,8 +3,8 @@ import torch
 import torch.nn as nn
 from abstract.abstract_class_point import point
 from torch.autograd import Variable, grad
-
-from general_util.pytorch_util import get_list_stats
+from general_util.pytorch_util import get_list_stats, general_load_point,general_assert_syncro
+from general_util.pytorch_util import general_load_param_to_flattened,general_load_flattened_tensor_to_param
 
 
 # if need to define explicit gradient do it
@@ -35,16 +35,20 @@ class V(nn.Module):
     #def load_explicit_gradient(self):
     #    raise NotImplementedError()
     #    return()
-    def evaluate_scalar(self):
+    def evaluate_scalar(self,q_point=None):
         # return float or double
-        return(self.forward().data[0])
-    def gradient(self):
-        # load gradients to list(self.parameters()).grad
-        if not self.explicit_gradient:
-            o = self.forward()
-            o.backward()
+        if not q_point is None:
+            self.load_point(q_point)
         else:
-            self.load_explicit_gradient()
+            pass
+        return(self.forward().data[0])
+    # def gradient(self):
+    #     # load gradients to list(self.parameters()).grad
+    #     if not self.explicit_gradient:
+    #         o = self.forward()
+    #         o.backward()
+    #     else:
+    #         self.load_explicit_gradient()
 
     def dq(self,q_flattened_tensor):
         self.load_flattened_tensor_to_param(q_flattened_tensor)
@@ -116,14 +120,20 @@ class V(nn.Module):
         else:
             if not self.need_flatten:
                 g = self.getdV()
+
+
                 H = Variable(torch.zeros(self.dim, self.dim))
                 for i in range(self.dim):
                     H[i, :] = grad(g[i], self.list_var, create_graph=True)[0]
+                    #if i ==1:
+                     #   debug_dict.update({"abstract": H[i,:].data.clone()})
+                #
                 self.load_gradient([g])
             # output: H - Pytorch Variable
             # repetitive. only need to compute the upper or lower triangular part than flip
             else:
                 g = self.getdV()
+
                 H = numpy.empty((self.num_var,self.num_var),dtype=numpy.ndarray)
                 #H[i,j] = dH/dvar_i dvar_j . a pytorch variable with the shape of var_j
                 for i in range(self.num_var):
@@ -335,38 +345,52 @@ class V(nn.Module):
         if self.num_var>1:
             self.need_flatten = True
         elif self.num_var==1:
-            if len(list(self.list_var[0].data.shape))>1:
+            if len(list(self.list_tensor[0].shape))>1:
                 self.need_flatten = True
         else:
             raise ValueError("count is >=2 but not 1")
-        self.store_shapes,self.store_lens,self.dim,self.store_slices=get_list_stats(self.list_var)
+        self.store_shapes,self.store_lens,self.dim,self.store_slices=get_list_stats(list_tensor=self.list_tensor)
         if self.need_flatten:
             self.flattened_tensor = torch.zeros(self.dim)
             cur = 0
             for i in range(self.num_var):
-                self.flattened_tensor[cur:(cur + self.store_lens[i])] = self.list_var[i].data.view(self.store_lens[i])
+                self.flattened_tensor[cur:(cur + self.store_lens[i])] = self.list_tensor[i].view(self.store_lens[i])
                 cur = cur + self.store_lens[i]
         else:
             self.flattened_tensor = self.list_var[0].data
         return()
+
     def load_flattened_tensor_to_param(self,flattened_tensor=None):
-        cur = 0
-        if flattened_tensor is None:
-            for i in range(self.num_var):
-                # convert to copy_ later
-                self.list_var[i].data.copy_(self.flattened_tensor[cur:(cur + self.store_lens[i])].view(self.store_shapes[i]))
-        else:
-            for i in range(self.num_var):
-                # convert to copy_ later
-                self.list_var[i].data.copy_(flattened_tensor[cur:(cur + self.store_lens[i])].view(self.store_shapes[i]))
-            self.load_param_to_flattened()
+        general_load_flattened_tensor_to_param(obj=self,flattened_tensor=flattened_tensor)
         return()
     def load_param_to_flattened(self):
-        cur = 0
-        for i in range(self.num_var):
-            self.flattened_tensor[cur:(cur + self.store_lens[i])].copy_(self.list_var[i].data.view(self.store_shapes[i]))
-            cur = cur + self.store_lens[i]
+        general_load_param_to_flattened(obj=self)
         return()
+    def load_point(self,q_point):
+        general_load_point(obj=self,point_obj=q_point)
+        return()
+    def asssert_syncro(self):
+        return(general_assert_syncro(self))
+    # def load_flattened_tensor_to_param(self,flattened_tensor=None):
+    #     cur = 0
+    #     if flattened_tensor is None:
+    #         for i in range(self.num_var):
+    #             # convert to copy_ later
+    #             self.list_tensor[i].copy_(self.flattened_tensor[cur:(cur + self.store_lens[i])].view(self.store_shapes[i]))
+    #     else:
+    #         for i in range(self.num_var):
+    #             # convert to copy_ later
+    #             self.list_tensor[i].copy_(flattened_tensor[cur:(cur + self.store_lens[i])].view(self.store_shapes[i]))
+    #         self.load_param_to_flattened()
+    #     return()
+
+    # def load_param_to_flattened(self):
+    #     cur = 0
+    #     for i in range(self.num_var):
+    #         self.flattened_tensor[cur:(cur + self.store_lens[i])].copy_(self.list_tensor[i].view(self.store_shapes[i]))
+    #         cur = cur + self.store_lens[i]
+    #     return()
+
 
     # def create_T(self,metric):
     #     # metric object- includes information about type and cov or diag_v, or softabs
@@ -375,31 +399,35 @@ class V(nn.Module):
     #     self.T.linkedV = self
     #
     #     return()
-    def load_point(self,q_point):
-        #print("point syncro {}".format(q_point.assert_syncro()))
-        if self.need_flatten:
-            self.flattened_tensor.copy_(q_point.flattened_tensor)
-            self.load_param_to_flattened()
-        else:
-            self.flattened_tensor.copy_(q_point.flattened_tensor)
-            #q_point.assert_syncro()
-        #print("self syncro {}".format(self.assert_syncro()))
-        return()
+    # def load_point(self,q_point):
+    #     #print("point syncro {}".format(q_point.assert_syncro()))
+    #     if self.need_flatten:
+    #         self.flattened_tensor.copy_(q_point.flattened_tensor)
+    #         self.load_param_to_flattened()
+    #     else:
+    #         #self.flattened_tensor.copy_(q_point.flattened_tensor)
+    #         for i in range(self.num_var):
+    #             self.list_tensor[i].copy_(q_point.list_tensor[i])
+    #     #print("q_point syncro {}".format(q_point.assert_syncro()))
+    #     #print("self syncro {}".format(self.assert_syncro()))
+    #     return()
 
-    def assert_syncro(self):
-        # check that list_var and flattened_tensor hold the same value
-        temp = self.flattened_tensor.clone()
-        cur = 0
-        for i in range(self.num_var):
-            temp[cur:(cur + self.store_lens[i])].copy_(self.list_var[i].data.view(self.store_shapes[i]))
-            cur = cur + self.store_lens[i]
-        diff = ((temp - self.flattened_tensor)*(temp-self.flattened_tensor) ).sum()
-        #print(diff)
-        if diff > 1e-6:
-            out = False
-        else:
-            out = True
-        return(out)
+
+    # def assert_syncro(self):
+    #     # check that list_var and flattened_tensor hold the same value
+    #     temp = self.flattened_tensor.clone()
+    #     cur = 0
+    #     for i in range(self.num_var):
+    #         temp[cur:(cur + self.store_lens[i])].copy_(self.list_tensor[i].view(self.store_shapes[i]))
+    #         cur = cur + self.store_lens[i]
+    #     diff = ((temp - self.flattened_tensor)*(temp-self.flattened_tensor) ).sum()
+    #     #print(diff)
+    #     if diff > 1e-6:
+    #         out = False
+    #     else:
+    #         out = True
+    #     return(out)
+
 
     def prepare_prior(self,prior_dict):
         if prior_dict["has_hypar"]:

@@ -8,7 +8,12 @@ class T_unit_e(T):
         super(T_unit_e, self).__init__(linkedV)
         #return()
 
-    def evaluate_scalar(self):
+    def evaluate_scalar(self,q_point=None,p_point=None):
+        if not q_point is None:
+            print("should not pass q_point for this metric")
+            pass
+        if not p_point is None:
+            self.load_point(p_point)
         output = 0
         for i in range(len(self.list_var)):
             output += (self.list_var[i].data * self.list_var[i].data).sum() * 0.5

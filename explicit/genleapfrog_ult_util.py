@@ -66,6 +66,10 @@ def getH(q,V):
         H = Variable(torch.zeros(dim, dim))
     for i in range(dim):
         H[i, :] = grad(g[i], q, create_graph=True)[0]
+        #if i == 1:
+        #    debug_dict.update({"explicit": H[i,:].data.clone()})
+    #debug_dict.update({"explicit": q.data.clone()})
+
     return(g,H)
 def getH_tensor(q,V):
     # output: H - Pytorch tensor

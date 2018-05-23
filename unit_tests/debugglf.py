@@ -60,13 +60,17 @@ def V(q):
 def T(q,alpha):
     def T_givenq(p):
         _,H_ = getH(q,V)
+        #debug_dict.update({"explicit":_.data.clone()})
         out = eigen(H_.data)
         lam = out[0]
         Q = out[1]
         temp = softabs_map(lam,alpha)
+        #print("explicit p {}".format(q.data))
         inv_exp_H = torch.mm(torch.mm(Q,torch.diag(1/temp)),torch.t(Q))
         o = 0.5 * torch.dot(p.data,torch.mv(inv_exp_H,p.data))
         temp2 = 0.5 * torch.log((temp)).sum()
+        print("explicit tau {}".format(o))
+        print("explicit logdetmetric {}".format(temp2))
         return(o + temp2)
     return(T_givenq)
 
@@ -75,9 +79,13 @@ def H(q,p,alpha):
     return(V(q).data[0] + T(q,alpha)(p))
 
 alpha = 1e6
-# first verify they have the same Hamiltonian function
-print("exact H {}".format(H(q,p,alpha)))
+#debug_dict = {"abstract":None,"explicit":None}
 
+#debug_dict.update({"explicit":y.data.clone()})
+# first verify they have the same Hamiltonian function
+#print("exact H {}".format(H(q,p,alpha)))
+print("exact V {}".format(V(q).data[0]))
+print("exact T {}".format((T(q,alpha)(p))))
 v_obj = V_pima_inidan_logit()
 metric_obj = metric("softabs",v_obj,alpha)
 Ham = Hamiltonian(v_obj,metric_obj)
@@ -86,17 +94,27 @@ p_point = Ham.T.p_point.point_clone()
 
 q_point.flattened_tensor.copy_(inputq)
 p_point.flattened_tensor.copy_(inputp)
-
-print("abstract H {}".format(Ham.evaluate(q_point,p_point)))
-
+q_point.load_flatten()
+p_point.load_flatten()
+#print("q point need_flatten {}".format(q_point.need_flatten))
+#print("q_point syncro {}".format(q_point.assert_syncro()))
+#print("q_point list_tensor {}".format(q_point.list_tensor))
+#print("q_point flattened_tensor {}".format(q_point.flattened_tensor))
+#print("abstract H {}".format(Ham.evaluate(q_point,p_point)))
+print("abstract V {}".format(Ham.V.evaluate_scalar(q_point)))
+print("abstract T {}".format(Ham.T.evaluate_scalar(q_point,p_point)))
 print("input q diff{}".format((q.data-q_point.flattened_tensor).sum()))
 print("input p diff {}".format((p.data-p_point.flattened_tensor).sum()))
 
-debug_dict = {"abstract":None,"explicit":None}
+#debug_dict.update({"abstract":Ham.V.y.data.clone()})
+#diff_term = ((debug_dict["abstract"]-debug_dict["explicit"])*(debug_dict["abstract"]-debug_dict["explicit"])).sum()
+#print("H_diff {}".format(diff_term))
+
+
 
 for i in range(10):
-    outq, outp = explicit_generalized_leapfrog(q, p, 0.1, alpha, 0.1, V,debug_dict=debug_dict)
-    outq_a, outp_a, stat = abstract_generalized_leapfrog(q_point, p_point, 0.1, Ham,debug_dict=debug_dict)
+    outq, outp = explicit_generalized_leapfrog(q, p, 0.1, alpha, 0.1, V)
+    outq_a, outp_a, stat = abstract_generalized_leapfrog(q_point, p_point, 0.1, Ham)
     q,p = outq,outp
     q_point,p_point = outq_a,outp_a
 #outq,outp = explicit_generalized_leapfrog(q,p,0.1,alpha,0.1,V)
