@@ -15,8 +15,8 @@ numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 dim = 5
 num_ob = 100
-chain_l = 1000
-burn_in = 100
+chain_l = 10
+burn_in = 0
 max_tdepth = 10
 
 stan_sampling = True
@@ -45,7 +45,7 @@ if stan_sampling:
     else:
         mod = pickle.load(open('model.pkl', 'rb'))
 
-    fit = mod.sampling(data=data, refresh=0)
+    #fit = mod.sampling(data=data, refresh=0)
 
 #print(fit)
 
@@ -110,6 +110,7 @@ for i in range(chain_l):
     out = GNUTS(q,0.1,fi_fake,gleapfrog,10,p_sharp)
     store[i,] = out[0].data # turn this on when using Nuts
     q.data = out[0].data # turn this on when using nuts
+    print("q {}".format(q.data))
 
 total = time.time() - begin
 print("total time is {}".format(total))
@@ -124,4 +125,4 @@ emmean = numpy.mean(store,axis=0)
 #print(empCov)
 print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
-print(fit)
+#print(fit)
