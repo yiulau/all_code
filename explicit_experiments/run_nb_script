@@ -1,1 +1,1 @@
- jupyter nbconvert --execute --to notebook --inplace --ExecutePreprocessor.ti    meout=-1 test_correctness.ipynb
+jupyter nbconvert --execute --to notebook --inplace --ExecutePreprocessor.timeout=-1 test_correctness.ipynb
