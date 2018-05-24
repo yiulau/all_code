@@ -1,6 +1,7 @@
 from adapt_util.return_update_list import return_update_lists
 from adapt_util.tune_param_classes.tune_param_class import tune_param_creator
 from adapt_util.tune_param_classes.tune_param_setting_util import default_adapter_setting
+import six
 class adapter_class(object):
     #
     def __init__(self,one_chain_obj,adapter_setting=None):
@@ -59,14 +60,15 @@ class adapter_class(object):
         for param,val in one_chain_obj.tune_dict.items():
             #print(val)
             if param in self.permitted_tune_params:
+
                 if param=="cov":
-                    if val == "adapt":
-                        self.tune_method_dict.update({param:val})
+                    if isinstance(val,six.string_types) and val == "adapt":
+                        self.tune_method_dict.update({param:"adapt"})
                     else:
                         self.tune_method_dict.update({param: "fixed"})
                         self.par_type_dict.update({param: "fixed"})
                 else:
-                    if not val=="opt" and not val=="dual" and not val is None:
+                    if not val=="opt" and not val=="dual":
                         self.tune_method_dict.update({param:"fixed"})
                         self.par_type_dict.update({param:"fixed"})
                     elif val=="opt" or val=="dual":

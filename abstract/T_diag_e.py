@@ -18,7 +18,7 @@ class T_diag_e(T):
 
         return(output)
     def dp(self,p_flattened_tensor):
-        out = self.metric._var_vec * p_flattened_tensor
+        out = self.metric._flattened_var * p_flattened_tensor
         return(out)
     def dtaudp(self,p=None):
         if p==None:
@@ -34,6 +34,6 @@ class T_diag_e(T):
 
     def generate_momentum(self,q):
         out = point(list_tensor=self.list_tensor,pointtype="p",need_flatten=self.need_flatten)
-        out.flattened_tensor.copy_(self.metric._sd_vec * torch.randn(self.dim))
+        out.flattened_tensor.copy_(self.metric._flattened_sd * torch.randn(self.dim))
         out.load_flatten()
         return(out)
