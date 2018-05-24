@@ -19,13 +19,14 @@ class metric(object):
                 self._sd_list_tensor[i] = torch.ones(self.store_shapes[i])
             self._var_list_tensor = numpy.empty(self.num_var,dtype=type(V_instance.list_var[0]))
             for i in range(self.num_var):
-                self._var_list_tensor[i] = torch.ones(self.store_shapes[i])
-            self._var_vec = torch.ones(V_instance.dim)
-            self._sd_vec = torch.ones(V_instance.dim)
+                 self._var_list_tensor[i] = torch.ones(self.store_shapes[i])
+            self._flattened_var = torch.ones(V_instance.dim)
+            self._flattened_sd = torch.ones(V_instance.dim)
         elif name=="dense_e":
             # covL * covL^T = cov
             self._flattened_covL = torch.eye(V_instance.dim,V_instance.dim)
             self._flattened_cov = torch.eye(V_instance.dim,V_instance.dim)
+            self._flattened_covL_inv = torch.eye(V_instance.dim,V_instance.dim)
         elif name=="softabs" or name=="softabs_diag" or name=="softabs_outer_product" or name=="softabs_outer_product_diag":
             if alpha==None:
                 raise ValueError("alpha needs be defined for softabs metric")
@@ -35,24 +36,34 @@ class metric(object):
 
         else:
             raise ValueError("unknown metric type")
-    def set_metric(self,var_or_cov_tensor):
+    def set_metric(self,input_var):
         # input: either flattened empircial covariance for dense_e or
         # list of variances with the shape of p for diag_e
         if self.name == "diag_e":
-            for i in range(self.num_var):
-                self._sd_list[i].copy_(torch.sqrt(var_or_cov_tensor[i]))
-                self._var_list[i].copy_(var_or_cov_tensor[i])
+            self._flattened_var.copy_(input_var)
+            self._flattened_sd.copy_(torch.sqrt(self._flattened_var))
+            self._load_flatten()
         elif self.name == "dense_e":
-            raise ValueError("fix this")
-            self._flattened_covL.copy_(sd_or_covL_tensor)
+            self._flattened_cov.copy_(input_var)
+            self._flattened_covL.copy_(torch.potrf(self._flattened_cov,upper=False))
         else:
             raise ValueError("should not use this function unless the metrics are diag_e or dense_e")
 
-    def initialize_m_m_2(self,point):
-        m_ = point.zeroclone()
-        if self.name=="dense_e":
-            m_2 = torch.zeros((self.dim,self.dim))
-        elif self.name=="diag_e":
-            m_2 = point.zeroclone()
-        return(m_,m_2)
+    def _load_flatten(self):
+        if not self.name =="diag_e":
+            raise ValueError("should not use this fun if not diag_e")
+        else:
+            cur = 0
+            for i in range(self.num_var):
+                self._var_list_tensor[i].copy_(self._flattened_cov[cur:(cur + self.store_lens[i])].view(self.store_shapes[i]))
+                self._sd_list_tensor[i].copy_(torch.sqrt(self._var_list_tensor[i]))
+                cur = cur + self.store_lens[i]
+
+    # def initialize_m_m_2(self,point):
+    #     m_ = point.zeroclone()
+    #     if self.name=="dense_e":
+    #         m_2 = torch.zeros((self.dim,self.dim))
+    #     elif self.name=="diag_e":
+    #         m_2 = point.zeroclone()
+    #     return(m_,m_2)
 

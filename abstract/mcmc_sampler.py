@@ -323,6 +323,7 @@ class one_chain_obj(object):
         #for param,val in self.sampling_metadata.__dict__.items():
         #    setattr(self,param,val)
         self.tune_dict = tune_dict
+
         #if tuning_param_settings is None:
         #    self.tuning_param_settings = tuning_param_settings(tune_dict)
         #else:

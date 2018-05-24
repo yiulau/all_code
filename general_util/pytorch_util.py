@@ -82,9 +82,11 @@ def general_load_flattened_tensor_to_param(obj,flattened_tensor=None):
         for i in range(obj.num_var):
             # convert to copy_ later
             obj.list_tensor[i].copy_(obj.flattened_tensor[cur:(cur + obj.store_lens[i])].view(obj.store_shapes[i]))
+            cur = cur + obj.store_lens[i]
     else:
         for i in range(obj.num_var):
             # convert to copy_ later
             obj.list_tensor[i].copy_(flattened_tensor[cur:(cur + obj.store_lens[i])].view(obj.store_shapes[i]))
+            cur = cur + obj.store_lens[i]
         obj.load_param_to_flattened()
     return()

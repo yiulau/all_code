@@ -12,8 +12,8 @@ class T_dense_e(T):
             pass
         if not p_point is None:
             self.load_point(p_point)
-        Lp = torch.mv(self.metric._flattened_covL, self.flattened_tensor)
-        output = torch.dot(Lp, Lp)
+        L_inv_p = torch.mv(self.metric._flattened_covL_inv, self.flattened_tensor)
+        output = torch.dot(L_inv_p, L_inv_p) * 0.5
         return(output)
 
 
