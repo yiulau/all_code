@@ -8,14 +8,21 @@ class T_softabs_outer_product(T):
         self.metric = metric
         super(T_softabs_outer_product, self).__init__(linkedV)
 
-    def evaluate_float(self,p=None,q=None,dV=None):
+    def evaluate_float(self,q_point=None,p_point=None):
+        if not q_point is None:
+            self.linkedV.load_point(q_point)
+        if not p_point is None:
+            self.load_point(p_point)
+        _, H_ = self.linkedV.getH_tensor()
+        dV = self.linkedV.getV()
         gg = torch.dot(dV, dV)
         s = numpy.sinh(self.metric.msoftabsalpha * gg)
         c = numpy.cosh(self.metric.msoftabsalpha * gg)
         mLogdetmetric = - len(dV) * math.log(s / gg) + math.log(c)
+        p = self.flattened_tensor
         gv = torch.dot(dV, p)
         aux = (s / gg) * (p + (1 / c - 1) * (gv / gg) * dV)
-        out = 0.5 * mLogdetmetric + 0.5 * torch.dot(p, p)
+        out = 0.5 * mLogdetmetric + 0.5 * torch.dot(p,p)
         return (out)
 
     def dtaudp(self,lam=None,Q=None,p_flattened_tensor=None,dV=None):

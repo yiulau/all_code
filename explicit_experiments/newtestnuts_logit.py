@@ -104,7 +104,8 @@ emmean = numpy.mean(store,axis=0)
 #print(empCov)
 print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
-#print(fit)
+if stan_sampling:
+    print(fit)
 
 address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"
 correct = pickle.load(open(address, 'rb'))

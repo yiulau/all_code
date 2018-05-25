@@ -7,7 +7,12 @@ class T_softabs_diag_outer_product_e(T):
         super(T_softabs_diag_outer_product_e, self).__init__()
         return ()
 
-    def evaluate_float(self):
+    def evaluate_float(self,q_point=None,p_point=None):
+        if not q_point is None:
+            self.linkedV.load_point(q_point)
+        if not p_point is None:
+            self.load_point(p_point)
+        _, H_ = self.linkedV.getH_tensor()
         dV = self.linkedV.getV()
         p = self.flattened_tensor
         mlambda, mlogdetmetric = self.fcomputemetric(dV)

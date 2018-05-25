@@ -46,7 +46,7 @@ if stan_sampling:
     else:
         mod = pickle.load(open('model.pkl', 'rb'))
 
-    #fit = mod.sampling(data=data, refresh=0)
+    fit = mod.sampling(data=data, refresh=0)
 
 #print(fit)
 
@@ -126,7 +126,9 @@ emmean = numpy.mean(store,axis=0)
 #print(empCov)
 print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
-#print(fit)
+if stan_sampling:
+    print(fit)
+
 mcmc_samples = store
 
 address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"

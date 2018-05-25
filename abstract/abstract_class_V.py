@@ -154,8 +154,9 @@ class V(nn.Module):
             _,H = self.getH_tensor()
             self.diagH_tensor.copy_(torch.diag(H))
         else:
-            self.gradient_tensor.copy_(self.load_gradient())
-            self.gradient_tensor.copy_(self.load_mdiagH())
+
+            self.gradient_tensor.copy_(self.load_explicit_gradient())
+            self.diagH_tensor.copy_(self.load_explicit_diagH())
         return(self.gradient_tensor,self.diagH_tensor)
 
 
@@ -217,7 +218,6 @@ class V(nn.Module):
         #returns (dV,mdiagH,mgraddiagH)
         if not q is None:
             self.load_point(q)
-        assert self.explicit_gradient == True
         if not self.explicit_gradient:
             _,H,dH = self.getdH_tensor()
             self.diagH_tensor.copy_(torch.diag(H))
@@ -226,12 +226,10 @@ class V(nn.Module):
                 out[i, :] = torch.diag(dH[i, :, :])
             self.graddiagH_tensor.copy_(out)
         else:
-            self.gradient_tensor.copy_(self.load_gradient())
-            self.gradient_tensor.copy_(self.load_mdiagH())
+            self.gradient_tensor.copy_(self.load_explicit_gradient())
+            self.diagH_tensor.copy_(self.load_explicit_diagH())
+            self.graddiagH_tensor.copy_(self.load_explicit_graddiagH())
         #assert self.metric.name == "softabs_diag"
-        self.gradient_tensor.copy_(self.load_explicit_gradient())
-        self.diagH_tensor.copy_(self.load_explicit_diagH())
-        self.graddiagH_tensor.copy_(self.load_explicit_graddiagH())
         return(self.gradient_tensor,self.diagH_tensor,self.graddiagH_tensor)
 
     def block_2nd_deriv(self,var1,var2,retain_graph,create_graph):

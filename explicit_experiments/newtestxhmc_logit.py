@@ -11,7 +11,7 @@ from torch.autograd import Variable
 from experiments.correctdist_experiments.prototype import check_mean_var
 
 from explicit.nuts_util import NUTS_xhmc
-seedid = 32
+seedid = 2
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 dim = 5
@@ -112,7 +112,8 @@ print("store is {}".format(store))
 #print(empCov)
 print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
-
+if stan_sampling:
+    print(fit)
 
 address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"
 correct = pickle.load(open(address, 'rb'))

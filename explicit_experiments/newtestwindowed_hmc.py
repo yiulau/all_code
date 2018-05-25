@@ -89,8 +89,8 @@ print("total time is {}".format(end_time))
 print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
 
-
-#print(fit)
+if stan_sampling:
+    print(fit)
 mcmc_samples = store
 address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"
 correct = pickle.load(open(address, 'rb'))

@@ -119,9 +119,9 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):
     return(q_prop,p_prop,p_init,-log_w,accepted,accept_rate,divergent,j)
 def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tdepth=5,log_obj=None,debug_dict=None):
     Ham.diagnostics = time_diagnositcs()
-    seedid = 30
-    numpy.random.seed(seedid)
-    torch.manual_seed(seedid)
+    #seedid = 30
+    #numpy.random.seed(seedid)
+    #torch.manual_seed(seedid)
     p_init = Ham.T.generate_momentum(init_q)
     q_left = init_q.point_clone()
     q_right = init_q.point_clone()
@@ -201,7 +201,7 @@ def abstract_BuildTree_nuts(q,p,v,j,epsilon,Ham,H_0):
         else:
             continue_divergence = False
             num_div = 1
-        return q_prime, p_prime, q_prime, p_prime, q_prime, p_prime, continue_divergence, log_w_prime, num_div
+        return q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(), p_prime.point_clone(), continue_divergence, log_w_prime, num_div
     else:
         # first half of subtree
         q_left, p_left, q_right, p_right, q_prime, p_prime,s_prime, log_w_prime,num_div_prime = abstract_BuildTree_nuts(q, p, v, j - 1, epsilon, Ham,H_0)
@@ -235,7 +235,7 @@ def abstract_BuildTree_gnuts(q,p,v,j,epsilon,Ham,H_0):
         else:
             continue_divergence = False
             num_div = 1
-        return q_prime, p_prime, q_prime, p_prime, q_prime,p_prime, continue_divergence, log_w_prime,p_prime.flattened_tensor,num_div
+        return q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(),p_prime.point_clone(), continue_divergence, log_w_prime,p_prime.flattened_tensor.clone(),num_div
     else:
         # first half of subtree
         sum_p = torch.zeros(len(p.flattened_tensor))
@@ -276,7 +276,7 @@ def abstract_BuildTree_nuts_xhmc(q,p,v,j,epsilon,Ham,xhmc_delta,H_0):
             continue_divergence = False
             num_div = 1
         ave = Ham.dG_dt(q, p)
-        return q_prime, p_prime, q_prime, p_prime, q_prime,p_prime, continue_divergence, log_w_prime, ave, num_div
+        return q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(),p_prime.point_clone(), continue_divergence, log_w_prime, ave, num_div
     else:
         # first half of subtree
         q_left, p_left, q_right, p_right, q_prime,p_prime, s_prime, log_w_prime, ave_prime,num_div_prime = abstract_BuildTree_nuts_xhmc(q, p, v, j - 1,
@@ -307,7 +307,7 @@ def abstract_BuildTree_nuts_xhmc(q,p,v,j,epsilon,Ham,xhmc_delta,H_0):
 def abstract_NUTS_criterion(q_left,q_right,p_left,p_right):
     # True = continue doubling the trajectory
     # False = stop
-    o = (torch.dot(p_right.flattened_tensor,q_right.flattened_tensor-q_left.flattened_tensor) >=0) or \
+    o = (torch.dot(p_right.flattened_tensor,q_right.flattened_tensor-q_left.flattened_tensor) >=0) and \
         (torch.dot(p_left.flattened_tensor,q_right.flattened_tensor-q_left.flattened_tensor) >=0)
     return(o)
 
@@ -315,10 +315,11 @@ def abstract_gen_NUTS_criterion(p_sleft,p_sright,p_sum):
     # p_sum should be a tensor
     # True = continue doubling the trajectory
     # False = stop
-    o = (torch.dot(p_sleft.flattened_tensor,p_sum) >= 0) or \
-        (torch.dot(p_sright.flattened_tensor,p_sum) >= 0)
+    o = (torch.dot(p_sleft.flattened_tensor,p_sum) > 0) and \
+        (torch.dot(p_sright.flattened_tensor,p_sum) > 0)
     return(o)
 
 def abstract_xhmc_criterion(ave,xhmc_delta,traj_len):
     o = abs(ave)/traj_len > xhmc_delta
+    #o = (abs(ave)>xhmc_delta)
     return(o)

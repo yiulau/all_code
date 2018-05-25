@@ -119,9 +119,11 @@ def generalized_leapfrog_softabsdiag(q,p,epsilon,Ham,delta=0.1):
     # can take anything but should output tensor
     stat = gleapfrog_stat()
     dV,mdiagH,mgraddiagH = Ham.V.get_graddiagH(q)
+    #print(dV.shape)
+    #exit()
     mlambda,_ = Ham.T.fcomputeMetric(mdiagH)
     # dphidq outputs and inputs takes flattened gradient in flattened form
-    p.flattened_tensor -= epsilon * 0.5 * Ham.T.dphidq(dV,mdiagH,mgraddiagH,mlambda)
+    p.flattened_tensor -= epsilon * 0.5 * Ham.T.dphidq(dV=dV,mdiagH=mdiagH,mgraddiagH=mgraddiagH,mlambda=mlambda)
     p.load_flatten()
     rho = p.flattened_tensor.clone()
     pprime = p.flattened_tensor.clone()
@@ -135,7 +137,6 @@ def generalized_leapfrog_softabsdiag(q,p,epsilon,Ham,delta=0.1):
         p.load_flatten()
         count = count + 1
     if deltap>delta:
-
         stat.divergent = True
         stat.first_divergent = True
         #print("pprime {}".format(pprime))

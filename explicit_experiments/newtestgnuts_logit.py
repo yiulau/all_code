@@ -11,7 +11,7 @@ from torch.autograd import Variable
 from experiments.correctdist_experiments.prototype import check_mean_var
 
 from explicit.nuts_util import GNUTS
-seedid = 30
+seedid = 3
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 dim = 5
@@ -19,7 +19,7 @@ num_ob = 100
 chain_l = 1000
 burn_in = 100
 max_tdepth = 10
-stan_sampling = True
+stan_sampling = False
 
 
 
@@ -102,7 +102,9 @@ print("store is {}".format(store))
 #print(empCov)
 print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
-print(fit)
+if stan_sampling:
+    print(fit)
+
 mcmc_samples = store
 
 address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"

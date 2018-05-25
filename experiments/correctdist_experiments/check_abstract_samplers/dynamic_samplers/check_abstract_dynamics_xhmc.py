@@ -9,11 +9,11 @@ from experiments.experiment_obj import tuneinput_class
 
 from experiments.correctdist_experiments.prototype import check_mean_var
 
-seedid = 30
-numpy.random.seed(seedid)
-torch.manual_seed(seedid)
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=200,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=0,
-                                   warmup_per_chain=0,is_float=False,isstore_to_disk=False)
+# seedid = 30
+# numpy.random.seed(seedid)
+# torch.manual_seed(seedid)
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=10500,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=0,
+                                   warmup_per_chain=2050,is_float=False,isstore_to_disk=False)
 
 input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],"xhmc_delta":[0.1],
               "metric_name":["unit_e"],"dynamic":[True],"windowed":[False],"criterion":["xhmc"]}
@@ -40,7 +40,7 @@ correct_cov = correct["correct_cov"]
 correct_diag_cov = correct_cov.diagonal()
 print("exact mean {}".format(correct_mean))
 #print(correct_cov)
-exit()
+
 output = check_mean_var(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
 mean_check,cov_check = output["mcmc_mean"],output["mcmc_Cov"]
 pc_mean,pc_cov = output["pc_of_mean"],output["pc_of_cov"]

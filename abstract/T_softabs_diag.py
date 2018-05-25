@@ -6,10 +6,16 @@ class T_softabs_diag_e(T):
         self.metric = metric
         super(T_softabs_diag_e, self).__init__(linkedV)
 
-    def evaluate_scalar(self):
+    def evaluate_scalar(self,q_point=None,p_point=None):
+        if not q_point is None:
+            self.linkedV.load_point(q_point)
+        if not p_point is None:
+            self.load_point(p_point)
+        _, H_ = self.linkedV.getH_tensor()
         _, mdiagH = self.linkedV.getdiagH_tensor()
         mlambda,mLogdetmetric = self.fcomputeMetric(mdiagH)
-        out = torch.dot(mlambda * self.flattened_tensor, self.flattened_tensor) + 0.5 * mLogdetmetric
+        tau = 0.5 * torch.dot(mlambda * self.flattened_tensor, self.flattened_tensor)
+        out = tau + 0.5 * mLogdetmetric
         return (out)
 
 

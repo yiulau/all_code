@@ -391,7 +391,7 @@ def BuildTree_nuts_xhmc_tensor(q,p,v,j,epsilon,leapfrog,H_fun,dG_dt,xhmc_delta):
 def NUTS_criterion(q_left,q_right,p_left,p_right):
     # True = continue doubling the trajectory
     # False = stop
-    o = (torch.dot(q_right.data-q_left.data,p_right.data) >=0) or \
+    o = (torch.dot(q_right.data-q_left.data,p_right.data) >=0) and \
         (torch.dot(q_right.data-q_left.data,p_left.data) >=0)
     return(o)
 
@@ -399,14 +399,14 @@ def NUTS_criterion_tensor(q_left,q_right,p_left,p_right):
     # input and output are tensors
     # True = continue doubling the trajectory
     # False = stop
-    o = (torch.dot(q_right-q_left.data,p_right) >=0) or \
+    o = (torch.dot(q_right-q_left.data,p_right) >=0) and \
         (torch.dot(q_right-q_left.data,p_left) >=0)
     return(o)
 def gen_NUTS_criterion(p_sleft,p_sright,p_sum):
     # p_sum should be a tensor
     # True = continue doubling the trajectory
     # False = stop
-    o = (torch.dot(p_sleft,p_sum) >= 0) or \
+    o = (torch.dot(p_sleft,p_sum) >= 0) and \
         (torch.dot(p_sright,p_sum) >= 0)
     return(o)
 

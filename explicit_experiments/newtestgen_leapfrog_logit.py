@@ -122,8 +122,10 @@ print("alpha is {}".format(alp))
 print("sd is {}".format(np.sqrt(np.diagonal(empCov))))
 print("mean is {}".format(emmean))
 
+
 mcmc_samples = store
-#print(fit)
+if stan_sampling:
+    print(fit)
 address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"
 correct = pickle.load(open(address, 'rb'))
 correct_mean = correct["correct_mean"]
@@ -137,3 +139,4 @@ print(mean_check)
 print(cov_check)
 print(pc_mean)
 print(pc_cov)
+

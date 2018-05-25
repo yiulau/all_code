@@ -48,7 +48,7 @@ if stan_sampling:
 
     fit = mod.sampling(data=data, refresh=0)
 
-correct_samples = fit.extract(permuted=True)["beta"]
+#correct_samples = fit.extract(permuted=True)["beta"]
 
 y = Variable(torch.from_numpy(y_np).float(),requires_grad=False)
 
@@ -99,7 +99,8 @@ print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
 mcmc_samples=store
 
-#print(fit)
+if stan_sampling:
+    print(fit)
 
 address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"
 correct = pickle.load(open(address, 'rb'))
