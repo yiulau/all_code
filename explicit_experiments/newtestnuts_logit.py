@@ -11,7 +11,7 @@ from torch.autograd import Variable
 from experiments.correctdist_experiments.prototype import check_mean_var
 
 from explicit.nuts_util import NUTS
-seedid = 30
+seedid = 32
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 dim = 5

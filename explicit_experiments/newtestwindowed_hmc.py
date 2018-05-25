@@ -6,6 +6,7 @@ import pystan
 import torch
 from explicit.general_util import logsumexp_torch
 from torch.autograd import Variable
+from experiments.correctdist_experiments.prototype import check_mean_var
 
 from explicit.leapfrog_ult_util import HMC_alt_windowed, leapfrog_window
 seedid = 30
@@ -89,4 +90,18 @@ print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
 
 
-print(fit)
+#print(fit)
+mcmc_samples = store
+address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"
+correct = pickle.load(open(address, 'rb'))
+correct_mean = correct["correct_mean"]
+correct_cov = correct["correct_cov"]
+correct_diag_cov = correct_cov.diagonal()
+
+output = check_mean_var(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
+mean_check,cov_check = output["mcmc_mean"],output["mcmc_Cov"]
+pc_mean,pc_cov = output["pc_of_mean"],output["pc_of_cov"]
+print(mean_check)
+print(cov_check)
+print(pc_mean)
+print(pc_cov)
