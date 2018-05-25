@@ -1,4 +1,3 @@
-
 import numpy
 import pickle
 import torch
@@ -23,6 +22,7 @@ tune_settings_dict = tuning_settings([],[],[],[])
 
 tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 
+
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
 
 out = sampler1.start_sampling()
@@ -30,7 +30,7 @@ out = sampler1.start_sampling()
 
 
 mcmc_samples = sampler1.get_samples(permuted=True)
-#print(numpy.mean(mcmc_samples,axis=0))
+print("mcmc mean {}".format(numpy.mean(mcmc_samples,axis=0)))
 #print(numpy.cov(mcmc_samples,rowvar=False))
 
 address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"
@@ -38,7 +38,9 @@ correct = pickle.load(open(address, 'rb'))
 correct_mean = correct["correct_mean"]
 correct_cov = correct["correct_cov"]
 correct_diag_cov = correct_cov.diagonal()
-
+print("exact mean {}".format(correct_mean))
+#print(correct_cov)
+exit()
 output = check_mean_var(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
 mean_check,cov_check = output["mcmc_mean"],output["mcmc_Cov"]
 pc_mean,pc_cov = output["pc_of_mean"],output["pc_of_cov"]

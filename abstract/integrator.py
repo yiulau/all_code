@@ -130,7 +130,7 @@ def wrap(raw_sampler_one_step):
     def sampler_one_step(input_point_obj,Ham_obj,tune_param_objs_dict,log_obj=None):
         # tune_param_objs_dict contains tuning parameter objects for this integrator
         tune_param_dict = {}
-        sampler_permissible_tune_parm = ("epsilon","evolve_t","evolve_L")
+        sampler_permissible_tune_parm = ("epsilon","evolve_t","evolve_L","xhmc_delta")
         for param_name,obj in tune_param_objs_dict.items():
             if param_name in sampler_permissible_tune_parm:
                 tune_param_dict.update({param_name:obj.get_val()})
@@ -140,7 +140,8 @@ def wrap(raw_sampler_one_step):
         tune_param_dict.update({"Ham":Ham_obj})
         #print(tune_param_dict)
         #exit()
-
+        #print(tune_param_dict)
+        #exit()
         return(raw_sampler_one_step(**tune_param_dict))
 
     return(sampler_one_step)

@@ -8,6 +8,7 @@ import torch
 from explicit.general_util import logsumexp_torch
 from explicit.leapfrog_ult_util import leapfrog_ult as leapfrog
 from torch.autograd import Variable
+from experiments.correctdist_experiments.prototype import check_mean_var
 
 from explicit.nuts_util import NUTS
 seedid = 30
@@ -18,7 +19,7 @@ num_ob = 100
 chain_l = 1000
 burn_in = 100
 max_tdepth = 10
-stan_sampling = True
+stan_sampling = False
 
 
 y_np= numpy.random.binomial(n=1,p=0.5,size=num_ob)
@@ -97,9 +98,24 @@ print("length of burn in is {}".format(burn_in))
 print("Use logit")
 store = store[burn_in:,]
 store = store.numpy()
+mcmc_samples = store
 empCov = numpy.cov(store,rowvar=False)
 emmean = numpy.mean(store,axis=0)
 #print(empCov)
 print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
-print(fit)
+#print(fit)
+
+address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"
+correct = pickle.load(open(address, 'rb'))
+correct_mean = correct["correct_mean"]
+correct_cov = correct["correct_cov"]
+correct_diag_cov = correct_cov.diagonal()
+
+output = check_mean_var(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
+mean_check,cov_check = output["mcmc_mean"],output["mcmc_Cov"]
+pc_mean,pc_cov = output["pc_of_mean"],output["pc_of_cov"]
+print(mean_check)
+print(cov_check)
+print(pc_mean)
+print(pc_cov)

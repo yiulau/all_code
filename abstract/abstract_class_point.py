@@ -79,6 +79,9 @@ class point(object):
         if self.need_flatten:
             self.load_flattened_tensor_to_param()
         else:
+            #print("flattened {}".format(self.flattened_tensor))
+            #print("list tensor {}".format(self.list_tensor[0]))
+            #print("syncro {}".format(self.assert_syncro()))
             assert hex(id(self.flattened_tensor)) == hex(id(self.list_tensor[0]))
         return()
 
@@ -100,7 +103,8 @@ class point(object):
             out = False
         else:
             out = True
-
+        if not self.need_flatten:
+            assert hex(id(self.flattened_tensor)) == hex(id(self.list_tensor[0]))
 
         return (out)
 

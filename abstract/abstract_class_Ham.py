@@ -108,7 +108,7 @@ class Hamiltonian(object):
                 _,H = self.V.getH_tensor(q)
                 lam,Q = eigen(H)
                 out = p.point_clone()
-                out.flattened_tensor = self.T.dtaudp(p.flattened_tensor,lam,Q)
+                out.flattened_tensor.copy_(self.T.dtaudp(p.flattened_tensor,lam,Q))
                 out.load_flatten()
                 return(out)
         elif(self.metric.name=="softabs_diag"):
@@ -116,20 +116,20 @@ class Hamiltonian(object):
                 _,mdiagH = self.V.getdiagH_tensor()
                 mlambda,_ = self.T.fcomputeMetric(mdiagH)
                 out = p.point_clone()
-                out.flattened_tensor = self.T.dtaudp(p.flattened_tensor,mlambda)
+                out.flattened_tensor.copy_(self.T.dtaudp(p.flattened_tensor,mlambda))
                 out.load_flatten()
                 return(out)
         elif(self.metric.name=="softabs_outer_product" or self.metric.name=="softabs_diag_outer_product"):
             def p_sharp(q,p,dV=None):
                 out = p.point_clone()
-                out.flattened_tensor = self.T.dtaudp(p.flattened_tensor,dV)
+                out.flattened_tensor.copy_(self.T.dtaudp(p.flattened_tensor,dV))
                 out.load_flatten()
                 return(out)
 
         elif(self.metric.name=="dense_e" or self.metric.name=="unit_e" or self.metric.name=="diag_e"):
             def p_sharp(q,p):
                 out = p.point_clone()
-                out.flattened_tensor = self.T.dp(p.flattened_tensor)
+                out.flattened_tensor.copy_(self.T.dp(p.flattened_tensor))
                 out.load_flatten()
                 return(out)
 

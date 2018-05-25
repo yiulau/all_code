@@ -32,8 +32,8 @@ def abstract_NUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):
         else:
             _, _, q_right, p_right, q_prime, p_prime, s_prime, log_w_prime,num_div_prime = abstract_BuildTree_nuts(q_right, p_right, 1, j, epsilon, Ham,H_0
                                                                               )
+        accept_rate = math.exp(min(0, (log_w_prime - log_w)))
         if s_prime:
-            accept_rate = math.exp(min(0,(log_w_prime-log_w)))
             u = numpy.random.rand(1)
             if u < accept_rate:
                 accepted = accepted or True
@@ -89,8 +89,9 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):
         else:
             _, _, q_right, p_right, q_prime, p_prime,s_prime, log_w_prime, sum_dp,num_div_prime = abstract_BuildTree_gnuts(q_right, p_right, 1, j, epsilon, Ham,
                                                                               H_0)
+        accept_rate = math.exp(min(0, (log_w_prime - log_w)))
         if s_prime:
-            accept_rate = math.exp(min(0,(log_w_prime-log_w)))
+
             u = numpy.random.rand(1)
             if u < accept_rate:
                 accepted = accepted or True
@@ -109,16 +110,18 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):
         divergent = True
         p_prop = None
 
-    if hasattr(abstract_GNUTS,"log_obj"):
-        abstract_GNUTS.log_obj.update({"prop_H":-log_w})
-        abstract_GNUTS.log_obj.update({"accepted":accepted})
-        abstract_GNUTS.log_obj.update({"accept_rate":accept_rate})
-        abstract_GNUTS.log_obj.update({"divergent":divergent})
-        abstract_GNUTS.log_obj.update({"tree_depth":j})
+    if not log_obj is None:
+        log_obj.store.update({"prop_H":-log_w})
+        log_obj.store.update({"accepted":accepted})
+        log_obj.store.update({"accept_rate":accept_rate})
+        log_obj.store.update({"divergent":divergent})
+        log_obj.store.update({"tree_depth":j})
     return(q_prop,p_prop,p_init,-log_w,accepted,accept_rate,divergent,j)
-def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tdepth=5,log_obj=None):
-
+def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tdepth=5,log_obj=None,debug_dict=None):
     Ham.diagnostics = time_diagnositcs()
+    seedid = 30
+    numpy.random.seed(seedid)
+    torch.manual_seed(seedid)
     p_init = Ham.T.generate_momentum(init_q)
     q_left = init_q.point_clone()
     q_right = init_q.point_clone()
@@ -133,17 +136,30 @@ def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tdepth=5,log_obj=None):
     accepted = False
     divergent = False
     ave = Ham.dG_dt(init_q, p_init)
+
     s = True
     while s:
         v = numpy.random.choice([-1,1])
+        #print("j {}".format(j==6))
+        #print("abstract v {}".format(v))
         if v < 0:
             q_left, p_left, _, _, q_prime,p_prime, s_prime, log_w_prime,ave_dp,num_div_prime = abstract_BuildTree_nuts_xhmc(q_left, p_left, -1, j, epsilon, Ham,
                                                                             xhmc_delta,H_0)
         else:
-            _, _, q_right, p_right,p_prime, q_prime, s_prime, log_w_prime,ave_dp,num_div_prime = abstract_BuildTree_nuts_xhmc(q_right, p_right, 1, j, epsilon, Ham,
+
+
+            _, _, q_right, p_right, q_prime,p_prime, s_prime, log_w_prime,ave_dp,num_div_prime = abstract_BuildTree_nuts_xhmc(q_right, p_right, 1, j, epsilon, Ham,
                                                                               xhmc_delta,H_0)
+        if j == 2:
+            print("abstract q_prime {}".format(q_prime.flattened_tensor))
+
+        accept_rate = math.exp(min(0, (log_w_prime - log_w)))
+        if j ==1:
+            #print("abstract ar {}".format(accept_rate))
+            pass
+            #print("abstract pprime {}".format(p_prime.flattened_tensor))
+        #print("abstract s_prime {}".format(s_prime))
         if s_prime:
-            accept_rate = math.exp(min(0,(log_w_prime-log_w)))
             u = numpy.random.rand(1)
             if u < accept_rate:
                 accepted = accepted or True
@@ -167,6 +183,9 @@ def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tdepth=5,log_obj=None):
         log_obj.store.update({"accept_rate":accept_rate})
         log_obj.store.update({"divergent":divergent})
         log_obj.store.update({"tree_depth":j})
+    #print("abstract num_div {}".format(num_div))
+    #debug_dict.update({"abstract": j})
+
     return(q_prop,p_prop,p_init,-log_w,accepted,accept_rate,divergent,j)
 def abstract_BuildTree_nuts(q,p,v,j,epsilon,Ham,H_0):
     if j ==0:

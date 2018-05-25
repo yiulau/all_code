@@ -46,8 +46,8 @@ X = Variable(torch.from_numpy(X_np).float(),requires_grad=False)
 inputq = torch.randn(dim)
 
 inputp = torch.randn(dim)
-q = Variable(inputq,requires_grad=True)
-p = Variable(inputp,requires_grad=False)
+q = Variable(inputq.clone(),requires_grad=True)
+p = Variable(inputp.clone(),requires_grad=False)
 
 def V(beta):
     likelihood = torch.dot(beta, torch.mv(torch.t(X), y)) - \

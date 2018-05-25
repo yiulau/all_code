@@ -135,8 +135,13 @@ def GNUTS_tensor(q_init,epsilon,H_fun,leapfrog,max_tdepth,p_sharp_fun):
         j = j + 1
         s = s and (j<max_tdepth)
     return(q_prop,j)
-def NUTS_xhmc(q_init,epsilon,H_fun,leapfrog,max_tdepth,dG_dt,xhmc_delta):
+def NUTS_xhmc(q_init,epsilon,H_fun,leapfrog,max_tdepth,dG_dt,xhmc_delta,debug_dict=None):
+    seedid = 30
+    numpy.random.seed(seedid)
+    torch.manual_seed(seedid)
     p = Variable(torch.randn(len(q_init)),requires_grad=False)
+
+
     q_left = Variable(q_init.data.clone(),requires_grad=True)
     q_right = Variable(q_init.data.clone(),requires_grad=True)
     p_left = Variable(p.data.clone(),requires_grad=False)
@@ -145,17 +150,26 @@ def NUTS_xhmc(q_init,epsilon,H_fun,leapfrog,max_tdepth,dG_dt,xhmc_delta):
     q_prop = Variable(q_init.data.clone(),requires_grad=True)
     log_w = -H_fun(q_init,p,return_float=True)
     ave = dG_dt(q_init, p)
+    counter = 0
     s = True
     while s:
         v = numpy.random.choice([-1,1])
+        #print("explicit v {} ".format(v))
         if v < 0:
             q_left, p_left, _, _, q_prime, s_prime, log_w_prime,ave_dp = BuildTree_nuts_xhmc(q_left, p_left, -1, j, epsilon, leapfrog, H_fun,
                                                                             dG_dt,xhmc_delta)
         else:
             _, _, q_right, p_right, q_prime, s_prime, log_w_prime,ave_dp = BuildTree_nuts_xhmc(q_right, p_right, 1, j, epsilon, leapfrog, H_fun,
                                                                               dG_dt,xhmc_delta)
+        #if j==2:
+        #    print("explicit q_prime {}".format(q_prime.data))
+
+        accept_rate = math.exp(min(0, (log_w_prime - log_w)))
+        if j==1:
+            #print("explicit ar {}".format(accept_rate))
+            pass
+        #print("explicit sprime {}".format(s_prime))
         if s_prime:
-            accept_rate = math.exp(min(0,(log_w_prime-log_w)))
             u = numpy.random.rand(1)
             if u < accept_rate:
                 q_prop.data = q_prime.data.clone()
@@ -165,6 +179,8 @@ def NUTS_xhmc(q_init,epsilon,H_fun,leapfrog,max_tdepth,dG_dt,xhmc_delta):
         s = s_prime and xhmc_criterion(ave,xhmc_delta,math.pow(2,j))
         j = j + 1
         s = s and (j<max_tdepth)
+
+    #debug_dict.update({"explicit": j})
     return(q_prop,j)
 
 def NUTS_xhmc_tensor(q_init,epsilon,H_fun,leapfrog,max_tdepth,dG_dt,xhmc_delta):

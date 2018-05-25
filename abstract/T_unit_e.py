@@ -10,7 +10,7 @@ class T_unit_e(T):
 
     def evaluate_scalar(self,q_point=None,p_point=None):
         if not q_point is None:
-            print("should not pass q_point for this metric")
+            raise ValueError("should not pass q_point for this metric")
             pass
         if not p_point is None:
             self.load_point(p_point)

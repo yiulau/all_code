@@ -8,9 +8,10 @@ import torch
 from explicit.general_util import logsumexp_torch
 from explicit.leapfrog_ult_util import leapfrog_ult
 from torch.autograd import Variable
+from experiments.correctdist_experiments.prototype import check_mean_var
 
 from explicit.nuts_util import NUTS_xhmc
-seedid = 30
+seedid = 3
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 dim = 5
@@ -93,7 +94,7 @@ store = torch.zeros((chain_l,dim))
 begin = time.time()
 for i in range(chain_l):
     print("round {}".format(i))
-    out = NUTS_xhmc(q,0.12,H,leapfrog_ult,10,dG_dt,0.1)
+    out = NUTS_xhmc(q,0.1,H,leapfrog_ult,10,dG_dt,0.1)
     store[i,] = out[0].data # turn this on when using Nuts
     q.data = out[0].data # turn this on when using nuts
     #print("q is {} tree length {}".format(q.data, out[1]))
@@ -104,6 +105,7 @@ print("length of burn in is {}".format(burn_in))
 print("Use logit")
 store = store[burn_in:,]
 store = store.numpy()
+mcmc_samples = store
 empCov = numpy.cov(store,rowvar=False)
 emmean = numpy.mean(store,axis=0)
 print("store is {}".format(store))
@@ -111,4 +113,18 @@ print("store is {}".format(store))
 print("sd is {}".format(numpy.sqrt(numpy.diagonal(empCov))))
 print("mean is {}".format(emmean))
 
-print(fit)
+
+address = os.environ["PYTHONPATH"] + "/experiments/correctdist_experiments/result_from_long_chain.pkl"
+correct = pickle.load(open(address, 'rb'))
+correct_mean = correct["correct_mean"]
+correct_cov = correct["correct_cov"]
+correct_diag_cov = correct_cov.diagonal()
+
+output = check_mean_var(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
+mean_check,cov_check = output["mcmc_mean"],output["mcmc_Cov"]
+pc_mean,pc_cov = output["pc_of_mean"],output["pc_of_cov"]
+print(mean_check)
+print(cov_check)
+print(pc_mean)
+print(pc_cov)
+#print(fit)
