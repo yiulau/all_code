@@ -36,7 +36,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print(p.flattened_tensor)
     current_H = Ham.evaluate(q,p)
 
-    print("startH {}".format(current_H))
+    #print("startH {}".format(current_H))
 
 
     #newq,newp,stat = Ham.integrator(q, p, epsilon, Ham)

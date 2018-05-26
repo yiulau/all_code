@@ -46,8 +46,8 @@ class tune_param_concrete(object):
     #         pass
     #     else:
     #         raise ValueError("unknown tune method ")
-    def set_Ham(self,Ham):
-        self.Ham = Ham
+    # def set_Ham(self,Ham):
+    #     self.Ham = Ham
 
     def initialize_tuning_param(self):
         #print("yes")
@@ -60,9 +60,9 @@ class tune_param_concrete(object):
         return()
 
     # apply to each param obj after all have been created
-    def add_param_objs_dict(self,param_objs_dict):
-        assert self == param_objs_dict[self.name]
-        self.param_objs_dict = param_objs_dict
+    # def add_param_objs_dict(self,param_objs_dict):
+    #     assert self == param_objs_dict[self.name]
+    #     self.param_objs_dict = param_objs_dict
     @abc.abstractmethod
     def find_reasonable_start(self):
         # returns reasonable initialization value
@@ -79,10 +79,10 @@ class tune_param_concrete(object):
     @abc.abstractmethod
     def get_val(self):
         return
-def dual_input_accept_rate(sample_obj,dual_settings_obj):
-    alpha = sample_obj.accept_rate
-    input = dual_settings_obj.target - alpha
-    return(input)
+# def dual_input_accept_rate(sample_obj,dual_settings_obj):
+#     alpha = sample_obj.accept_rate
+#     input = dual_settings_obj.target - alpha
+#     return(input)
 
 
 
@@ -305,7 +305,21 @@ class dense_cov(tune_param_concrete):
         self.store.copy_(val)
         self.cur_val = self.store.clone()
         return ()
+    def update_metric(self):
+        assert hasattr(self,"Ham")
+        print(self.store)
+        normal = self.check_normal()
+        if normal:
+            self.Ham.metric.set_metric(self.store)
 
+
+    def check_normal(self):
+        try:
+            test_inv = torch.inverse(self.store)
+            test_invL = torch.potrf(test_inv,upper=False)
+            return(True)
+        except ValueError:
+            print("current val in store not invertible or inverse not decomposable ")
 
 
 class diag_cov(tune_param_concrete):
@@ -341,6 +355,31 @@ class diag_cov(tune_param_concrete):
 
     def create_store(self,dim):
         self.store = torch.zeros(dim)
+
+    def update_metric(self):
+        assert hasattr(self,"Ham")
+        # first check all entries positive
+
+        too_large,too_small = self.check_normal()
+        anormal = too_large or too_small
+        if anormal:
+            # make some kind of record or raise error
+            raise ValueError("too large {}, too small {}".format(too_large,too_small))
+        else:
+            self.Ham.metric.set_metric(self.store)
+
+
+    def check_normal(self):
+        if sum((self.store < 0.00001).type("torch.FloatTensor").numpy()) > 0:
+            too_small = True
+        else:
+            too_small = False
+
+        if sum((self.store > 100).type("torch.FloatTensor").numpy()) > 0:
+            too_large = True
+        else:
+            too_large = False
+        return(too_small,too_large)
 
 def tune_param_creator(param_name,iter_list,tune_method,par_type,par_tune_setting):
     if param_name=="epsilon":

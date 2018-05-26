@@ -9,13 +9,14 @@ from distributions.logistic_regressions.pima_indian_logisitic_regression import 
 from torch.autograd import Variable
 from abstract.abstract_class_point import point
 from explicit.genleapfrog_ult_util import getH, eigen, softabs_map
+from abstract.abstract_static_sampler import abstract_static_one_step
 import os
 
-seedid = 33
+seedid = 3
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 
-alpha = 1e6
+alpha = 1e-4
 #debug_dict = {"abstract":None,"explicit":None}
 
 #debug_dict.update({"explicit":y.data.clone()})
@@ -37,10 +38,28 @@ print("abstract V {}".format(Ham.V.evaluate_scalar(q_point)))
 print("abstract T {}".format(Ham.T.evaluate_scalar(q_point,p_point)))
 
 
-L= 1
+
+L= 5000
+mcmc_samples = torch.zeros(L,7)
 for i in range(L):
-    outq_a, outp_a, stat = generalized_leapfrog_softabsdiag(q_point, p_point, 0.1, Ham)
-    q_point,p_point = outq_a,outp_a
+    out = abstract_static_one_step(epsilon=0.1,init_q=q_point,Ham=Ham,evolve_L=10,alpha=alpha)
+    q_point = out[0]
+    mcmc_samples[i,:] = q_point.flattened_tensor.clone()
+
+
+store = mcmc_samples.numpy()
+mcmc_mean = numpy.mean(store,axis=0)
+mcmc_cov = numpy.cov(store,rowvar=False)
+
+print("mcmc_mean {}".format(mcmc_mean))
+print("mcmc_cov {}".format(mcmc_cov))
+# for i in range(L):
+#     outq_a,outp_a,stat = Ham.integrator(q_point,p_point,0.1,Ham,0.1)
+#     q_point,p_point = outq_a,outp_a
+
+# for i in range(L):
+#     outq_a, outp_a, stat = generalized_leapfrog_softabsdiag(q_point, p_point, 0.1, Ham)
+#     q_point,p_point = outq_a,outp_a
 
 print("end H abstract {}".format(Ham.evaluate(q_point,p_point)))
-print(stat.divergent)
+#print(stat.divergent)

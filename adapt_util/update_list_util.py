@@ -160,21 +160,23 @@ def fsf(window_size=25,ini_buffer=75,end_buffer=50,min_slow_updates=2,tune_l=250
 
 # case 4
 # msm
-def msm(window_size=25,min_medium_updates=5,min_slow_updates=2,tune_l=250):
+def msm(window_size=25,min_medium_updates=5,min_slow_updates=2,tune_l=250,ini_buffer=None):
     case = 4
     fast_list = []
     medium_list = []
     slow_list = []
 # if case==1:
     slow_window_size = window_size
-    min_length = window_size * (round(min_medium_updates * (1.75)))
+    if ini_buffer is None:
+        ini_buffer = 3 * window_size
+    min_length = window_size * (round(min_medium_updates * (1.75))) + ini_buffer
     n = (2 ** (min_slow_updates + 1) - 1) * window_size
     min_length = min_length + n
 
     if tune_l < min_length:
         raise ValueError("warm up not long enough")
     else:
-        counter = 0
+        counter = ini_buffer
         overshoots = False
         while overshoots == False:
             if counter <  min_medium_updates * window_size:
@@ -241,20 +243,23 @@ def f(tune_l=250):
 
 #case 6
 # m
-def m(window_size=25,min_medium_updates=5,tune_l=250):
+def m(window_size=25,min_medium_updates=5,tune_l=250,ini_buffer=None):
     case = 6
     fast_list = []
     medium_list = []
     slow_list = []
 # if case==1:
     slow_window_size = window_size
-    min_length = window_size * (round(min_medium_updates *(1.75)))
+    if ini_buffer is None:
+        ini_buffer = 3 * window_size
+    min_length = window_size * (round(min_medium_updates *(1.75))) + ini_buffer
     #print("tune_l {}".format(tune_l))
 
     if tune_l < min_length:
         raise ValueError("warm up not long enough")
     else:
-        counter = 0
+        assert ini_buffer >=0
+        counter = ini_buffer
         overshoots = False
         while overshoots == False:
             if counter <  tune_l:
@@ -274,20 +279,22 @@ def m(window_size=25,min_medium_updates=5,tune_l=250):
 #print(out[1])
 #print(out[2])
 
-def s(window_size=25,min_slow_updates=3,tune_l=250):
+def s(window_size=25,min_slow_updates=3,tune_l=250,ini_buffer=None):
     case = 7
     fast_list = []
     medium_list = []
     slow_list = []
 # if case==1:
     slow_window_size = window_size
-
-    min_length = (2 ** (min_slow_updates + 1) - 1) * window_size
+    if ini_buffer is None:
+        ini_buffer = 3 * window_size
+    min_length = (2 ** (min_slow_updates + 1) - 1) * window_size + ini_buffer
 
     if tune_l < min_length:
         raise ValueError("warm up not long enough")
     else:
-        counter = 0
+        assert ini_buffer >=0
+        counter = ini_buffer
         overshoots = False
         while overshoots == False:
             if counter <  tune_l:
@@ -303,6 +310,8 @@ def s(window_size=25,min_slow_updates=3,tune_l=250):
                 overshoots = True
     return(fast_list,medium_list,slow_list)
 
+# out = s(tune_l=1000)
+# print(out)
 #out = case7(tune_l=1570,window_size=25)
 #print(out[0])
 #print(out[1])

@@ -6,7 +6,7 @@ from abstract.abstract_static_sampler import *
 from abstract.metric import metric
 from adapt_util.adapt_util import tuneable_param
 
-from general_util.pytorch_util import welford
+from general_util.pytorch_util import welford_float
 
 
 # this object is assumed to be initiated properly
@@ -19,8 +19,12 @@ class sampler_one_step(object):
         #     val = obj.get_val()
         #     setattr(self,param_name,val)
         self.v_fun = tune_dict["v_fun"]
-        self.windowed = tune_dict["windowed"]
         self.dynamic = tune_dict["dynamic"]
+        if self.dynamic:
+            self.windowed = None
+        else:
+            self.windowed = tune_dict["windowed"]
+            assert self.windowed==True or self.windowed==False
         self.second_order = tune_dict["second_order"]
         self.metric_name = tune_dict["metric_name"]
         self.criterion = tune_dict["criterion"]
@@ -62,14 +66,14 @@ class sampler_one_step(object):
         self.run()
         total_seconds = time.time() - start
         ave_seconds = total_seconds/self.log_obj["num_transitions"]
-        self.ave_second_per_leapfrog = self.welford_obj.mean(self.ave_second_per_leapfrog,ave_seconds)
+        self.ave_second_per_leapfrog,_ = self.welford_obj.mean_var(self.ave_second_per_leapfrog,ave_seconds)
 
     def set_tunable_param(self,metric):
         self.tuneable_param = tuneable_param(self.dynamic,self.second_order,metric,self.criterion,self.input_time)
 
     def find_ave_second_per_leapfrog(self):
         if self.ave_second_per_leapfrog==0:
-            self.welford_obj = welford()
+            self.welford_obj = welford_float()
             for i in range(20):
                 self.evolve()
         return(self.ave_second_per_leapfrog)

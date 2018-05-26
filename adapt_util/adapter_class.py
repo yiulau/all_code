@@ -20,6 +20,7 @@ class adapter_class(object):
             self.par_type_dict.update({param:obj["par_type"]})
 
 
+
         self.permitted_tune_params = ("epsilon","evolve_L","evolve_t","alpha","xhmc_delta","cov")
         #self.par_type_dict = {"epsilon":"fast","evolve_L": "medium", "evolve_t": "medium", "alpha": "medium", "xhmc_delta": "medium",
         #                 "diag_cov": "slow", "cov": "slow"}
@@ -147,8 +148,8 @@ class adapter_class(object):
 
     # for each
     # first determine if there are fast parameters
-    def update_list(self):
-        pass
+    # def update_list(self):
+    #     pass
 
     def update(self,sample_obj):
         # by definition
@@ -181,10 +182,11 @@ class adapter_class(object):
             if hasattr(slow_state,"adapt_cov_state"):
                 slow_state.adapt_cov_state.update(sample_obj)
 
-
+        return()
     #def prepare_adapter(self):
     #    self.tuning_param_state = tuning_param_states(self)
-
+    def update_setting(self,adapter_out):
+        pass
 
 
 

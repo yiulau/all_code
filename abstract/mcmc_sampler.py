@@ -104,7 +104,7 @@ class mcmc_sampler(object):
                                                      num_samples=self.num_samples_per_chain,
                                                      warm_up=self.warmup_per_chain,tune_l=self.tune_l_per_chain)
             this_tune_dict = self.tune_dict.copy()
-            this_chain_obj = one_chain_obj(sampler_obj=self,init_point=self.init_q_point_list[i],
+            this_chain_obj = one_chain_obj(init_point=self.init_q_point_list[i],
                                            tune_dict=self.tune_dict,chain_setting=this_chain_setting,
                                            tune_settings_dict=self.tune_settings_dict.copy(),
                                            adapter_setting=self.adapter_setting)
@@ -301,6 +301,12 @@ class sampler_metadata(object):
 # unique for individual sampler
 #tune_method_dict = {"epsilon":"opt","evolve_t":"opt"}
 
+class one_chain_sample_meta(object):
+    def __init__(self,one_chain_obj):
+        self.num_restart = 0
+
+    def load(self,sample_meta):
+        pass
 
 # want it so that sampler_one_step only has inputq and tuning paramater
 # supply tuning parameter with a dictionary
@@ -310,8 +316,8 @@ class sampler_metadata(object):
 
 # tune_dict for each chain should be independent
 class one_chain_obj(object):
-    def __init__(self,sampler_obj,init_point,tune_dict,chain_setting,
-                 tune_settings_dict,adapter_setting=None):
+    def __init__(self,init_point,tune_dict,chain_setting,
+                 tune_settings_dict,adapter_setting=None,sample_meta=None):
         self.chain_setting = chain_setting
         self.store_samples = []
         self.chain_ready = False
@@ -358,11 +364,22 @@ class one_chain_obj(object):
         #self.sampler_one_step = sampler_one_step(self.tune_param_objs_dict,init_point)
         self.sampler_one_step = sampler_one_step(tune_param_objs_dict=self.tune_param_objs_dict,init_point=init_point,
                                                  tune_dict=tune_dict)
+
         if "epsilon" in self.tune_param_objs_dict:
             ep_obj = self.tune_param_objs_dict["epsilon"]
             ep_obj.Ham = self.sampler_one_step.Ham
 
+        if "dense_cov" or "diag_cov" in self.tune_param_objs_dict:
+            if "dense_cov" in self.tune_param_objs_dict:
+                cov_obj = self.tune_param_objs_dict["dense_cov"]
+            else:
+                cov_obj = self.tune_param_objs_dict["diag_cov"]
+            cov_obj.Ham = self.sampler_one_step.Ham
         #exit()
+        if sample_meta is None:
+            self.sample_meta = one_chain_sample_meta(self)
+        else:
+            self.sample_meta = sample_meta
     def adapt(self,sample_obj):
         # if self.adapter is none, do nothing
         self.adapter.update(sample_obj)
@@ -405,7 +422,7 @@ class one_chain_obj(object):
             else:
                 keep = False
 
-            print(self.tune_param_objs_dict["epsilon"].get_val())
+            #print(self.tune_param_objs_dict["epsilon"].get_val())
 
             out = self.sampler_one_step.run()
             #self.adapter.log_obj = self.log_obj
@@ -416,14 +433,18 @@ class one_chain_obj(object):
                     self.store_to_disk()
             if counter < self.chain_setting["tune_l"]:
                 out.iter = counter
-                self.adapt(sample_dict)
+                out = self.adapt(sample_dict)
+                if self.allow_restart:
+                    if out["restart"]:
+                        self.restart(out)
+
             #print("tune_l is {}".format(self.chain_setting["tune_l"]))
-            print(out.flattened_tensor)
-            print("iter is {}".format(counter))
-            print("epsilon val {}".format(self.tune_param_objs_dict["epsilon"].get_val()))
+            #print(out.flattened_tensor)
+            #print("iter is {}".format(counter))
+            #print("epsilon val {}".format(self.tune_param_objs_dict["epsilon"].get_val()))
 #            print("evolve_L val {}".format(self.tune_param_objs_dict["evolve_L"].get_val()))
-            print("accept_rate {}".format(self.log_obj.store["accept_rate"]))
-            print("divergent is {}".format(self.log_obj.store["divergent"]))
+            #print("accept_rate {}".format(self.log_obj.store["accept_rate"]))
+            #print("divergent is {}".format(self.log_obj.store["divergent"]))
 
         return()
     def add_sample(self,sample_dict):
@@ -446,6 +467,19 @@ class one_chain_obj(object):
         store_matrix = store_torch_matrix.numpy()
         return(store_matrix)
 
+    def restart(self,adapter_out):
+        # return to start state
+        # load samplemeta
+        # erase saved samples (if any)
+        # run
+        self.store_samples = []
+        self.prepare_this_chain()
+        self.adapter.update_setting(adapter_out)
+        self.metadata.load(adapter_out)
+        if not self.metadata.enough_restarts:
+            self.restart_run()
+
+        return()
 # log_obj should keep information about dual_obj, and information about tuning parameters
 # created at the start of each transition. discarded at the end of each transition
 class log_class(object):

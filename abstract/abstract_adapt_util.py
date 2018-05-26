@@ -167,25 +167,25 @@ def return_update_ep_list(tune_l,ini_buffer=75,end_buffer=50,window_size=25):
             output_list.append(counter-1)
     return(output_list)
 
-def return_update_slow_list(tune_l,ini_buffer=75,end_buffer=50,slow_window_size=25,scale_factor=2):
-    # returns indices at which the chain ends a covariance update window and also updates epsilon once
-    if tune_l < ini_buffer + end_buffer + slow_window_size:
-        raise ValueError("warmup iterations not long enough")
-    else:
-        cur_window_size = slow_window_size
-        counter = self.slow_start
-        overshoots = False
-        output_list = []
-        while not overshoots:
-            counter = counter + cur_window_size
-            cur_window_size = cur_window_size * scale_factor
-            overshoots = (counter >= self.slow_end)
-            #overshoots = counter >= tune_l - end_buffer
-            if overshoots:
-                output_list.append(tune_l-end_buffer-1)
-            else:
-                output_list.append(counter-1)
-    return(output_list)
+# def return_update_slow_list(tune_l,ini_buffer=75,end_buffer=50,slow_window_size=25,scale_factor=2):
+#     # returns indices at which the chain ends a covariance update window and also updates epsilon once
+#     if tune_l < ini_buffer + end_buffer + slow_window_size:
+#         raise ValueError("warmup iterations not long enough")
+#     else:
+#         cur_window_size = slow_window_size
+#         counter = self.slow_start
+#         overshoots = False
+#         output_list = []
+#         while not overshoots:
+#             counter = counter + cur_window_size
+#             cur_window_size = cur_window_size * scale_factor
+#             overshoots = (counter >= self.slow_end)
+#             #overshoots = counter >= tune_l - end_buffer
+#             if overshoots:
+#                 output_list.append(tune_l-end_buffer-1)
+#             else:
+#                 output_list.append(counter-1)
+#     return(output_list)
 
 
 def return_update_lists(tune_l,ini_buffer=75,end_buffer=50,window_size=25,min_medium_updates=10):

@@ -38,7 +38,7 @@ class metric(object):
             raise ValueError("unknown metric type")
     def set_metric(self,input_var):
         # input: either flattened empircial covariance for dense_e or
-        # list of variances with the shape of p for diag_e
+        # flattened var tensor for diag_e
         if self.name == "diag_e":
             self._flattened_var.copy_(input_var)
             self._flattened_sd.copy_(torch.sqrt(self._flattened_var))

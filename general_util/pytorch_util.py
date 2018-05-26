@@ -16,21 +16,37 @@ def get_list_stats(list_tensor):
         cur = cur+store_lens[i]
     return (store_shape, store_lens, dim,store_slices)
 
+def welford_tensor(next_sample,sample_counter,m_,m_2,diag):
+    # next_sample pytorch tensor
+    # used for calculating ave second per leapfrog
+    # keep accumulating variance for monitoring purposes
 
+    delta = (next_sample-m_)
+    m_ += delta/sample_counter
+    # torch.ger(x,y) = x * y^T
+    if diag:
+        m_2 += (next_sample-m_) * delta
+    else:
+        m_2 += torch.ger((next_sample-m_),delta)
 
-class welford(object):
+    return(m_,m_2)
+
+class welford_float(object):
     def __init__(self):
         self.iter = 0
         self.m_ = 0
         self.m_2 = 0
 
-    def mean(self,next_sample,m_):
+    def mean_var(self,next_sample,m_):
         delta = (next_sample - m_)
         m_ += delta / self.iter
         self.iter += 1
         self.m_ = m_
         self.m_2  += (next_sample-m_) * delta
-        return(m_)
+        return(m_,self.m_2/(self.iter-1))
+
+
+
 
 
 def general_load_point(obj,point_obj):

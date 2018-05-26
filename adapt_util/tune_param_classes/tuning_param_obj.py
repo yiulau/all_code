@@ -57,7 +57,7 @@ class dual_state(object):
             self.store_samples.append(sample_dict)
 
         elif iter == self.next_refresh_iter:
-            print("reach here ")
+            #print("reach here ")
             self.store_samples.append(sample_dict)
             for param, obj in self.dual_param_objs_dict.items():
                 #print(self.store_samples[0])
@@ -74,12 +74,13 @@ class dual_state(object):
                 #print(next_tune_par_vals_dict)
                 #exit()
                 self.dual_param_objs_dict[param].set_val(next_tune_par_val)
+                #print("updated param {} , new value {}".format(param,obj.get_val()))
             if self.update_iter_list[self.cur_in_iter_list]==self.end_iter:
                 # end of update period.
                 # do not need to update nex_iter if we are on our last point
                 pass
             else:
-                print("here too")
+                #print("here too")
                 obj.dual_metadata.cur_in_iter_list +=1
                 self.cur_in_iter_list += 1
                 self.next_refresh_iter = self.update_iter_list[self.cur_in_iter_list]
@@ -120,8 +121,8 @@ class dual_param_metadata(object):
     def update(self, objective):
         # objective = objective fun evaluated for this samples in this window
         #print("reach here")
-        print("objective fun value is {}".format(objective))
-        print("target {}".format(self.target))
+        #print("objective fun value is {}".format(objective))
+        #print("target {}".format(self.target))
         self.bar_H_i = (1 - 1 / (self.cur_in_iter_list + 1 + self.t_0)) * self.bar_H_i + (
                 1 / (self.cur_in_iter_list + 1 + self.t_0)) * (self.target-objective)
         logep = self.mu - math.sqrt(self.cur_in_iter_list + 1) / self.gamma * self.bar_H_i
@@ -231,6 +232,7 @@ class gpyopt_state(object):
                 for param, obj in self.opt_param_objs_dict:
                     #obj.store = next_tune_par_vals_dict[param]
                     obj.set_val(next_tune_par_vals_dict[param])
+                    print("iter {} updated param {} , new value {}".format(iter,obj.name,obj.get_val()))
                 self.cur_in_iter_list +=1
                 self.next_refresh_iter = self.update_iter_list[self.cur_in_iter_list]
             self.store = []
@@ -245,6 +247,8 @@ class adapt_cov_state(object):
         #print(list(adapt_cov_param_objs_dict.items())[0])
         #exit()
         self.update_iter_list = update_iter_list
+        #print(self.update_iter_list)
+        #exit()
         self.cur_in_iter_list = None
         # opt_dict should be sorted by update priorities
         self.param_name,self.param_obj = list(adapt_cov_param_objs_dict.items())[0]
@@ -277,17 +281,20 @@ class adapt_cov_state(object):
         iter = sample_dict["iter"]
         if iter < self.start_iter:
             pass
-        if iter >= self.end_iter:
+        elif iter >= self.end_iter:
             pass
-        if iter == self.start_iter:
+        elif iter == self.start_iter:
             self.initialize()
             self.cur_in_iter_list += 1
-        if iter < self.next_refresh_iter:
-            pass
-        if iter == self.next_refresh_iter:
+        elif iter < self.next_refresh_iter:
+            self.update_cov(sample_dict)
+        elif iter == self.next_refresh_iter:
+            #print("iter {}, sample_dict {}".format(iter,sample_dict["q"].flattened_tensor))
             self.update_cov(sample_dict)
             #self.tuning_obj.integrator.set_metric(self.m_2)
             self.param_obj.set_val(self.m_2/(self.iter-1))
+            self.param_obj.update_metric()
+            #print("iter {} updated param {} , new value {}".format(iter,self.param_obj.name,self.param_obj.get_val()))
             # do not need to explore next point if we are on our last point
             if self.cur_in_iter_list==self.end_iter:
                 pass
@@ -295,7 +302,8 @@ class adapt_cov_state(object):
                 self.refresh_cov()
                 self.cur_in_iter_list +=1
                 self.next_refresh_iter = self.update_iter_list[self.cur_in_iter_list]
-
+        else:
+            raise ValueError("shouldnt happen")
 
 
 class par_type_state(object):
