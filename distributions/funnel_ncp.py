@@ -3,9 +3,9 @@ import torch
 import torch.nn as nn
 
 
-class V_test_abstract(V):
+class V_funnel_ncp(V):
     def __init__(self):
-        super(V_test_abstract, self).__init__()
+        super(V_funnel_ncp, self).__init__()
 
     def V_setup(self,n):
         self.explicit_gradient = False

@@ -7,7 +7,9 @@ precision_type = 'torch.DoubleTensor'
 torch.set_default_tensor_type(precision_type)
 
 
-class V_funnel(V):
+class V_funnel_cp(V):
+    def __init__(self):
+        super(V_funnel_cp, self).__init__()
     def V_setup(self):
         self.n = 10
         self.explicit_gradient = True

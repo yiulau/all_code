@@ -1,6 +1,7 @@
 from abstract.abstract_class_V import V
 import abc
 class new_base_V_nn_class(V):
+    __metaclass__ = abc.ABCMeta
     def __init__(self):
         super(new_base_V_nn_class, self).__init__()
 

@@ -1,7 +1,7 @@
 import abc, numpy, pickle, os
-from abstract.mcmc_sampler import mcmc_sampler_settings,mcmc_sampler
-def experiment_setting_dict(chain_length):
-    out = {"chain_length":chain_length}
+from abstract.mcmc_sampler import mcmc_sampler_settings_dict,mcmc_sampler
+def experiment_setting_dict(chain_length,num_repeat):
+    out = {"chain_length":chain_length,"num_repeat":num_repeat}
     return(out)
 def resume_experiment():
     experiment_obj = pickle.load(open('save_experiment.pkl', 'rb'))
@@ -26,7 +26,7 @@ class experiment(object):
             self.id_to_multi_index.append(it.multi_index)
             self.multi_index_to_id.update({it.multi_index: cur})
             tune_dict = self.tune_param_grid[it.multi_index]
-            sampling_metaobj = mcmc_sampler_settings(mcmc_id = cur)
+            sampling_metaobj = mcmc_sampler_settings_dict(mcmc_id = cur)
             grid_pt_metadict = {"mcmc_id":cur,"started":False,"completed":False,"saved":False}
             self.store_grid_obj[it.multi_index] = {"sampler":mcmc_sampler(tune_dict,sampling_metaobj),"metadata":grid_pt_metadict}
             it.iternext()

@@ -30,27 +30,14 @@ from adapt_util.tune_param_classes.tune_param_class import tune_param_objs_creat
 # integration time t is also a slow parameter, because diagnostics (ESS) for its performance can only be calculated by looking
 # at a number of samples
 
-def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=5,warmup_per_chain=1000,is_float=False,isstore_to_disk=False,same_init=False):
+def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=5,warmup_per_chain=1000,is_float=False,isstore_to_disk=False,same_init=False,allow_restart=True):
         # mcmc_id should be a dictionary
         out = {}
         out.update({"num_chains":num_chains,"num_cpu":num_cpu,"thin":thin,"warmup_per_chain":warmup_per_chain})
         out.update({"is_float":is_float,"isstore_to_disk":isstore_to_disk,"mcmc_id":mcmc_id})
         out.update({"num_samples_per_chain":samples_per_chain,"same_init":same_init,"tune_l_per_chain":tune_l_per_chain})
+        out.update({"allow_restart":allow_restart})
         return(out)
-class mcmc_sampler_settings(object):
-    def __init__(self,mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,warmup_per_chain=5,tune_l_per_chain=1000,is_float=False,isstore_to_disk=False,same_init=False):
-
-        # mcmc_id should be a dictionary
-        self.num_chains = num_chains
-        self.num_cpu = num_cpu
-        self.thin = thin
-        self.warmup_per_chain = warmup_per_chain
-        self.tune_l_per_chain = tune_l_per_chain
-        self.is_float = is_float
-        self.isstore_to_disk = isstore_to_disk
-        self.mcmc_id = mcmc_id
-        self.num_samples_per_chain = samples_per_chain
-        self.same_init = same_init
 
 class mcmc_sampler(object):
     # may share experiment id with other sampling_objs
@@ -92,6 +79,7 @@ class mcmc_sampler(object):
         self.isstore_to_disk = self.mcmc_settings_dict["isstore_to_disk"]
         self.warmup_per_chain = self.mcmc_settings_dict["warmup_per_chain"]
         self.tune_l_per_chain = self.mcmc_settings_dict["tune_l_per_chain"]
+        self.allow_restart = self.mcmc_settings_dict["allow_restart"]
         for i in range(self.num_chains):
             #if same_init:
              #   initialization_obj = initialization()
@@ -102,7 +90,7 @@ class mcmc_sampler(object):
             this_chain_setting = one_chain_settings_dict(sampler_id=self.sampler_id,chain_id=i,
                                                      experiment_id=self.experiment_id,
                                                      num_samples=self.num_samples_per_chain,
-                                                     warm_up=self.warmup_per_chain,tune_l=self.tune_l_per_chain)
+                                                     warm_up=self.warmup_per_chain,tune_l=self.tune_l_per_chain,allow_restart=self.allow_restart)
             this_tune_dict = self.tune_dict.copy()
             this_chain_obj = one_chain_obj(init_point=self.init_q_point_list[i],
                                            tune_dict=self.tune_dict,chain_setting=this_chain_setting,
@@ -322,7 +310,7 @@ class one_chain_obj(object):
         self.store_samples = []
         self.chain_ready = False
         self.tune_settings_dict = tune_settings_dict
-
+        self.store_log_obj = []
 
 
         #print(self.sampling_metadata.__dict__)
@@ -427,6 +415,7 @@ class one_chain_obj(object):
             out = self.sampler_one_step.run()
             #self.adapter.log_obj = self.log_obj
             sample_dict = {"q":out,"iter":counter,"log":self.log_obj.snapshot()}
+            self.store_log_obj.append(sample_dict["log"])
             if keep:
                 self.add_sample(sample_dict=sample_dict)
                 if self.is_to_disk_now(counter):
@@ -434,9 +423,9 @@ class one_chain_obj(object):
             if counter < self.chain_setting["tune_l"]:
                 out.iter = counter
                 out = self.adapt(sample_dict)
-                if self.allow_restart:
-                    if out["restart"]:
-                        self.restart(out)
+                # if self.chain_setting["allow_restart"]:
+                #     if out["restart"]:
+                #         self.restart(out)
 
             #print("tune_l is {}".format(self.chain_setting["tune_l"]))
             #print(out.flattened_tensor)
@@ -467,19 +456,20 @@ class one_chain_obj(object):
         store_matrix = store_torch_matrix.numpy()
         return(store_matrix)
 
-    def restart(self,adapter_out):
-        # return to start state
-        # load samplemeta
-        # erase saved samples (if any)
-        # run
-        self.store_samples = []
-        self.prepare_this_chain()
-        self.adapter.update_setting(adapter_out)
-        self.metadata.load(adapter_out)
-        if not self.metadata.enough_restarts:
-            self.restart_run()
+    # def restart(self,adapter_out):
+    #     # return to start state
+    #     # load samplemeta
+    #     # erase saved samples (if any)
+    #     # run
+    #     self.store_samples = []
+    #     self.prepare_this_chain()
+    #     self.adapter.update_setting(adapter_out)
+    #     self.metadata.load(adapter_out)
+    #     if not self.metadata.enough_restarts:
+    #         self.restart_run()
+    #
+    #     return()
 
-        return()
 # log_obj should keep information about dual_obj, and information about tuning parameters
 # created at the start of each transition. discarded at the end of each transition
 class log_class(object):
@@ -529,7 +519,7 @@ class initialization(object):
 #     #def clone(self):
 
 
-def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment_id=None,tune_l=5,warm_up=5):
+def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment_id=None,tune_l=5,warm_up=5,allow_restart=True):
 
         # one for every chain. in everything sampling object, in every experiment
         # parallel chains sampling from the same distribution shares sampling_obj
@@ -540,7 +530,7 @@ def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment
         # period for saving samples
         out = {"experiment_id":experiment_id,"sampler_id":sampler_id,"chain_id":chain_id}
         out.update({"num_samples":num_samples,"thin":thin,"tune_l":tune_l,"warm_up":warm_up})
-
+        out.update({"allow_restart":allow_restart})
         return(out)
 
 
@@ -668,3 +658,19 @@ def default_init_q_point_list(v_fun,num_chains,same_init=False):
 
 
     return(init_q_point_list)
+
+
+# class mcmc_sampler_settings(object):
+#     def __init__(self,mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,warmup_per_chain=5,tune_l_per_chain=1000,is_float=False,isstore_to_disk=False,same_init=False):
+#
+#         # mcmc_id should be a dictionary
+#         self.num_chains = num_chains
+#         self.num_cpu = num_cpu
+#         self.thin = thin
+#         self.warmup_per_chain = warmup_per_chain
+#         self.tune_l_per_chain = tune_l_per_chain
+#         self.is_float = is_float
+#         self.isstore_to_disk = isstore_to_disk
+#         self.mcmc_id = mcmc_id
+#         self.num_samples_per_chain = samples_per_chain
+#         self.same_init = same_init
