@@ -10,7 +10,7 @@ seedid = 3
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=50000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=0,
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=5000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=0,
                                    warmup_per_chain=1000,is_float=False,isstore_to_disk=False)
 
 input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"alpha":[1e6],"second_order":[True],

@@ -5,9 +5,12 @@ from torch.autograd import Variable, grad
 
 from explicit.general_util import logsumexp
 
+# def coth(x):
+#     return (1 / torch.tanh(x))
+
 
 def coth(x):
-    # input and output is float
+     # input and output is float
     return(1/numpy.asscalar(numpy.tanh(x)))
 def coth_torch(x):
     # input and output are pytorch tensors

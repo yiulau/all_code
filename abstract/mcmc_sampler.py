@@ -357,7 +357,7 @@ class one_chain_obj(object):
             ep_obj = self.tune_param_objs_dict["epsilon"]
             ep_obj.Ham = self.sampler_one_step.Ham
 
-        if "dense_cov" or "diag_cov" in self.tune_param_objs_dict:
+        if "dense_cov" in self.tune_param_objs_dict  or "diag_cov" in self.tune_param_objs_dict:
             if "dense_cov" in self.tune_param_objs_dict:
                 cov_obj = self.tune_param_objs_dict["dense_cov"]
             else:
@@ -429,11 +429,11 @@ class one_chain_obj(object):
 
             #print("tune_l is {}".format(self.chain_setting["tune_l"]))
             #print(out.flattened_tensor)
-            #print("iter is {}".format(counter))
+            print("iter is {}".format(counter))
             #print("epsilon val {}".format(self.tune_param_objs_dict["epsilon"].get_val()))
 #            print("evolve_L val {}".format(self.tune_param_objs_dict["evolve_L"].get_val()))
-            #print("accept_rate {}".format(self.log_obj.store["accept_rate"]))
-            #print("divergent is {}".format(self.log_obj.store["divergent"]))
+            print("accept_rate {}".format(self.log_obj.store["accept_rate"]))
+            print("divergent is {}".format(self.log_obj.store["divergent"]))
 
         return()
     def add_sample(self,sample_dict):

@@ -1,14 +1,14 @@
 import torch
-from distributions.funnel_cp import V_funnel
+from distributions.funnel_cp import V_funnel_cp
 
-from all_code.unit_tests.finite_differences.finite_diff_funcs import compute_and_display_results
+from unit_tests.finite_differences.finite_diff_funcs import compute_and_display_results
 
-funnel_object = V_funnel()
+funnel_object = V_funnel_cp()
 
 funnel_object.beta.data.copy_(torch.randn(10))
 compute_and_display_results(funnel_object,10)
 
-exit()
+
 cur_beta = funnel_object.beta.data.clone()
 
 
@@ -24,7 +24,7 @@ explicit_grad = funnel_object.load_explicit_gradient()
 
 
 #print(explicit_grad)
-from all_code.unit_tests.finite_differences.finite_diff_funcs import finite_1stderiv
+from unit_tests.finite_differences.finite_diff_funcs import finite_1stderiv
 def finite_diff_grad():
     cur_beta = funnel_object.beta.data.clone()
     out = torch.zeros(10)
@@ -65,7 +65,7 @@ explicit_hessian = funnel_object.load_explicit_H()
 #print(explicit_hessian)
 # finite difference hessian
 
-from all_code.unit_tests.finite_differences.finite_diff_funcs import finite_2ndderiv
+from unit_tests.finite_differences.finite_diff_funcs import finite_2ndderiv
 def finite_diff_hessian():
     out = torch.zeros(10,10)
     for i in range(10):
@@ -93,8 +93,8 @@ print("l2 norm difference between exact and finite diff for the hessian {} ".for
 
 # autograd hessian
 
-autograd_hessian = funnel_object.getH().data
-
+_,autograd_hessian = funnel_object.getH()
+autograd_hessian = autograd_hessian.data
 #print(autograd_hessian)
 l2norm_diff2ndderiv_autograd = ((autograd_hessian-fin_diff_hessian)*(autograd_hessian-fin_diff_hessian)).sum()
 print("l2 norm difference between autograd and finite diff for the hessian {} ".format(l2norm_diff2ndderiv_autograd))
@@ -110,7 +110,7 @@ explicit_dH = funnel_object.load_explicit_dH()
 #print(explicit_dH)
 
 # finite difference dH
-from all_code.unit_tests.finite_differences.finite_diff_funcs import finite_3rdderiv
+from unit_tests.finite_differences.finite_diff_funcs import finite_3rdderiv
 def finite_diff_dH():
     out = torch.zeros(10,10,10)
     for i in range(10):
@@ -151,7 +151,7 @@ for i in range(num_rep):
     fin_diff_dH = finite_diff_dH()
     time_total_finite += time.time() - time_temp
     time_temp = time.time()
-    autograd_dH = funnel_object.getdH()
+    _,_,autograd_dH = funnel_object.getdH()
     time_total_autograd += time.time()-time_temp
 
     l2norm_diff3rdderiv = ((explicit_dH-fin_diff_dH)*(explicit_dH-fin_diff_dH)).sum()
@@ -176,7 +176,7 @@ print("mean exact-finite diff{}".format(numpy.mean(store_diff_exact_finite)))
 print("mean autograd-finite diff{}".format(numpy.mean(store_diff_autograd_finite)))
 print("mean autograd-exact diff{}".format(numpy.mean(store_diff_autograd_exact)))
 
-exit()
+
 
 #print(fin_diff_dH)
 
@@ -185,7 +185,7 @@ print("l2 norm difference between exact and finite diff for the dH {} ".format(l
 
 # autograd dh
 
-autograd_dH = funnel_object.getdH()
+_,_,autograd_dH = funnel_object.getdH()
 l2norm_diff3rdderiv_autograd = ((autograd_dH-fin_diff_dH)*(autograd_dH-fin_diff_dH)).sum()
 print("l2 norm difference between autograd and finite diff for the dH {} ".format(l2norm_diff3rdderiv_autograd))
 

@@ -23,7 +23,7 @@ def genleapfrog_wrap(delta,H):
         return generalized_leapfrog(q,p,ep,delta,H)
     return(inside)
 
-def generalized_leapfrog(q,p,epsilon,Ham,delta=0.1,debug_dict=None):
+def generalized_leapfrog(q,p,epsilon,Ham,delta=1e-2,debug_dict=None):
     # input output point object
     # can take anything but should output tensor
     #print("first q abstract {}".format(q.flattened_tensor))
