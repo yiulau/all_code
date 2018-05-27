@@ -2,6 +2,7 @@ import time
 #from multiprocessing import Pool
 import pathos.multiprocessing as multiprocessing
 from pathos.multiprocessing import ProcessingPool as Pool
+import pathos
 #import multiprocessing
 import numpy
 import pickle
@@ -121,6 +122,8 @@ class mcmc_sampler(object):
             self.prepare_chains()
         if self.num_cpu>1:
             # do something parallel
+            #with pathos.pools.ParallelPool(nodes=self.num_cpu) as pool:
+            #with multiprocessing.ProcessingPool(nodes=self.num_cpu) as pool:
             with multiprocessing.Pool(processes=self.num_cpu) as pool:
                 result_parallel = pool.map(self.run_chain, range(self.num_chains))
             #out = result_parallel
