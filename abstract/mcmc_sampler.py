@@ -1,7 +1,8 @@
 import time
-from multiprocessing import Pool
-
-import multiprocessing
+#from multiprocessing import Pool
+import pathos.multiprocessing as multiprocessing
+from pathos.multiprocessing import ProcessingPool as Pool
+#import multiprocessing
 import numpy
 import pickle
 import torch

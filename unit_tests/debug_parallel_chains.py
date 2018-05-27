@@ -7,7 +7,7 @@ from experiments.experiment_obj import tuneinput_class
 
 from experiments.correctdist_experiments.prototype import check_mean_var
 
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=10,num_chains=2,num_cpu=1,thin=1,tune_l_per_chain=0,
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=10,num_chains=2,num_cpu=2,thin=1,tune_l_per_chain=0,
                                    warmup_per_chain=5,is_float=False,isstore_to_disk=False)
 
 
