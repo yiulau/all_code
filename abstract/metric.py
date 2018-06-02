@@ -27,12 +27,12 @@ class metric(object):
             self._flattened_covL = torch.eye(V_instance.dim,V_instance.dim)
             self._flattened_cov = torch.eye(V_instance.dim,V_instance.dim)
             self._flattened_covL_inv = torch.eye(V_instance.dim,V_instance.dim)
-        elif name=="softabs" or name=="softabs_diag" or name=="softabs_outer_product" or name=="softabs_outer_product_diag":
-            if alpha==None:
-                raise ValueError("alpha needs be defined for softabs metric")
-            elif alpha <= 0 or alpha==math.inf:
-                raise ValueError("alpha needs be > 0 and less than < Inf")
-            self.msoftabsalpha = alpha
+        # elif name=="softabs" or name=="softabs_diag" or name=="softabs_outer_product" or name=="softabs_outer_product_diag":
+        #     if alpha==None:
+        #         raise ValueError("alpha needs be defined for softabs metric")
+        #     elif alpha <= 0 or alpha==math.inf:
+        #         raise ValueError("alpha needs be > 0 and less than < Inf")
+        #     self.msoftabsalpha = alpha
 
         else:
             raise ValueError("unknown metric type")
@@ -58,12 +58,4 @@ class metric(object):
                 self._var_list_tensor[i].copy_(self._flattened_cov[cur:(cur + self.store_lens[i])].view(self.store_shapes[i]))
                 self._sd_list_tensor[i].copy_(torch.sqrt(self._var_list_tensor[i]))
                 cur = cur + self.store_lens[i]
-
-    # def initialize_m_m_2(self,point):
-    #     m_ = point.zeroclone()
-    #     if self.name=="dense_e":
-    #         m_2 = torch.zeros((self.dim,self.dim))
-    #     elif self.name=="diag_e":
-    #         m_2 = point.zeroclone()
-    #     return(m_,m_2)
 

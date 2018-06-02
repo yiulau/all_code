@@ -3,7 +3,7 @@ import numpy
 
 from general_util.time_diagnostics import time_diagnositcs
 
-def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log_obj=None,alpha=None):
+def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log_obj=None):
     # Input:
     # current_q Pytorch Variable
     # H_fun(q,p,return_float) returns Pytorch Variable or float
@@ -36,7 +36,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print(p.flattened_tensor)
     current_H = Ham.evaluate(q,p)
 
-    #print("startH {}".format(current_H))
+    print("startH {}".format(current_H))
 
 
     #newq,newp,stat = Ham.integrator(q, p, epsilon, Ham)
@@ -58,7 +58,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
         if careful:
             temp_H = Ham.evaluate(q, p)
             #print("H is {}".format(temp_H))
-            if(abs(temp_H-current_H)>1000 or divergent):
+            if(abs(temp_H-current_H)>50 or divergent):
                 #print("yeye")
                 #print(i)
                 #print(temp_H)
@@ -74,7 +74,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
 
     if not divergent:
         proposed_H = Ham.evaluate(q,p)
-        if (abs(current_H - proposed_H) > 1000):
+        if (abs(current_H - proposed_H) > 50):
             return_q = init_q
             return_p = None
             return_H = current_H
@@ -102,7 +102,8 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     endH = Ham.evaluate(q,p)
     accept_rate = math.exp(min(0, current_H - endH))
     #print("accept_rate {}".format(accept_rate))
-    #print("endH {}".format(Ham.evaluate(q,p)))
+    print("divergent inside {}".format(divergent))
+    print("endH {}".format(Ham.evaluate(q,p)))
     #exit()
     if not log_obj is None:
         log_obj.store.update({"prop_H":return_H})
@@ -114,7 +115,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     return(return_q,return_p,init_p,return_H,accepted,accept_rate,divergent,num_transitions)
 
 
-def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_t=None,careful=True,log_obj=None,alpha=None):
+def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_t=None,careful=True,log_obj=None):
     # evaluate gradient 2*L times
     # evluate H function L times
 

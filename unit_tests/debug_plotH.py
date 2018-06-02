@@ -1,7 +1,7 @@
 import numpy
 import torch
 from abstract.abstract_class_Ham import Hamiltonian
-from abstract.abstract_genleapfrog_ult_util import generalized_leapfrog
+from abstract.deprecated_code.abstract_genleapfrog_ult_util import generalized_leapfrog
 from abstract.metric import metric
 from post_processing.plot_energy_oscillation import plot_V_T
 

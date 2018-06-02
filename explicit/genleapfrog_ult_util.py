@@ -23,6 +23,9 @@ def softabs_map(lam,alpha):
     upper_softabs_thresh = 18
     out = torch.zeros(len(lam))
     for i in range(len(lam)):
+        #print(i)
+        #print(type(lam[i]))
+        #print(type(alpha))
         alp_lam = lam[i] * alpha
         if (abs(alp_lam)<lower_softabs_thresh):
             out[i] = (1. + (1./3.) * alp_lam * alp_lam)/alpha
@@ -43,8 +46,42 @@ def eigen(H):
     # input must be of type tensor ** not variable
     # it should also be symmetric
     # returns lam, Q such that H = Q * diag(lam) Q^T = H
-    out = torch.symeig(H,True)
-    return(out[0],out[1])
+    #out = torch.symeig(H,True)
+    #out = torch.eig(H,True)
+    #out = torch.eig(H,True)
+    try:
+        #print(H)
+        out = torch.eig(H,True)
+    except:
+        ValueError("H {}".format(H))
+    #print(lam)
+    #print(sum(lam[:,1]))
+    #print(sum(lam[:,1]==0))
+    #exit()
+    lam,Q = out
+    # all eigenvalues are real ie no complex eigen values
+    # all_real = not sum(lam[:,1]!=0)>0
+    # #assert all_real,"complex parts {}".format(lam[:,1])
+    # if all_real:
+    #     recompose_H = Q.mm(torch.diag(lam[:,0])).mm(Q.t())
+    #     diff = ((recompose_H - H) * (recompose_H - H)).sum()
+    #     close_enough = diff<1e-4
+    #     if not close_enough:
+    #         print("original H {}".format(H))
+    #         print("recomposed H {}".format(recompose_H))
+    #         print("lam is {}".format(lam))
+    #         print("diff is {}".format(diff))
+    #         raise ValueError("all eigenvalues real yet decomposition not accurate")
+    # else:
+    #     pass
+    lam = lam[:,0]
+    #print(recompose_H)
+    #print(H)
+    #diff = ((recompose_H - H)*(recompose_H-H)).sum()
+    #print(diff)
+    #lam,Q = torch.eig(H,True)
+    #lam = lam[:,0]
+    return(lam,Q)
 
 def getdV(q,V,want_graph):
     # returns

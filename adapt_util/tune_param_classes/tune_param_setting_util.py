@@ -78,46 +78,6 @@ def tuning_settings(dual_arguments,opt_arguments,adapt_cov_arguments,other_argum
     # at this point should look at all tuning parameters and fill in by default values any yet to be specified variables
 
 
-
-
-    # for param,val in tune_dict:
-    #     if param.par_type=="fast":
-    #         if val == "dual":
-    #
-    #             tlist = fast_tune_setting_dict["dual"]
-    #             exists = False
-    #             for arg in tlist:
-    #                 if param.name in arg:
-    #                     exists = True
-    #             tlist.append(dual_default_arguments(name=param.name))
-    #
-    #         elif val=="opt":
-    #             param_names = slow_dict and opt_dict
-    #             chosen_list = {}
-    #             for param in param_names:
-    #                 chosen_list.update({param,False})
-    #             tlist = fast_tune_setting_dict["opt"]
-    #             for arg in tlist:
-    #                 if param.name in arg["params"]:
-    #                     chosen_list.update({param,True})
-    #
-    #
-    #     if param.par_type=="medium":
-    #         if val == "dual":
-    #             tlist = medium_tune_setting_dict["dual"]
-    #         elif val=="opt":
-    #             tlist = medium_tune_setting_dict["opt"]
-    #         elif val=="adapt":
-    #             tlist = medium_tune_setting_dict["adapt"]
-    #     if param.par_type=="slow":
-    #         if val == "dual":
-    #             tlist = slow_tune_setting_dict["dual"]
-    #         elif val=="opt":
-    #             tlist = slow_tune_setting_dict["opt"]
-    #         elif val=="adapt":
-    #             tlist = slow_tune_setting_dict["adapt"]
-    #
-
     return(out)
 
 def default_adapter_setting():

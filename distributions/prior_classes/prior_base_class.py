@@ -3,19 +3,17 @@ import torch.nn as nn
 
 class prior_class(object):
     __metaclass__ = abc.ABCMeta
-    def __init__(self):
+    def __init__(self,obj):
+        self.V = obj
+    @abc.abstractmethod
+    def create_hyper_par_fun(self):
         pass
-
-    def create_hyper_par_fun(self,obj):
-        for block in obj.divisble_blocks:
-            for name, param in block:
-                setattr(obj,name)
 
     @abc.abstractmethod
     def prior_forward(self):
         pass
-def generate_prior_dict():
-    def create_hyper_par_fun(obj):
+# def generate_prior_dict():
+#     def create_hyper_par_fun(obj):
 
 
 

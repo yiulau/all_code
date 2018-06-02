@@ -1,7 +1,7 @@
 import math
 import numpy
 
-from abstract.abstract_genleapfrog_ult_util import gleapfrog_stat
+from abstract.deprecated_code.abstract_genleapfrog_ult_util import gleapfrog_stat
 
 from general_util.time_diagnostics import time_diagnositcs
 

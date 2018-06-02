@@ -39,7 +39,7 @@ class T_softabs_e(T):
         output = o + temp2
         return (output)
 
-    def dtaudp(self,p_flattened_tensor,lam=None,Q=None):
+    def dtaudp(self,p_flattened_tensor,lam,Q):
         #if Q == None or lam == None:
         #    _, H_ = self.linkedV.getH_tensor()
         #    lam, Q = eigen(H_)
@@ -84,7 +84,16 @@ class T_softabs_e(T):
         #    lam, Q = eigen(H_)
         _, H_ = self.linkedV.getH_tensor(q)
         lam, Q = eigen(H_)
+        #print(lam)
+        #print(Q)
+
+        #print(lam.shape)
+        #print(type(lam))
+        #print(type(lam[0]))
+        #exit()
         temp = torch.mm(Q, torch.diag(torch.sqrt(softabs_map(lam, self.metric.msoftabsalpha))))
+        #print(temp)
+        #exit()
         out = point(list_tensor=self.list_tensor,pointtype="p",need_flatten=self.need_flatten)
         out.flattened_tensor.copy_(torch.mv(temp, torch.randn(len(lam))))
         out.load_flatten()

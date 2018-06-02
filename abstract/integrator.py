@@ -2,6 +2,7 @@ import time
 
 from abstract.abstract_class_Ham import Hamiltonian
 from abstract.abstract_nuts_util import *
+#from abstract.abstract_static_sampler import *
 from abstract.abstract_static_sampler import *
 from abstract.metric import metric
 from adapt_util.adapt_util import tuneable_param

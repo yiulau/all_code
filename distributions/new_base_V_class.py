@@ -11,12 +11,15 @@ class new_base_V_class(V):
     @abc.abstract_method
     def log_prior(self):
         return()
-    @abc.abstract_method
+
+
     def prepare_prior(self):
         # functions to add hyperparamters to parameter list
-        pass
+        self.prior_state = prior_state(self)
+        return()
     def forward(self):
-        out = self.log_likelihood() + self.log_prior()
+        log_posterior = self.log_likelihood() + self.log_prior()
+        out = -log_posterior
         return(out)
 
     def get_beta(self):

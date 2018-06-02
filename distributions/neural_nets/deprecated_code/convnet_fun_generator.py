@@ -45,7 +45,9 @@ def convnet_fun_generator(dataset,problem_type,num_units_list,activations_list,i
         def forward(self, X,y):
             out_liklihood = self.log_likelihood(X,y)
             out_prior = self.log_prior()
-            return(loss)
+            log_posterior = out_prior + out_liklihood
+            out = -log_posterior
+            return(out)
         def p_y_given_theta(self, observed_datapoint, posterior_param_point):
             self.load_point(posterior_param_point)
             out = self.forward(X=observed_datapoint["input"],y=observed_datapoint["target"])

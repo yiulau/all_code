@@ -1,14 +1,10 @@
 import time
 #from multiprocessing import Pool
 import pathos.multiprocessing as multiprocessing
-from pathos.multiprocessing import ProcessingPool as Pool
-import pathos
 #import multiprocessing
-import numpy
 import pickle
-import torch
-from abstract.abstract_genleapfrog_ult_util import *
-from abstract.abstract_leapfrog_ult_util import *
+from abstract.deprecated_code.abstract_genleapfrog_ult_util import *
+from abstract.abstract_leapfrog_util import *
 from abstract.integrator import sampler_one_step
 from adapt_util.adapter_class import adapter_class
 from adapt_util.tune_param_classes.tune_param_setting_util import default_adapter_setting
@@ -214,10 +210,14 @@ class mcmc_sampler(object):
             output = temp_list[0]
             if len(temp_list)>0:
                 for i in range(1,len(temp_list)):
-                    output = numpy.concatentate([output,temp_list[i]],axis=0)
+                    output = numpy.concatenate([output,temp_list[i]],axis=0)
             return(output)
         else:
-            raise ValueError("for now leave this")
+            chain_shape = self.store_chains[0]["chain_obj"].get_samples(warmup=self.warmup_per_chain).shape
+            output = numpy.zeros((self.num_chains,chain_shape[0],chain_shape[1]))
+            for i in range(self.num_chains):
+                output[i,:,:] = self.store_chains[i]["chain_obj"].get_samples(warmup=self.warmup_per_chain)
+            return(output)
 # metadata only matters after sampling has started
 class sampler_metadata(object):
     def __init___(self,mcmc_sampler_obj):
@@ -434,10 +434,11 @@ class one_chain_obj(object):
             #print("tune_l is {}".format(self.chain_setting["tune_l"]))
             #print(out.flattened_tensor)
             print("iter is {}".format(counter))
-            #print("epsilon val {}".format(self.tune_param_objs_dict["epsilon"].get_val()))
+            print("epsilon val {}".format(self.tune_param_objs_dict["epsilon"].get_val()))
 #            print("evolve_L val {}".format(self.tune_param_objs_dict["evolve_L"].get_val()))
             print("accept_rate {}".format(self.log_obj.store["accept_rate"]))
             print("divergent is {}".format(self.log_obj.store["divergent"]))
+
 
         return()
     def add_sample(self,sample_dict):

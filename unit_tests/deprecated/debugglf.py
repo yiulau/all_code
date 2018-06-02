@@ -3,7 +3,7 @@ import numpy
 import pandas as pd
 import torch
 from abstract.abstract_class_Ham import Hamiltonian
-from abstract.abstract_genleapfrog_ult_util import generalized_leapfrog as abstract_generalized_leapfrog
+from abstract.deprecated_code.abstract_genleapfrog_ult_util import generalized_leapfrog as abstract_generalized_leapfrog
 from abstract.metric import metric
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from torch.autograd import Variable

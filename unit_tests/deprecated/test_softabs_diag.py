@@ -1,16 +1,11 @@
 # check that abstract leapfrog and explicit leapfrog gives the same answer
 import numpy
-import pandas as pd
 import torch
 from abstract.abstract_class_Ham import Hamiltonian
-from abstract.abstract_genleapfrog_ult_util import generalized_leapfrog_softabsdiag
 from abstract.metric import metric
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
-from torch.autograd import Variable
 from abstract.abstract_class_point import point
-from explicit.genleapfrog_ult_util import getH, eigen, softabs_map
 from abstract.abstract_static_sampler import abstract_static_one_step
-import os
 
 seedid = 3
 numpy.random.seed(seedid)

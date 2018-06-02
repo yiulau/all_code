@@ -8,28 +8,28 @@ def sd_normal_prior_fun(model):
         out += -(param*param).sum() * 0.5
     return(out)
 
-def horseshoe_prior_one_tau(model):
-    out = 0
-    for param in model.list_var:
-        out += -(param*param).sum() * 0.5
+# def horseshoe_prior_one_tau(model):
+#     out = 0
+#     for param in model.list_var:
+#         out += -(param*param).sum() * 0.5
+#
+#     for param in model.list_tau:
+#         out +=
+#
+#     for param in mo
+#     return(out)
 
-    for param in model.list_tau:
-        out +=
 
-    for param in mo
-    return(out)
-
-
-def horseshoe_prior_tau_per_l(model):
-    out = 0
-    for param in model.list_var:
-        out += -(param * param).sum() * 0.5
-
-    for param in model.list_tau:
-        out +=
-
-    for param in mo
-        return (out)
+# def horseshoe_prior_tau_per_l(model):
+#     out = 0
+#     for param in model.list_var:
+#         out += -(param * param).sum() * 0.5
+#
+#     for param in model.list_tau:
+#         out +=
+#
+#     for param in mo
+#         return (out)
 
 class prior_class(object):
     def __init__(self,V_nn_obj,prior_type):
@@ -47,7 +47,8 @@ class prior_class(object):
             pass
         elif self.prior_type=="hs_ncp_per_l":
             pass
-        elif
+        else:
+            pass
         return(out)
 
     def prior_setup(self):

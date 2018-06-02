@@ -46,6 +46,8 @@ class welford_float(object):
         return(m_,self.m_2/(self.iter-1))
 
 
+def isnan(x):
+    return(x!=x)
 
 
 
@@ -56,8 +58,10 @@ def general_load_point(obj,point_obj):
     #print(obj.need_flatten)
     #print(point_obj.need_flatten)
     #print(point_obj.assert_syncro())
-    obj.flattened_tensor.copy_(point_obj.flattened_tensor)
-    obj.load_param_to_flattened()
+    #print(point_obj.flattened_tensor)
+    obj.flattened_tensor.copy_(point_obj.flattened_tensor.clone())
+    obj.load_flattened_tensor_to_param()
+    #obj.load_param_to_flattened()
     #if obj.need_flatten:
     #    obj.flattened_tensor.copy_(point_obj.flattened_tensor)
     #    obj.load_param_to_flattened()
@@ -88,7 +92,7 @@ def general_assert_syncro(obj):
 def general_load_param_to_flattened(obj):
     cur = 0
     for i in range(obj.num_var):
-        obj.flattened_tensor[cur:(cur + obj.store_lens[i])].copy_(obj.list_tensor[i].view(obj.store_shapes[i]))
+        obj.flattened_tensor[cur:(cur + obj.store_lens[i])].copy_(obj.list_tensor[i].view(-1))
         cur = cur + obj.store_lens[i]
     return()
 

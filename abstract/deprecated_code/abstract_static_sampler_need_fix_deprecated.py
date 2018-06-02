@@ -3,7 +3,7 @@ import numpy
 
 from general_util.time_diagnostics import time_diagnositcs
 
-def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log_obj=None,alpha=None):
+def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log_obj=None):
     # Input:
     # current_q Pytorch Variable
     # H_fun(q,p,return_float) returns Pytorch Variable or float
@@ -16,8 +16,8 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     # q = Variable(current_q.data.clone(),requires_grad=True)
     # evaluate gradient L*2 times
     # evluate H 1 time
-
-
+    raise ValueError("shoudl not use")
+    print("q {}".format(init_q.flattened_tensor))
     if not evolve_L is None and not evolve_t is None:
         raise ValueError("L contradicts with evol_t")
     assert evolve_L is None or evolve_t is None
@@ -36,7 +36,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print(p.flattened_tensor)
     current_H = Ham.evaluate(q,p)
 
-    #print("startH {}".format(current_H))
+    print("startH {}".format(current_H))
 
 
     #newq,newp,stat = Ham.integrator(q, p, epsilon, Ham)
@@ -51,19 +51,34 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print(p.flattened_tensor)
     #print("epsilon is {}".format(epsilon))
     for i in range(evolve_L):
-        q, p, stat = Ham.integrator(q, p, epsilon, Ham)
+        # print("inside one step {}".format(i))
+        # print("first q abstract {}".format(q.flattened_tensor))
+        # print("first p abstract {}".format(p.flattened_tensor))
+        q_dummy, p_dummy, stat = Ham.integrator(q, p, epsilon, Ham)
+        #stat = Ham.integrator(q, p, epsilon, Ham)
+        #print(len(stat))
         divergent = stat.divergent
+        #print("here div {}".format(divergent))
         #print(q.flattened_tensor)
         #print(p.flattened_tensor)
         if careful:
-            temp_H = Ham.evaluate(q, p)
+            if not divergent:
+                q = q_dummy
+                p = p_dummy
+                temp_H = Ham.evaluate(q, p)
             #print("H is {}".format(temp_H))
-            if(abs(temp_H-current_H)>1000 or divergent):
-                #print("yeye")
-                #print(i)
-                #print(temp_H)
-                #print(current_H)
-                #exit()
+                if(abs(temp_H-current_H)>1000 or divergent):
+                    return_q = init_q
+                    return_H = current_H
+                    accept_rate = 0
+                    accepted = False
+                    divergent = True
+                    return_p = None
+                    num_transitions = i
+                    break
+                else:
+                    pass
+            else:
                 return_q = init_q
                 return_H = current_H
                 accept_rate = 0
@@ -71,6 +86,8 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
                 divergent = True
                 return_p = None
                 num_transitions = i
+                break
+
 
     if not divergent:
         proposed_H = Ham.evaluate(q,p)
@@ -85,8 +102,6 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
         else:
 
             accept_rate = math.exp(min(0,current_H - proposed_H))
-
-            divergent = False
             if (numpy.random.random(1) < accept_rate):
                 accepted = True
                 return_q = q
@@ -97,12 +112,14 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
                 return_q = init_q
                 return_p = init_p
                 return_H = current_H
+    else:
+        pass
     Ham.diagnostics.update_time()
         #print(log_obj is None)
-    endH = Ham.evaluate(q,p)
-    accept_rate = math.exp(min(0, current_H - endH))
+    #endH = Ham.evaluate(q,p)
+    #accept_rate = math.exp(min(0, current_H - endH))
     #print("accept_rate {}".format(accept_rate))
-    #print("endH {}".format(Ham.evaluate(q,p)))
+    print("endH {}".format(Ham.evaluate(q,p)))
     #exit()
     if not log_obj is None:
         log_obj.store.update({"prop_H":return_H})
@@ -117,7 +134,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
 def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_t=None,careful=True,log_obj=None,alpha=None):
     # evaluate gradient 2*L times
     # evluate H function L times
-
+    raise ValueError("should not use")
     assert evolve_L is None or evolve_t is None
     if not evolve_L==None and not evolve_t==None:
         raise ValueError("L contradicts with evol_t")

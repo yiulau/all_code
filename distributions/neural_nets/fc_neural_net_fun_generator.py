@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.autograd import Variable, Function
 from abstract.abstract_class_V import V
 import numpy
-def generate_nn_fun(dataset,problem_type,num_units_list,activations_list,is_skip_connections,prior_dict):
+def generate_fc_nn_fun(dataset,problem_type,num_units_list,activations_list,is_skip_connections,prior_dict):
     # problem_type : one of ("classification","regression")
     # dataset : dict {"input":X,"target":y} should be numpy
     # minimum length 1 , each entry represent one hidden - layer

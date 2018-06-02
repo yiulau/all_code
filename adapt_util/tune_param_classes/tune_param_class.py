@@ -34,20 +34,6 @@ class tune_param_concrete(object):
             self.need_initialize = True
         else:
             self.need_initialize = False
-    # def update_internal_state(self,sample_obj):
-    #     if self.tune_method=="dual":
-    #         input = self.obj_fun(sample_obj)
-    #         self.dual_metadata.update_dual(input)
-    #     elif self.tune_method=="opt":
-    #         self.gpyopt_obj.update(sample_obj)
-    #     elif self.tune_method == "adapt":
-    #         self.adapt_obj.update(sample_obj)
-    #     elif self.tune_method=="fixed":
-    #         pass
-    #     else:
-    #         raise ValueError("unknown tune method ")
-    # def set_Ham(self,Ham):
-    #     self.Ham = Ham
 
     def initialize_tuning_param(self):
         #print("yes")
@@ -79,11 +65,6 @@ class tune_param_concrete(object):
     @abc.abstractmethod
     def get_val(self):
         return
-# def dual_input_accept_rate(sample_obj,dual_settings_obj):
-#     alpha = sample_obj.accept_rate
-#     input = dual_settings_obj.target - alpha
-#     return(input)
-
 
 
 class epsilon(tune_param_concrete):

@@ -3,7 +3,7 @@ import numpy
 import pandas as pd
 import torch
 from abstract.abstract_class_Ham import Hamiltonian
-from abstract.abstract_leapfrog_ult_util import abstract_leapfrog_ult
+from abstract.abstract_leapfrog_util import abstract_leapfrog_ult
 from abstract.metric import metric
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from explicit.general_util import logsumexp_torch
@@ -12,7 +12,7 @@ from abstract.abstract_class_point import point
 from explicit.leapfrog_ult_util import leapfrog_ult
 #y_np= numpy.random.binomial(n=1,p=0.5,size=num_ob)
 #X_np = numpy.random.randn(num_ob,dim)
-seedid = 33
+seedid = 301321
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 import os
@@ -36,7 +36,7 @@ num_ob = X_np.shape[0]
 data = dict(y=y_np,X=X_np,N=num_ob,p=dim)
 
 
-
+input_data = {"X_np":X_np,"y_np":y_np}
 
 y = Variable(torch.from_numpy(y_np).float(),requires_grad=False)
 
@@ -67,10 +67,12 @@ def H(q,p,return_float):
         return((V(q)+T(p)))
 
 # first verify they have the same Hamiltonian function
-print("exact H {}".format(H(q,p,True)))
-print("exact V {}".format(V(q).data[0]))
-print("exact T {}".format(T(p).data[0]))
-v_obj = V_pima_inidan_logit()
+# print("exact H {}".format(H(q,p,True)))
+# print("exact V {}".format(V(q).data[0]))
+# print("exact T {}".format(T(p).data[0]))
+#v_obj = V_pima_inidan_logit()
+from distributions.neural_nets.fc_V_hierarchical import V_fc_test_hyper
+v_obj = V_fc_test_hyper(input_data)
 metric_obj = metric("unit_e",v_obj)
 Ham = Hamiltonian(v_obj,metric_obj)
 #q_point = Ham.V.q_point.point_clone()
@@ -80,30 +82,47 @@ p_point = point(T=Ham.T)
 #print(hex(id(q_point.flattened_tensor)))
 #print(hex(id(q_point.list_tensor[0])))
 
-q_point.flattened_tensor.copy_(inputq)
-p_point.flattened_tensor.copy_(inputp)
+#q_point.flattened_tensor.copy_(inputq)
+#p_point.flattened_tensor.copy_(inputp)
+q_point.flattened_tensor.normal_()
+p_point.flattened_tensor.normal_()
 #print(q_point.flattened_tensor)
 #print(q_point.list_tensor[0])
 #exit()
 q_point.load_flatten()
 p_point.load_flatten()
 
+
 print("abstract H {}".format(Ham.evaluate(q_point,p_point)))
-print("abstract T {}".format(Ham.T.evaluate_scalar(p_point)))
-print("abstract V {}".format(Ham.V.evaluate_scalar(q_point)))
-print("input q diff{}".format((q.data-q_point.flattened_tensor).sum()))
-print("input p diff {}".format((p.data-p_point.flattened_tensor).sum()))
-#exit()
-L=10
+#print("abstract T {}".format(Ham.T.evaluate_scalar(p_point)))
+#print("abstract V {}".format(Ham.V.evaluate_scalar(q_point)))
+# print("input q diff{}".format((q.data-q_point.flattened_tensor).sum()))
+# print("input p diff {}".format((p.data-p_point.flattened_tensor).sum()))
+
+start_q = q_point.point_clone()
+
+L = 100
 for i in range(L):
-    outq,outp = leapfrog_ult(q,p,0.1,H)
+    #print(i)
+    #outq,outp = leapfrog_ult(q,p,0.1,H)
     outq_a,outp_a,stat = abstract_leapfrog_ult(q_point,p_point,0.1,Ham)
-    q, p = outq, outp
+    #q, p = outq, outp
     q_point, p_point = outq_a, outp_a
-diffq = ((outq.data - outq_a.flattened_tensor)*(outq.data - outq_a.flattened_tensor)).sum()
-diffp = ((outp.data - outp_a.flattened_tensor)*(outp.data - outp_a.flattened_tensor)).sum()
-print("diff outq {}".format(diffq))
-print("diff outp {}".format(diffp))
+    print("H {}".format(Ham.evaluate(q_point, p_point)))
+
+#diffq = ((outq.data - outq_a.flattened_tensor)*(outq.data - outq_a.flattened_tensor)).sum()
+#diffp = ((outp.data - outp_a.flattened_tensor)*(outp.data - outp_a.flattened_tensor)).sum()
+print("abstract end H {}".format(Ham.evaluate(q_point,p_point)))
+
+prob = v_obj.predict()
+prediction = (prob>0.5).type("torch.FloatTensor")
+#print(prediction)
+target = v_obj.y.data.type("torch.FloatTensor")
+
+print(sum(prediction.numpy()==target.numpy()))
+#print(v_obj.y.type("torch.FloatTensor"))
+#print("diff outq {}".format(diffq))
+#print("diff outp {}".format(diffp))
 
 
 #print("exact")
