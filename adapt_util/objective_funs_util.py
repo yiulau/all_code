@@ -29,7 +29,7 @@ def ESJD(store_samples):
         diff_square_list[i] = diff_squared
 
     out = numpy.mean(diff_square_list)
-    return(out)
+    return(-out)
 
 
 def ESJD_g_normalized(store_samples):
@@ -48,6 +48,6 @@ def ESJD_g_normalized(store_samples):
     #exit()
     ave_num_grad = numpy.mean(num_grad_list)
     out = ESJD/math.sqrt(ave_num_grad)
-    return(out)
+    return(-out)
 
 

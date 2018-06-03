@@ -284,22 +284,27 @@ class dense_cov(tune_param_concrete):
         return (self.store.clone())
 
     def set_val(self, val):
+        try:
+            torch.inverse(val)
+            torch.potrf(val)
+        except:
+            raise ValueError("not invertible or decomposable")
         self.store.copy_(val)
         self.cur_val = self.store.clone()
         return ()
     def update_metric(self):
         assert hasattr(self,"Ham")
-        print(self.store)
+        #print(self.store)
 
         normal = self.check_normal()
         if normal:
             self.Ham.metric.set_metric(self.store)
 
 
-    def check_normal(self):
+    def check_normal(self,input=None):
         try:
             test_inv = torch.inverse(self.store)
-            test_invL = torch.potrf(test_inv,upper=False)
+            test_covL = torch.potrf(self.store,upper=False)
             return(True)
         except ValueError:
             print("current val in store not invertible or inverse not decomposable ")
@@ -353,12 +358,12 @@ class diag_cov(tune_param_concrete):
 
 
     def check_normal(self):
-        if sum((self.store < 0.00001).type("torch.FloatTensor").numpy()) > 0:
+        if sum((self.store < 1e-8).type("torch.FloatTensor").numpy()) > 0:
             too_small = True
         else:
             too_small = False
 
-        if sum((self.store > 100).type("torch.FloatTensor").numpy()) > 0:
+        if sum((self.store > 1e8).type("torch.FloatTensor").numpy()) > 0:
             too_large = True
         else:
             too_large = False
@@ -426,24 +431,26 @@ def tune_param_objs_creator(tune_dict,adapter_obj,tune_settings_dict):
 
             elif tune_method=="opt":
                 #par_tune_setting = tune_settings_dict["par_type"][par_type][tune_method][param_name]
-                print(tune_settings_dict["par_name"][param_name])
+                #print(tune_settings_dict["par_name"][param_name])
+
                 par_tune_setting.update(tune_settings_dict["par_name"][param_name])
                 par_tune_setting.update(tune_settings_dict["others"])
             elif tune_method=="fixed":
                 par_tune_setting = None
             else:
                 print(tune_method)
+                raise ValueError("unknown tune method")
                 #exit()
                 #assert tune_method=="adapt_cov"
 
             #print(param_name)
             #print(par_tune_setting)
-            print(param_name)
-            print(iter_list)
-            print(tune_method)
-            print(par_type)
-            print(par_tune_setting)
-
+            # print(param_name)
+            # print(iter_list)
+            # print(tune_method)
+            # print(par_type)
+            # print(par_tune_setting)
+            # exit()
             obj = tune_param_creator(param_name=param_name,iter_list=iter_list,tune_method=tune_method,
                                      par_type=par_type,par_tune_setting=par_tune_setting)
             #obj = tune_param_creator(param_name=param_name,iter_list,tune_method,par_type,par_tune_setting)

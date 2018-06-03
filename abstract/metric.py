@@ -14,14 +14,14 @@ class metric(object):
             self.num_var = V_instance.num_var
             self.store_shapes = V_instance.store_shapes
             self.store_lens = V_instance.store_lens
-            self._sd_list_tensor = numpy.empty(self.num_var, dtype=type(V_instance.flattened_tensor))
-            for i in range(self.num_var):
-                self._sd_list_tensor[i] = torch.ones(self.store_shapes[i])
+            #self._sd_list_tensor = numpy.empty(self.num_var, dtype=type(V_instance.flattened_tensor))
+            # for i in range(self.num_var):
+            #     self._sd_list_tensor[i] = torch.ones(self.store_shapes[i])
             self._var_list_tensor = numpy.empty(self.num_var,dtype=type(V_instance.list_var[0]))
             for i in range(self.num_var):
                  self._var_list_tensor[i] = torch.ones(self.store_shapes[i])
             self._flattened_var = torch.ones(V_instance.dim)
-            self._flattened_sd = torch.ones(V_instance.dim)
+            #self._flattened_sd = torch.ones(V_instance.dim)
         elif name=="dense_e":
             # covL * covL^T = cov
             self._flattened_cov_L = torch.eye(V_instance.dim,V_instance.dim)
@@ -45,14 +45,16 @@ class metric(object):
                 # none of the variances are too small or too large
                 assert not sum(input_var < 1e-8) > 0 and not sum(input_var >1e8) > 0
                 self._flattened_var.copy_(input_var)
-                self._flattened_sd.copy_(torch.sqrt(self._flattened_var))
+                #self._flattened_sd.copy_(torch.sqrt(self._flattened_var))
                 self._load_flatten()
             except:
                 raise ValueError("negative var or extreme var values")
         elif self.name == "dense_e":
             try:
                 temp_cov_inv = torch.inverse(input_var)
-                self._flattened_cov.copy_(input_var)
+                temp_cov_L = torch.potrf(input_var,upper=False)
+                #self._flattened_cov.copy_(input_var)
+                self._flattened_cov_L.copy_(temp_cov_L)
                 self._flattened_cov_inv.copy_(temp_cov_inv)
             except:
                 raise ValueError("not decomposable")
@@ -66,7 +68,7 @@ class metric(object):
         else:
             cur = 0
             for i in range(self.num_var):
-                self._var_list_tensor[i].copy_(self._flattened_cov[cur:(cur + self.store_lens[i])].view(self.store_shapes[i]))
-                self._sd_list_tensor[i].copy_(torch.sqrt(self._var_list_tensor[i]))
+                self._var_list_tensor[i].copy_(self._flattened_var[cur:(cur + self.store_lens[i])].view(self.store_shapes[i]))
+                #self._sd_list_tensor[i].copy_(torch.sqrt(self._var_list_tensor[i]))
                 cur = cur + self.store_lens[i]
 

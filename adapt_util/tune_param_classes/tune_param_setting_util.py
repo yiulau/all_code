@@ -11,15 +11,26 @@ def dual_default_arguments(name):
     return(output)
 
 available_obj_funs = ("accept_rate","ESJD","ESJD_g_normalized")
-def opt_default_arguments(name_list,par_type,bounds_list=None):
+def opt_default_arguments(name_list,par_type,obj_fun=None,bounds_list=None):
     # if leave bounds undefined it will be initiated by default
     # either leave all bounds out or provide all of them
-    if bounds_list is None:
-        output = {"obj_fun":"ESJD","par_type":par_type,"name":"opt","params_tuple":tuple(name_list)}
+    if not obj_fun is None:
+        assert obj_fun in available_obj_funs
+        if bounds_list is None:
+
+            output = {"obj_fun":obj_fun,"par_type":par_type,"name":"opt","params_tuple":tuple(name_list)}
+        else:
+            assert len(name_list)==len(bounds_list)
+            output = {"obj_fun":obj_fun,"par_type":par_type,"name":"opt","params_tuple":tuple(name_list),
+                      "bounds_tuple":tuple(bounds_list)}
     else:
-        assert len(name_list)==len(bounds_list)
-        output = {"obj_fun":"ESJD","par_type":par_type,"name":"opt","params_tuple":tuple(name_list),
-                  "bounds_tuple":tuple(bounds_list)}
+        if bounds_list is None:
+
+            output = {"obj_fun": "ESJD", "par_type": par_type, "name": "opt", "params_tuple": tuple(name_list)}
+        else:
+            assert len(name_list) == len(bounds_list)
+            output = {"obj_fun": "ESJD", "par_type": par_type, "name": "opt", "params_tuple": tuple(name_list),
+                      "bounds_tuple": tuple(bounds_list)}
     return(output)
 def adapt_cov_default_arguments(par_type,dim):
     return({"par_type":par_type,"name":"cov","dim":dim})
@@ -48,6 +59,7 @@ def tuning_settings(dual_arguments,opt_arguments,adapt_cov_arguments,other_argum
         dict_par_name.update({obj["name"]:obj})
 
     for obj in opt_arguments:
+        print("yres")
         if obj["par_type"]=="fast":
             fast_tune_setting_dict["opt"].append(obj)
         elif obj["par_type"]=="medium":
@@ -58,7 +70,7 @@ def tuning_settings(dual_arguments,opt_arguments,adapt_cov_arguments,other_argum
             raise ValueError("should not happen")
         for i in range(len(obj["params_tuple"])):
             if "bounds_tuple" in obj:
-                dict_par_name.update({obj["params_tuple"][i]:{"bounds":obj["bounds_list"][i],"par_type":obj["par_type"]}})
+                dict_par_name.update({obj["params_tuple"][i]:{"bounds":obj["bounds_tuple"][i],"par_type":obj["par_type"]}})
             else:
                 dict_par_name.update({obj["params_tuple"][i]:{"par_type":obj["par_type"]}})
 

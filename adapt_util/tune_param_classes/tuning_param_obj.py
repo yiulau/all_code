@@ -148,7 +148,11 @@ class dual_param_metadata(object):
 # shared by all opt variables with the same par_type
 class gpyopt_state(object):
     # only initialize when opt_dict not empty . upstream decision
-    def __init__(self,update_iter_list,opt_param_objs_dict=None,tune_setting=None):
+    def __init__(self,update_iter_list,opt_param_objs_dict=None,tune_dict=None):
+        #print(tune_setting.keys())
+        #print("wetf")
+        #print(tune_setting is None)
+        #exit()
         #if len(opt_dict)>0:
         #    self.param_dict = opt_dict
         #else:
@@ -160,7 +164,8 @@ class gpyopt_state(object):
         self.start_iter = self.update_iter_list[0]
         self.end_iter = self.update_iter_list[-1]
         self.store_samples = []
-        self.objective_fun = tune_setting.objective_fun
+        print(tune_dict)
+        self.objective_fun =get_objective_fun(tune_dict["obj_fun"])
         self.opt_param_objs_dict = opt_param_objs_dict
         #self.store_object= []
         self.store_objective = []
@@ -178,7 +183,7 @@ class gpyopt_state(object):
         start_temp = []
         bounds_temp = []
         self.name_list = []
-        for param_name,param_obj in self.opt_param_objs_dict:
+        for param_name,param_obj in self.opt_param_objs_dict.items():
             #start_temp.append(param.find_reasonable_start())
             start_temp.append(param_obj.get_val())
             self.name_list.append(param_name)
@@ -201,21 +206,21 @@ class gpyopt_state(object):
         x_next = bo_step.suggest_next_locations()
         self.X_step = numpy.vstack((self.X_step, x_next))
         out_dict = {}
-        for i in range(self.name_list):
-            out_dict.update({self.name_list[i]:bo_step[i]})
+        for i in range(len(self.name_list)):
+            out_dict.update({self.name_list[i]:x_next[0][i]})
         return(out_dict)
     def update(self,sample_dict):
         iter = sample_dict["iter"]
         if iter < self.start_iter:
             pass
-        if iter >= self.end_iter:
+        elif iter >= self.end_iter:
             pass
-        if iter == self.start_iter:
+        elif iter == self.start_iter:
             self.initialize()
             self.cur_in_iter_list += 1
-        if iter < self.next_refresh_iter:
+        elif iter < self.next_refresh_iter:
             self.store_samples.append(sample_dict)
-        if iter == self.next_refresh_iter:
+        elif iter == self.next_refresh_iter:
             self.store_samples.append(sample_dict)
             objective = self.compute_objective()
             self.store_objective.append(objective)
@@ -229,14 +234,15 @@ class gpyopt_state(object):
                 pass
             else:
                 next_tune_par_vals_dict = self.update_gp(objective)
-                for param, obj in self.opt_param_objs_dict:
+                for param, obj in self.opt_param_objs_dict.items():
                     #obj.store = next_tune_par_vals_dict[param]
                     obj.set_val(next_tune_par_vals_dict[param])
                     print("iter {} updated param {} , new value {}".format(iter,obj.name,obj.get_val()))
                 self.cur_in_iter_list +=1
                 self.next_refresh_iter = self.update_iter_list[self.cur_in_iter_list]
             self.store = []
-
+        else:
+            raise ValueError("shouldnt reach here")
 
 # used by the cov variable only, can be an par_type
 class adapt_cov_state(object):
@@ -292,8 +298,30 @@ class adapt_cov_state(object):
             #print("iter {}, sample_dict {}".format(iter,sample_dict["q"].flattened_tensor))
             self.update_cov(sample_dict)
             #self.tuning_obj.integrator.set_metric(self.m_2)
-            self.param_obj.set_val(self.m_2/(self.iter-1))
-            self.param_obj.update_metric()
+            data_cov = self.m_2 / (self.iter - 1)
+            #print("data cov {}".format(data_cov))
+            try:
+                if len(data_cov.shape)>1:
+                    momentum_cov = torch.inverse(data_cov)
+                else:
+                    momentum_cov = 1/data_cov
+
+                print(momentum_cov)
+                print(data_cov)
+                #recomposed_data_cov = torch.inverse(momentum_cov)
+                #cov_L = torch.potrf(momentum_cov,upper=False)
+
+                # print(cov_L)
+                #print(momentum_cov)
+                # print(recomposed_data_cov)
+                # exit()
+                self.param_obj.set_val(momentum_cov)
+
+                self.param_obj.update_metric()
+
+            except:
+                raise ValueError("mcmc samples cov not invertible")
+
             #print("iter {} updated param {} , new value {}".format(iter,self.param_obj.name,self.param_obj.get_val()))
             # do not need to explore next point if we are on our last point
             if self.cur_in_iter_list==self.end_iter:
@@ -307,7 +335,7 @@ class adapt_cov_state(object):
 
 
 class par_type_state(object):
-    def __init__(self,par_type,update_iter_list,dual_objs_dict=None,opt_objs_dict=None,adapt_cov_objs_dict=None):
+    def __init__(self,par_type,update_iter_list,dual_objs_dict=None,opt_objs_dict=None,adapt_cov_objs_dict=None,tune_dict=None):
         self.par_type = par_type
         self.iter_list = update_iter_list
 
@@ -324,7 +352,8 @@ class par_type_state(object):
             if len(dual_objs_dict)>0:
                 self.dual_state = dual_state(update_iter_list=update_iter_list,dual_param_objs_dict=dual_objs_dict)
             if len(opt_objs_dict)>0:
-                self.opt_state = gpyopt_state(update_iter_list=update_iter_list,opt_param_objs_dict=opt_objs_dict)
+                assert len(tune_dict["opt"])==1
+                self.opt_state = gpyopt_state(update_iter_list=update_iter_list,opt_param_objs_dict=opt_objs_dict,tune_dict=tune_dict["opt"][0])
             if len(adapt_cov_objs_dict)>0:
                 self.adapt_cov_state = adapt_cov_state(update_iter_list=update_iter_list,adapt_cov_param_objs_dict=adapt_cov_objs_dict)
 
@@ -336,7 +365,7 @@ class par_type_state(object):
 #         self.opt_state = opt_state_obj
 #         self.adapt_state = adapt_state_obj
 class tuning_param_states(object):
-    def __init__(self,adapter,param_objs_dict):
+    def __init__(self,adapter,param_objs_dict,tune_settings_dict):
         #dual_state_obj = None
         #opt_state_obj = None
         #adapt_state_obj = None
@@ -348,26 +377,29 @@ class tuning_param_states(object):
         #self.params_obj_dict = tune_params_obj_creator(adapter.tune_dict, adapter)
         fast_dict,medium_dict,slow_dict = sort_objs_by_par_type_method(param_objs_dict)
         if len(slow_dict)>0:
+            tune_dict = tune_settings_dict["par_type"]["slow"]
             slow_dual_objs_dict,slow_opt_objs_dict,slow_adapt_cov_objs_dict = sort_objs_by_tune_method(slow_dict)
             self.slow_state = par_type_state(par_type="slow",update_iter_list=adapter.update_slow_list,
                                              dual_objs_dict=slow_dual_objs_dict,opt_objs_dict=slow_opt_objs_dict,
-                                             adapt_cov_objs_dict=slow_adapt_cov_objs_dict)
+                                             adapt_cov_objs_dict=slow_adapt_cov_objs_dict,tune_dict=tune_dict)
 
         if len(medium_dict)>0:
+            tune_dict = tune_settings_dict["par_type"]["medium"]
             medium_dual_objs_dict, medium_opt_objs_dict, medium_adapt_cov_objs_dict =sort_objs_by_tune_method(medium_dict)
             self.medium_state = par_type_state(par_type="medium", update_iter_list=adapter.update_medium_list,
                                                dual_objs_dict=medium_dual_objs_dict, opt_objs_dict=medium_opt_objs_dict,
-                                               adapt_cov_objs_dict=medium_adapt_cov_objs_dict)
+                                               adapt_cov_objs_dict=medium_adapt_cov_objs_dict,tune_dict=tune_dict)
         if len(fast_dict)>0:
             #print("yes")
             #print(adapter.update_fast_list)
             #exit()
+            tune_dict = tune_settings_dict["par_type"]["fast"]
             fast_dual_objs_dict, fast_opt_objs_dict, fast_adapt_cov_objs_dict=sort_objs_by_tune_method(fast_dict)
             #self.fast_state = par_type_state("fast",adapter.update_fast_list,fast_dual_objs_dict,
             #                                 fast_opt_objs_dict,fast_adapt_objs_dict)
             self.fast_state = par_type_state(par_type="fast", update_iter_list=adapter.update_fast_list,
                                              dual_objs_dict=fast_dual_objs_dict, opt_objs_dict=fast_opt_objs_dict,
-                                             adapt_cov_objs_dict=fast_adapt_cov_objs_dict)
+                                             adapt_cov_objs_dict=fast_adapt_cov_objs_dict,tune_dict=tune_dict)
         #adapter.tuning_param_states = self
 
 

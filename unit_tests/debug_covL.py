@@ -1,5 +1,5 @@
 import torch,numpy,time
-dim = 2000
+dim = 200
 X = torch.randn(dim,dim)
 H = X.mm(X.t()) + torch.eye(dim,dim)
 

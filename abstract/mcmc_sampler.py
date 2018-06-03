@@ -2,7 +2,7 @@ import time
 #from multiprocessing import Pool
 import pathos.multiprocessing as multiprocessing
 #import multiprocessing
-import pickle
+import pickle,copy
 from abstract.deprecated_code.abstract_genleapfrog_ult_util import *
 from abstract.abstract_leapfrog_util import *
 from abstract.integrator import sampler_one_step
@@ -92,7 +92,7 @@ class mcmc_sampler(object):
             this_tune_dict = self.tune_dict.copy()
             this_chain_obj = one_chain_obj(init_point=self.init_q_point_list[i],
                                            tune_dict=self.tune_dict,chain_setting=this_chain_setting,
-                                           tune_settings_dict=self.tune_settings_dict.copy(),
+                                           tune_settings_dict=copy.deepcopy(self.tune_settings_dict),
                                            adapter_setting=self.adapter_setting)
             this_chain_obj.prepare_this_chain()
             this_chain_obj.isstore_to_disk = self.isstore_to_disk
@@ -340,7 +340,7 @@ class one_chain_obj(object):
 
         #print(self.tune_param_objs_dict)
         #exit()
-        self.tuning_param_states = tuning_param_states(adapter=self.adapter,param_objs_dict=self.tune_param_objs_dict)
+        self.tuning_param_states = tuning_param_states(adapter=self.adapter,param_objs_dict=self.tune_param_objs_dict,tune_settings_dict=tune_settings_dict)
         self.adapter.tuning_param_states = self.tuning_param_states
         #print(self.tuning_param_states)
         #exit()
@@ -435,7 +435,7 @@ class one_chain_obj(object):
             #print(out.flattened_tensor)
             print("iter is {}".format(counter))
             print("epsilon val {}".format(self.tune_param_objs_dict["epsilon"].get_val()))
-#            print("evolve_L val {}".format(self.tune_param_objs_dict["evolve_L"].get_val()))
+            print("evolve_L val {}".format(self.tune_param_objs_dict["evolve_L"].get_val()))
             print("accept_rate {}".format(self.log_obj.store["accept_rate"]))
             print("divergent is {}".format(self.log_obj.store["divergent"]))
 

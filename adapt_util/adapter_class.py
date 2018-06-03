@@ -16,6 +16,8 @@ class adapter_class(object):
         # default definitions
         # par_type should be determined by setting default parameters
         self.par_type_dict = {}
+        # print(self.one_chain_experiment.tune_settings_dict["par_type"])
+        # exit()
         for param,obj in self.one_chain_experiment.tune_settings_dict["par_name"].items():
             self.par_type_dict.update({param:obj["par_type"]})
 
