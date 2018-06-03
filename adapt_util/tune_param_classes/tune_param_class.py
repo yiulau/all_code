@@ -25,7 +25,8 @@ class tune_param_concrete(object):
         #exit()
             if self.maximum_second_per_sample is None:
                 self.par_tune_setting = par_tune_setting
-                raise ValueError("should not happen")
+                print(par_tune_setting)
+                raise ValueError("should always supply maxium_second_per_sample argument")
             else:
                 par_tune_setting.pop("maximum_second_per_sample")
                 self.par_tune_setting = par_tune_setting
@@ -289,6 +290,7 @@ class dense_cov(tune_param_concrete):
     def update_metric(self):
         assert hasattr(self,"Ham")
         print(self.store)
+
         normal = self.check_normal()
         if normal:
             self.Ham.metric.set_metric(self.store)

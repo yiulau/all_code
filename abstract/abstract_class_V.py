@@ -5,7 +5,7 @@ from abstract.abstract_class_point import point
 from torch.autograd import Variable, grad
 from general_util.pytorch_util import get_list_stats, general_load_point,general_assert_syncro
 from general_util.pytorch_util import general_load_param_to_flattened,general_load_flattened_tensor_to_param
-
+from general_util.pytorch_util import isnan
 
 # if need to define explicit gradient do it
 
@@ -52,13 +52,17 @@ class V(nn.Module):
         self.load_flattened_tensor_to_param(q_flattened_tensor)
         g = grad(self.forward(), self.list_var)
         # check for exploding gradient
-        assert isnan(g)
+        explode_grad = False
+        for i in range(len(g)):
+            explode_grad = explode_grad or isnan(g[i].data)
+            if explode_grad:
+                return(None,True)
         out = torch.zeros(len(q_flattened_tensor))
         cur = 0
         for i in range(self.num_var):
             out[cur:(cur + self.store_lens[i])] = g[i].data.view(self.store_lens[i])
             cur = cur + self.store_lens[i]
-        return(out)
+        return(out,explode_grad)
 
 
 

@@ -12,31 +12,32 @@ class T_dense_e(T):
             pass
         if not p_point is None:
             self.load_point(p_point)
-        L_inv_p = torch.mv(self.metric._flattened_covL_inv, self.flattened_tensor)
-        output = torch.dot(L_inv_p, L_inv_p) * 0.5
+        temp = torch.mv(self.metric._flattened_cov_inv, self.flattened_tensor)
+        output = torch.dot(temp, self.flattened_tensor) * 0.5
         return(output)
 
 
 
-    def dtaudp(self,p=None):
-        if self.need_flatten:
-            self.load_listp_to_flattened(self.p, self.flattened_p_tensor)
-            temp = torch.mv(self.metric._flattened_cov, self.flattened_p_tensor)
-            self.load_flattened_tenosr_to_target_list(self.gradient,self.flattened_p_tensor)
-            return (self.gradient)
-        else:
-            self.load_flattened_tenosr_to_target_list(self.gradient,torch.mv(self.metric._flattened_cov, self.p[0]))
-            return (self.gradient)
+    # def dtaudp(self,p=None):
+    #     if self.need_flatten:
+    #         self.load_listp_to_flattened(self.p, self.flattened_p_tensor)
+    #         temp = torch.mv(self.metric._flattened_cov, self.flattened_p_tensor)
+    #         self.load_flattened_tenosr_to_target_list(self.gradient,self.flattened_p_tensor)
+    #         return (self.gradient)
+    #     else:
+    #         self.load_flattened_tenosr_to_target_list(self.gradient,torch.mv(self.metric._flattened_cov, self.p[0]))
+    #         return (self.gradient)
 
     def dp(self,p_flattened_tensor):
-
-        out = torch.mv(self.metric._flattened_cov, p_flattened_tensor)
+        #print(self.metric._flattened_cov)
+        out = torch.mv(self.metric._flattened_cov_inv, p_flattened_tensor)
         return(out)
     def dtaudq(self):
         raise ValueError("should not call this function")
 
     def generate_momentum(self,q):
         out = point(list_tensor=self.list_tensor,pointtype="p",need_flatten=self.need_flatten)
+        #print(self.metric._flattened_covL)
         out.flattened_tensor.copy_(torch.mv(self.metric._flattened_covL, torch.randn(self.dim)))
         out.load_flatten()
         return(out)

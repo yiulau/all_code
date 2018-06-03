@@ -126,19 +126,21 @@ class adapter_class(object):
 
                 #assert self.par_type_dict[param] == self.one_chain_experiment.tune_settings_dict["par_name"][param]["par_type"]
 
-        self.adapter_meta = adapter_metadata(self.one_chain_experiment.chain_setting,
-                                             self.tune_fast, self.tune_medium, self.tune_slow)
+        self.adapter_meta = adapter_metadata_dict(chain_setting=self.one_chain_experiment.chain_setting,tune_fast=self.tune_fast,
+                                                  tune_medium=self.tune_medium,tune_slow=self.tune_slow)
 
         #self.update_fast_list, self.update_medium_list, self.update_slow_list = return_update_lists(self.adapter_meta)
-        if self.adapter_meta.tune:
-            #print("yes_tune")
-
+        if self.adapter_meta["tune"]:
+            print("yes_tune")
+            print(self.adapter_setting)
+            print(self.adapter_meta)
             self.choose_iter_dict = return_update_lists(self.adapter_meta,self.adapter_setting)
             self.update_fast_list = self.choose_iter_dict["fast"]
+            print("self.update_fast_list {}".format(self.update_fast_list))
             self.update_medium_list = self.choose_iter_dict["medium"]
             self.update_slow_list = self.choose_iter_dict["slow"]
             #print(self.choose_iter_dict)
-            #exit()
+
 
 
 
@@ -205,23 +207,23 @@ class adapter_class(object):
 #class adapt_settings(object):
 #    def __init__(self,min_slow_updates):
 #        self.min_slow_updates = min_slow_updates
-class adapter_metadata(object):
-    # records metadata about the adapter for a sampler obj
-    # does not set anything
-    def __init__(self,chain_setting,tune_fast,tune_medium,tune_slow):
-        self.num_samples = chain_setting["num_samples"]
-        self.tune_l = chain_setting["tune_l"]
-        self.tune_fast = tune_fast
-        self.tune_medium = tune_medium
-        self.tune_slow = tune_slow
-        self.tune = self.tune_fast or self.tune_medium or self.tune_slow
+# class adapter_metadata(object):
+#     # records metadata about the adapter for a sampler obj
+#     # does not set anything
+#     def __init__(self,chain_setting,tune_fast,tune_medium,tune_slow):
+#         self.num_samples = chain_setting["num_samples"]
+#         self.tune_l = chain_setting["tune_l"]
+#         self.tune_fast = tune_fast
+#         self.tune_medium = tune_medium
+#         self.tune_slow = tune_slow
+#         self.tune = self.tune_fast or self.tune_medium or self.tune_slow
 
 
 def adapter_metadata_dict(chain_setting,tune_fast,tune_medium,tune_slow):
     # records metadata about the adapter for a sampler obj
     # does not set anything
     #def __init__(self,sampling_metadata,tune_fast,tune_medium,tune_slow):
-    out = {"num_samples":chain_setting.num_samples,"tune_l":chain_setting.tune_l,"tune_fast":tune_fast}
+    out = {"num_samples":chain_setting["num_samples"],"tune_l":chain_setting["tune_l"],"tune_fast":tune_fast}
     out.update({"tune_medium":tune_medium,"tune_slow":tune_slow})
     tune = tune_fast or tune_medium or tune_slow
     out.update({"tune":tune})

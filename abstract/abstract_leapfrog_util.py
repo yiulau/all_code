@@ -10,8 +10,7 @@ class gleapfrog_stat(object):
     #collects information from start to beginning of one leapfrog/genleapfrog step
     def __init__(self):
         self.divergent = False
-        self.first_divergent = None
-        self.second_divergent = None
+        self.explode_grad = False
 
 def abstract_leapfrog_ult(q,p,epsilon,Ham):
     # Input:
@@ -28,14 +27,24 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
     #with open('debugqp.pkl', 'wb') as f:
     #    pickle.dump(out, f)
     #exit()
-
-    p.flattened_tensor -= Ham.V.dq(q.flattened_tensor) * 0.5 * epsilon
+    gleapfrog_stat_dict = {"divergent":False,"explode_grad":False}
+    V_dq,explode_grad = Ham.V.dq(q.flattened_tensor)
+    if explode_grad:
+        gleapfrog_stat_dict["explode_grad"] = True
+        gleapfrog_stat_dict["divergent"] = True
+        return(None,None,gleapfrog_stat_dict)
+    p.flattened_tensor -= V_dq * 0.5 * epsilon
     #print("first p abstract{}".format(p.flattened_tensor))
     #print("first H abstract {}".format(Ham.evaluate(q,p)))
     q.flattened_tensor += Ham.T.dp(p.flattened_tensor) * epsilon
     #print("first q abstract {}".format(q.flattened_tensor))
     #print("second H abstract {}".format(Ham.evaluate(q,p)))
-    p.flattened_tensor -= Ham.V.dq(q.flattened_tensor) * 0.5 * epsilon
+    V_dq, explode_grad = Ham.V.dq(q.flattened_tensor)
+    if explode_grad:
+        gleapfrog_stat_dict["explode_grad"] = True
+        gleapfrog_stat_dict["divergent"] = True
+        return (None, None, gleapfrog_stat_dict)
+    p.flattened_tensor -= V_dq * 0.5 * epsilon
     #print("second p abstract {}".format(p.flattened_tensor))
     #print("final q abstract {}".format(q.flattened_tensor))
     p.load_flatten()
@@ -44,7 +53,7 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
 
 
     #exit()
-    return(q,p,gleapfrog_stat())
+    return(q,p,gleapfrog_stat_dict)
 
 
 

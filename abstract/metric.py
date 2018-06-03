@@ -24,9 +24,8 @@ class metric(object):
             self._flattened_sd = torch.ones(V_instance.dim)
         elif name=="dense_e":
             # covL * covL^T = cov
-            self._flattened_covL = torch.eye(V_instance.dim,V_instance.dim)
-            self._flattened_cov = torch.eye(V_instance.dim,V_instance.dim)
-            self._flattened_covL_inv = torch.eye(V_instance.dim,V_instance.dim)
+            self._flattened_cov_L = torch.eye(V_instance.dim,V_instance.dim)
+            self._flattened_cov_inv = torch.eye(V_instance.dim,V_instance.dim)
         # elif name=="softabs" or name=="softabs_diag" or name=="softabs_outer_product" or name=="softabs_outer_product_diag":
         #     if alpha==None:
         #         raise ValueError("alpha needs be defined for softabs metric")
@@ -40,12 +39,24 @@ class metric(object):
         # input: either flattened empircial covariance for dense_e or
         # flattened var tensor for diag_e
         if self.name == "diag_e":
-            self._flattened_var.copy_(input_var)
-            self._flattened_sd.copy_(torch.sqrt(self._flattened_var))
-            self._load_flatten()
+            try:
+                # none of the variances or negative
+                assert not sum(input_var < 0) > 0
+                # none of the variances are too small or too large
+                assert not sum(input_var < 1e-8) > 0 and not sum(input_var >1e8) > 0
+                self._flattened_var.copy_(input_var)
+                self._flattened_sd.copy_(torch.sqrt(self._flattened_var))
+                self._load_flatten()
+            except:
+                raise ValueError("negative var or extreme var values")
         elif self.name == "dense_e":
-            self._flattened_cov.copy_(input_var)
-            self._flattened_covL.copy_(torch.potrf(self._flattened_cov,upper=False))
+            try:
+                temp_cov_inv = torch.inverse(input_var)
+                self._flattened_cov.copy_(input_var)
+                self._flattened_cov_inv.copy_(temp_cov_inv)
+            except:
+                raise ValueError("not decomposable")
+
         else:
             raise ValueError("should not use this function unless the metrics are diag_e or dense_e")
 

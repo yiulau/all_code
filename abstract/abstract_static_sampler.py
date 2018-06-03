@@ -28,6 +28,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     careful = True
     Ham.diagnostics = time_diagnositcs()
     divergent = False
+    explode_grad = False
     num_transitions = evolve_L
     q = init_q.point_clone()
     init_p = Ham.T.generate_momentum(q)
@@ -52,13 +53,14 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print("epsilon is {}".format(epsilon))
     for i in range(evolve_L):
         q, p, stat = Ham.integrator(q, p, epsilon, Ham)
-        divergent = stat.divergent
+        divergent = stat["divergent"]
+        explode_grad = stat["explode_grad"]
         #print(q.flattened_tensor)
         #print(p.flattened_tensor)
-        if careful:
+        if not explode_grad:
             temp_H = Ham.evaluate(q, p)
             #print("H is {}".format(temp_H))
-            if(abs(temp_H-current_H)>50 or divergent):
+            if(current_H < temp_H and abs(temp_H-current_H)>200 or divergent):
                 #print("yeye")
                 #print(i)
                 #print(temp_H)
@@ -71,22 +73,24 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
                 divergent = True
                 return_p = None
                 num_transitions = i
+                break
+        else:
+            break
 
-    if not divergent:
+
+    if not divergent and not explode_grad:
         proposed_H = Ham.evaluate(q,p)
-        if (abs(current_H - proposed_H) > 50):
+        if (current_H < proposed_H and abs(current_H - proposed_H) > 200):
             return_q = init_q
             return_p = None
             return_H = current_H
             accept_rate = 0
             accepted = False
-            divergent = True
+
 
         else:
 
             accept_rate = math.exp(min(0,current_H - proposed_H))
-
-            divergent = False
             if (numpy.random.random(1) < accept_rate):
                 accepted = True
                 return_q = q
@@ -99,11 +103,12 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
                 return_H = current_H
     Ham.diagnostics.update_time()
         #print(log_obj is None)
-    endH = Ham.evaluate(q,p)
-    accept_rate = math.exp(min(0, current_H - endH))
+    #endH = Ham.evaluate(q,p)
+    #accept_rate = math.exp(min(0, current_H - endH))
     #print("accept_rate {}".format(accept_rate))
     print("divergent inside {}".format(divergent))
-    print("endH {}".format(Ham.evaluate(q,p)))
+    if not divergent and not explode_grad:
+        print("endH {}".format(Ham.evaluate(q,p)))
     #exit()
     if not log_obj is None:
         log_obj.store.update({"prop_H":return_H})
@@ -111,7 +116,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
         log_obj.store.update({"accept_rate":accept_rate})
         log_obj.store.update({"divergent":divergent})
         log_obj.store.update({"num_transitions":num_transitions})
-
+        log_obj.store.update({"explode_grad":explode_grad})
     return(return_q,return_p,init_p,return_H,accepted,accept_rate,divergent,num_transitions)
 
 

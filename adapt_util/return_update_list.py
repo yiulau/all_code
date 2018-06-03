@@ -4,10 +4,10 @@ def return_update_lists(adapter_meta,adapter_setting):
     # fast list , medium list , slow list
 
     window_size = adapter_setting["window_size"]
-    tune_l = adapter_meta.tune_l
-    tune_fast = adapter_meta.tune_fast
-    tune_medium = adapter_meta.tune_medium
-    tune_slow = adapter_meta.tune_slow
+    tune_l = adapter_meta["tune_l"]
+    tune_fast = adapter_meta["tune_fast"]
+    tune_medium = adapter_meta["tune_medium"]
+    tune_slow = adapter_meta["tune_slow"]
 
     if tune_fast == True:
         ini_buffer = adapter_setting["ini_buffer"]
@@ -30,9 +30,7 @@ def return_update_lists(adapter_meta,adapter_setting):
             if tune_slow==True:
                 out = fsf(window_size,ini_buffer,end_buffer,min_slow_updates,tune_l)
             else:
-                #print("yes")
                 out = f(tune_l)
-                #print(out)
     else:
         if tune_medium:
             if tune_slow:
