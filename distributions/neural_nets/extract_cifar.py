@@ -1,13 +1,14 @@
 import torchvision
 import torchvision.transforms as transforms
-import torch,numpy
+import torch,numpy,os
 from sys import getsizeof
-train_dataset = torchvision.datasets.CIFAR10(root='./data/',
+abs_address = os.environ["PYTHONPATH"] + "/data/"
+train_dataset = torchvision.datasets.CIFAR10(root=abs_address,
                                            train=True,
                                            transform=transforms.ToTensor(),
                                            download=True)
 
-test_dataset = torchvision.datasets.CIFAR10(root='./data/',
+test_dataset = torchvision.datasets.CIFAR10(root=abs_address,
                                           train=False,
                                           transform=transforms.ToTensor())
 
