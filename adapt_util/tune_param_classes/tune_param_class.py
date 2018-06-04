@@ -122,6 +122,7 @@ class evolve_t(tune_param_concrete):
                 self.default_bounds = par_tune_setting["bounds"]
     def find_reasonable_start(self):
         # unit_e unit trajectory length
+        self.find_bounds()
         out = (self.bounds[0] + self.bounds[1])*0.5
         return(out)
 
@@ -164,9 +165,9 @@ class evolve_L(tune_param_concrete):
                 self.default_bounds = par_tune_setting["bounds"]
     def find_reasonable_start(self):
         # unit_e unit trajectory length
-        #self.find_bounds()
-        #out = round((self.bounds[0]+self.bounds[1])*0.5)
-        out = 8
+        self.find_bounds()
+        out = round((self.bounds[0]+self.bounds[1])*0.5)
+        #out = 8
         return(out)
 
     def find_bounds(self):

@@ -11,7 +11,7 @@ mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=3100,num_chai
                                    warmup_per_chain=2100,is_float=False,isstore_to_disk=False)
 
 input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":["opt"],"second_order":[False],
-              "evolve_L":["opt"],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
+              "evolve_t":["opt"],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
 
 # ep_dual_metadata_argument = {"name":"epsilon","target":0.65,"gamma":0.05,"t_0":10,
 #                         "kappa":0.75,"obj_fun":"accept_rate","par_type":"fast"}
@@ -22,7 +22,7 @@ input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":["opt"],"second_order":[Fa
 
 #alpha_opt_metadata_argument = {"name":"alpha","obj_fun":"ESJD","par_type":"slow"}
 
-medium_opt_metadata_argument = opt_default_arguments(name_list=["evolve_L","epsilon"],par_type="medium",obj_fun="ESJD_g_normalized",bounds_list=[(1,20),(0.001,0.2)])
+medium_opt_metadata_argument = opt_default_arguments(name_list=["evolve_t","epsilon"],par_type="medium",obj_fun="ESJD_g_normalized",bounds_list=[(0.3,2),(0.01,0.2)])
 #medium_opt_metadata_argument = opt_default_arguments(name_list=["evolve_L","alpha"],par_type="medium")
 
 print(medium_opt_metadata_argument)

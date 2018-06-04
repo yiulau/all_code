@@ -163,8 +163,9 @@ class gpyopt_state(object):
         #self.opt_dict = opt_dict
         self.start_iter = self.update_iter_list[0]
         self.end_iter = self.update_iter_list[-1]
+        #print(self.end_iter)
         self.store_samples = []
-        print(tune_dict)
+        #print(tune_dict)
         self.objective_fun =get_objective_fun(tune_dict["obj_fun"])
         self.opt_param_objs_dict = opt_param_objs_dict
         #self.store_object= []
@@ -211,9 +212,10 @@ class gpyopt_state(object):
         return(out_dict)
     def update(self,sample_dict):
         iter = sample_dict["iter"]
+
         if iter < self.start_iter:
             pass
-        elif iter >= self.end_iter:
+        elif iter > self.end_iter:
             pass
         elif iter == self.start_iter:
             self.initialize()
@@ -224,12 +226,17 @@ class gpyopt_state(object):
             self.store_samples.append(sample_dict)
             objective = self.compute_objective()
             self.store_objective.append(objective)
+
             # do not need to explore next point if we are on our last point
-            if self.update_iter_list[self.cur_in_iter_list]==self.end_iter:
+            if self.next_refresh_iter==self.end_iter:
                 # when it is end of iteration set params to best value so far
                 index = numpy.argmin(self.store_objective)
                 best_X = self.X_step[index]
-                for i in range(self.name_list):
+                print(best_X)
+                print(self.store_objective[index])
+                print(self.store_objective)
+                #exit()
+                for i in range(len(self.name_list)):
                     self.opt_param_objs_dict[self.name_list[i]].set_val(best_X[i])
                 pass
             else:

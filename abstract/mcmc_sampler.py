@@ -424,7 +424,7 @@ class one_chain_obj(object):
                 self.add_sample(sample_dict=sample_dict)
                 if self.is_to_disk_now(counter):
                     self.store_to_disk()
-            if counter < self.chain_setting["tune_l"]:
+            if counter < self.chain_setting["tune_l"]+1:
                 out.iter = counter
                 out = self.adapt(sample_dict)
                 # if self.chain_setting["allow_restart"]:
@@ -434,8 +434,15 @@ class one_chain_obj(object):
             #print("tune_l is {}".format(self.chain_setting["tune_l"]))
             #print(out.flattened_tensor)
             print("iter is {}".format(counter))
+            ep= self.tune_param_objs_dict["epsilon"].get_val()
             print("epsilon val {}".format(self.tune_param_objs_dict["epsilon"].get_val()))
-            print("evolve_L val {}".format(self.tune_param_objs_dict["evolve_L"].get_val()))
+            if "evolve_L" in self.tune_param_objs_dict:
+                print("evolve_L val {}".format(self.tune_param_objs_dict["evolve_L"].get_val()))
+            if "evolve_t" in self.tune_param_objs_dict:
+                t = self.tune_param_objs_dict["evolve_t"].get_val()
+                print("evolve_t val {}".format(self.tune_param_objs_dict["evolve_t"].get_val()))
+                print("effective L {}".format(round(t/ep)))
+            print("number of leapfrog steps {}".format(self.log_obj.store["num_transitions"]))
             print("accept_rate {}".format(self.log_obj.store["accept_rate"]))
             print("divergent is {}".format(self.log_obj.store["divergent"]))
 

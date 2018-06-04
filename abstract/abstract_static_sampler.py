@@ -60,7 +60,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
         if not explode_grad:
             temp_H = Ham.evaluate(q, p)
             #print("H is {}".format(temp_H))
-            if(current_H < temp_H and abs(temp_H-current_H)>200 or divergent):
+            if(current_H < temp_H and abs(temp_H-current_H)>500 or divergent):
                 #print("yeye")
                 #print(i)
                 #print(temp_H)
@@ -80,7 +80,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
 
     if not divergent and not explode_grad:
         proposed_H = Ham.evaluate(q,p)
-        if (current_H < proposed_H and abs(current_H - proposed_H) > 200):
+        if (current_H < proposed_H and abs(current_H - proposed_H) > 500):
             return_q = init_q
             return_p = None
             return_H = current_H
