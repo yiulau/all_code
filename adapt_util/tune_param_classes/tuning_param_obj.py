@@ -195,6 +195,7 @@ class gpyopt_state(object):
 
 
     def compute_objective(self):
+
         out = self.objective_fun(self.store_samples)
         return(out)
 
@@ -247,7 +248,7 @@ class gpyopt_state(object):
                     print("iter {} updated param {} , new value {}".format(iter,obj.name,obj.get_val()))
                 self.cur_in_iter_list +=1
                 self.next_refresh_iter = self.update_iter_list[self.cur_in_iter_list]
-            self.store = []
+            self.store_samples = []
         else:
             raise ValueError("shouldnt reach here")
 

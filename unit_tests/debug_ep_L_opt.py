@@ -22,7 +22,7 @@ input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":["opt"],"second_order":[Fa
 
 #alpha_opt_metadata_argument = {"name":"alpha","obj_fun":"ESJD","par_type":"slow"}
 
-medium_opt_metadata_argument = opt_default_arguments(name_list=["evolve_L","epsilon"],par_type="medium",obj_fun="ESJD_g_normalized",bounds_list=[(1,20),(0.001,0.2)])
+medium_opt_metadata_argument = opt_default_arguments(name_list=["evolve_L","epsilon"],par_type="medium",obj_fun="ESJD_g_normalized",bounds_list=[(1,40),(0.001,0.2)])
 #medium_opt_metadata_argument = opt_default_arguments(name_list=["evolve_L","alpha"],par_type="medium")
 
 print(medium_opt_metadata_argument)
