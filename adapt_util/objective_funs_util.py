@@ -35,14 +35,17 @@ def ESJD(store_samples):
 def ESJD_g_normalized(store_samples):
     diff_square_list = [None] * (len(store_samples) - 1)
     num_grad_list = [None]*(len(store_samples)-1)
-    for i in range(len(diff_square_list)):
+    diff_squared = torch.zeros(len(store_samples[0]["q"].flattened_tensor))
+    for i in range(len(store_samples)-1):
         q_next_flattened_tensor = store_samples[i + 1]["q"].flattened_tensor
         q_current_flattened_tensor = store_samples[i]["q"].flattened_tensor
         diff_squared = (q_next_flattened_tensor - q_current_flattened_tensor)
-        diff_squared = torch.dot(diff_squared, diff_squared)
+        diff_squared = torch.dot(diff_squared,diff_squared)
         diff_square_list[i] = diff_squared
-        num_grad = store_samples[i]["log"].store["num_transitions"]
-        num_grad_list[i] = num_grad
+
+
+    num_grad = store_samples[i]["log"].store["num_transitions"]
+    num_grad_list[i] = num_grad
     ESJD = numpy.mean(diff_square_list)
     #print(num_grad_list)
     #exit()

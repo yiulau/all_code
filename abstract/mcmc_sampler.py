@@ -512,24 +512,6 @@ class initialization(object):
         self.V_obj.q_point.load_flatten()
         return()
 
-# class one_chain_settings(object):
-#     def __init__(self,sampler_id,chain_id,num_samples=10,thin=1,experiment_id=None,tune_l=5):
-#         # one for every chain. in everything sampling object, in every experiment
-#         # parallel chains sampling from the same distribution shares sampling_obj
-#         # e.g. 4 chains sampling from iid normal
-#         # different chains sampling in the context of the same experiment shares experiment_obj
-#         # e.g. HMC(ep,t) sampling from a model with different values of (ep,t) on a grid
-#         # thin an integer >=0 skips
-#         # period for saving samples
-#         self.experiment_id = experiment_id
-#         self.sampler_id = sampler_id
-#         self.chain_id = chain_id
-#         self.num_samples = num_samples
-#         self.thin = thin
-#         self.tune_l = tune_l
-#
-#     #def clone(self):
-
 
 def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment_id=None,tune_l=5,warm_up=5,allow_restart=True):
 
@@ -547,101 +529,6 @@ def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
-# class mcmc_sampler(object):
-#     # may share experiment id with other sampling_objs
-#     def __init__(self,Ham,adapter=None,num_samples_per_chain=2000,thin=1,warm_up_per_chain=None,initialization=None,num_chains=4,num_cpu=1,is_float=False,isstore_to_disk=False):
-#         self.store_chains = numpy.empty(num_chains, object)
-#         self.num_cpu = num_cpu
-#         self.num_chains = num_chains
-#         self.Ham = Ham
-#         if not experiment_obj is None:
-#             self.experiment_id = experiment_obj.id
-#         else:
-#             self.experiment_id = None
-#         self.sampling_id = 0
-#
-#         return()
-#
-#     def prepare_chains(self,same_init=False):
-#         # same init = True means the chains will have the same initq, does not affect tuning parameters
-#         for i in range(self.num_chains):
-#             if same_init:
-#                 initialization_obj = self.initialization_obj.clone()
-#             this_chain_metadata = sampling_metadata(self.experiment_id,self.sampling_id,i)
-#             this_chain_obj = one_chain_obj(this_chain_metadata,initialization_obj)
-#             self.store_chains[i] = {"chain_obj":this_chain_obj}
-#
-#     def run(self,chain_id):
-#         (self.store_chains[chain_id]["chain_obj"]).run()
-#         output = self.store_chains[chain_id]["chain_obj"].store_samples
-#         return(output)
-#     def start_sampling(self):
-#         if self.num_cpu>1:
-#             # do something parallel
-#             with multiprocessing.Pool(processes=self.num_cpu) as pool:
-#                 result_parallel = pool.map(self.run, range(self.num_chains))
-#
-#         else:
-#             result_sequential = [None]*self.num_chains
-#             for i in range(self.num_chains):
-#                 result_sequential.append(self.run(i))
-#                 #experiment = one_chain_sampling(self.precision, self.initialization, self.sampler_one_step, self.adapter)
-#
-#         return()
-#
-#     def pre_experiment_diagnostics(self,test_run_chain_length=15):
-#         # get
-#         # 1 estimated total volume
-#         # 2 estimated  computing time (per chain )
-#         # 3 estimated total computing time (serial)
-#         # 4 estimated total coputing time (if parallel, given number of agents)
-#         # 5 ave number of time per leapfrog
-#         initialization_obj = initialization(chain_length = test_run_chain_length)
-#         temp_experiment = self.experiment.clone(initialization_obj)
-#
-#         temp_output = temp_experiment.run()
-#         out = {}
-#         time = temp_output.sampling_metadata.total_time
-#         ave_per_leapfrog = temp_output.sample_metadata.ave_second_per_leapfrog
-#         total_size = temp_output.sample_metadata.size_mb
-#         estimated_total_volume = total_size * (self.num_chains * self.num_per_chain)/test_run_chain_length
-#         out.append({"total_volume":estimated_total_volume})
-#         estimated_compute_seconds_per_chain = time * self.num_per_chain/test_run_chain_length
-#         out.append({"seconds_per_chain":estimated_compute_seconds_per_chain})
-#         estimated_compute_seconds = self.num_chains * estimated_compute_seconds_per_chain
-#         out.append({"total_seconds":estimated_compute_seconds})
-#         estimated_compute_seconds_parallel = estimated_compute_seconds/self.num_agents
-#         out.append({"total_seconds with parallel":estimated_compute_seconds_parallel})
-#         with open('model.pkl', 'wb') as f:
-#             pickle.dump(temp_output, f)
-#         size = os.path.getsize("./model.pkl") / (1024. * 1024)
-#         os.remove("./model.pkl")
-#
-#         return(out)
-#
-#
 
 
 
@@ -671,18 +558,3 @@ def default_init_q_point_list(v_fun,num_chains,same_init=False):
 
     return(init_q_point_list)
 
-
-# class mcmc_sampler_settings(object):
-#     def __init__(self,mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,warmup_per_chain=5,tune_l_per_chain=1000,is_float=False,isstore_to_disk=False,same_init=False):
-#
-#         # mcmc_id should be a dictionary
-#         self.num_chains = num_chains
-#         self.num_cpu = num_cpu
-#         self.thin = thin
-#         self.warmup_per_chain = warmup_per_chain
-#         self.tune_l_per_chain = tune_l_per_chain
-#         self.is_float = is_float
-#         self.isstore_to_disk = isstore_to_disk
-#         self.mcmc_id = mcmc_id
-#         self.num_samples_per_chain = samples_per_chain
-#         self.same_init = same_init
