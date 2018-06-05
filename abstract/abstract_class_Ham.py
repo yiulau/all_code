@@ -56,7 +56,8 @@ class Hamiltonian(object):
         if(self.metric.name=="dense_e" or self.metric.name=="diag_e" or self.metric.name=="unit_e"):
             def dG_dt(q,p):
                 self.T.load_point(p)
-                return (2 * self.T.evaluate_scalar() - torch.dot(q.flattened_tensor, self.V.dq(q.flattened_tensor)))
+                V_dq,_ = self.V.dq(q.flattened_tensor)
+                return (2 * self.T.evaluate_scalar() - torch.dot(q.flattened_tensor, V_dq))
         else:
             raise ValueError("unknown metric name")
         return(dG_dt)

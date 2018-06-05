@@ -103,8 +103,9 @@ def variogram_brute_force(inp):
 
 
 def ess_stan(mcmc_samples_tensor):
+    #mcmc_samples_tensor = split_chains(mcmc_samples_tensor)
     vario_g = variogram(mcmc_samples_tensor)
-    vars = marginal_var(mcmc_samples_tensor)[0].transpose()
+    vars = marginal_var(mcmc_samples_tensor).transpose()
     store_lags = 1 - vario_g/(2*vars)
     sum_lags = numpy.zeros(store_lags.shape[0])
     for i in range(len(sum_lags)):
@@ -122,7 +123,66 @@ def ess_stan(mcmc_samples_tensor):
     num_samples = mcmc_samples_tensor.shape[1]
     ess_vec = M*num_samples/(1+2*sum_lags)
     return(ess_vec)
+
+def split_chains(mcmc_samples_tensor):
+    # assume input dimension is [num_chains,num_samples_per_chain,model_dim]
+    # output dimension is [2*num_chains,num_samples_per_chain/2,model_dim]
+    # cut each chain in half to double the number of chains and decrease the number of samples per chain by half
+    num_chains = mcmc_samples_tensor.shape[0]
+    num_samples_per_chain = mcmc_samples_tensor.shape[1]
+    new_num_samples_per_chain = round(num_samples_per_chain/2)
+    dim = mcmc_samples_tensor.shape[2]
+    new_mcmc_samples_tensor = numpy.zeros((2*num_chains,new_num_samples_per_chain,dim))
+    for i in range(num_chains):
+        original_chain = mcmc_samples_tensor[i,:,:]
+        new_mcmc_samples_tensor[2*i,:new_num_samples_per_chain,:] = mcmc_samples_tensor[i,:new_num_samples_per_chain,:]
+        new_mcmc_samples_tensor[2*i+1,:new_num_samples_per_chain,:]=\
+            mcmc_samples_tensor[i,new_num_samples_per_chain:2*new_num_samples_per_chain,:]
 #
+    return(new_mcmc_samples_tensor)
+
+
+
+def diagnostics_stan(mcmc_samples_tensor):
+    mcmc_samples_tensor = split_chains(mcmc_samples_tensor)
+    vario_g = variogram(mcmc_samples_tensor)
+    var,Rhat = marginal_var(mcmc_samples_tensor)
+    vars = numpy.expand_dims(var,axis=1)
+    store_lags = 1 - vario_g/(2*vars)
+    sum_lags = numpy.zeros(store_lags.shape[0])
+    for i in range(len(sum_lags)):
+        temp = 0
+        for cur in range(store_lags.shape[1]//2-1):
+            sum_lag = store_lags[i,2*cur]+store_lags[i,2*cur+1]
+            if sum_lag< 0 :
+                #print(cur)
+                break
+            else:
+                temp += sum_lag
+        sum_lags[i] = temp
+
+    M = mcmc_samples_tensor.shape[0]
+    num_samples = mcmc_samples_tensor.shape[1]
+    ess_vec = M*num_samples/(1+2*sum_lags)
+    sd = numpy.sqrt(var.squeeze())
+    mcse = sd/numpy.sqrt(ess_vec)
+    out = {"ess":ess_vec,"sd":sd,"mcse":mcse,"rhat":Rhat}
+    return(out)
+
+
+
+# def diagnostics_stan(mcmc_samples_tensor):
+#     # compute ess, mcse and Rhat
+
+# inpu_tensor = numpy.random.randn(4,10000,5)
+#
+# out = diagnostics_stan(inpu_tensor)
+# #
+# print(out)
+# exit()
+#new_input_tensor = split_chains(inpu_tensor)
+#print(new_input_tensor.shape)
+#exit()
 # inpu_tensor = numpy.random.randn(4,1000,1)
 #
 # out = ess_stan(inpu_tensor)
