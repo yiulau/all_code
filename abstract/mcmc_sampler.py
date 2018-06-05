@@ -28,9 +28,13 @@ from adapt_util.tune_param_classes.tune_param_class import tune_param_objs_creat
 # integration time t is also a slow parameter, because diagnostics (ESS) for its performance can only be calculated by looking
 # at a number of samples
 
-def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=5,warmup_per_chain=1000,is_float=False,isstore_to_disk=False,same_init=False,allow_restart=True):
+def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=None,warmup_per_chain=None,is_float=False,isstore_to_disk=False,same_init=False,allow_restart=True):
         # mcmc_id should be a dictionary
         out = {}
+        if warmup_per_chain is None:
+            warmup_per_chain = round(samples_per_chain/2)
+        if tune_l_per_chain is None:
+            tune_l_per_chain = round(warmup_per_chain/2)
         out.update({"num_chains":num_chains,"num_cpu":num_cpu,"thin":thin,"warmup_per_chain":warmup_per_chain})
         out.update({"is_float":is_float,"isstore_to_disk":isstore_to_disk,"mcmc_id":mcmc_id})
         out.update({"num_samples_per_chain":samples_per_chain,"same_init":same_init,"tune_l_per_chain":tune_l_per_chain})

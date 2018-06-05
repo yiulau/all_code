@@ -38,7 +38,7 @@ print(raw_train_target.shape)
 #print(train_X_matrix[0,:,:].shape)
 import matplotlib.pyplot as plt
 plt.gray()
-plt.matshow(raw_train_X[230,1,:,:])
+plt.matshow(raw_train_X[2730,1,:,:])
 plt.show()
 exit()
 #for i, (images, labels) in enumerate(test_loader):

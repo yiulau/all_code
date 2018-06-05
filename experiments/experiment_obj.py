@@ -1,10 +1,12 @@
-import abc, numpy, pickle, os
+import abc, numpy, pickle, os,copy
 from abstract.mcmc_sampler import mcmc_sampler_settings_dict,mcmc_sampler
-def experiment_setting_dict(chain_length,num_repeat):
+def experiment_setting_dict(chain_length,num_repeat,num_chains_per_sampler,save_name):
     out = {"chain_length":chain_length,"num_repeat":num_repeat}
+    out.update({"num_chains_per_sampler":num_chains_per_sampler})
+    out.update({"save_name":save_name})
     return(out)
-def resume_experiment():
-    experiment_obj = pickle.load(open('save_experiment.pkl', 'rb'))
+def resume_experiment(save_name):
+    experiment_obj = pickle.load(open(save_name, 'rb'))
     experiment_obj.run()
     return()
 class experiment(object):
@@ -12,7 +14,7 @@ class experiment(object):
 
     def __init__(self,input_object=None,experiment_setting=None):
 
-
+        self.experiment_setting = experiment_setting
         self.input_object = input_object
         self.tune_param_grid = self.input_object.tune_param_grid
         self.store_grid_obj = numpy.empty(self.input_object.grid_shape,dtype=object)
@@ -26,7 +28,7 @@ class experiment(object):
             self.id_to_multi_index.append(it.multi_index)
             self.multi_index_to_id.update({it.multi_index: cur})
             tune_dict = self.tune_param_grid[it.multi_index]
-            sampling_metaobj = mcmc_sampler_settings_dict(mcmc_id = cur)
+            sampling_metaobj = mcmc_sampler_settings_dict(mcmc_id = cur,num_chains=self.experiment_setting["num_chains_per_sampler"])
             grid_pt_metadict = {"mcmc_id":cur,"started":False,"completed":False,"saved":False}
             self.store_grid_obj[it.multi_index] = {"sampler":mcmc_sampler(tune_dict,sampling_metaobj),"metadata":grid_pt_metadict}
             it.iternext()
@@ -99,10 +101,11 @@ class experiment(object):
 
     def clone(self):
         # clone experiment object at pre-sampling state
-        out = experiment(input_object=self.input_object.clone(),experiment_setting=self.experiment_setting.copy())
+        out = experiment(input_object=self.input_object.clone(),experiment_setting=copy.deepcopy(self.experiment_setting))
         return(out)
     def saves_progress(self):
-        with open('save_experiment.pkl', 'wb') as f:
+        save_name = self.experiment_setting["save_name"]
+        with open(save_name, 'wb') as f:
             pickle.dump(self, f)
 
 
