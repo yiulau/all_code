@@ -47,7 +47,7 @@ class V_fc_test_hyper(V):
         alpha_tensor = torch.zeros(len(self.list_hyperparam))
         beta_tensor = torch.zeros(len(self.list_hyperparam))
         for i in range(len(self.list_hyperparam)):
-            n = len(self.list_param[i].data.flatten())
+            n = len(self.list_param[i].data.view(-1))
             norm = ((self.list_param[i].data)*(self.list_param[i].data)).sum()
             alpha_tensor[i] = n*0.5 + 1
             beta_tensor[i] = norm *0.5 + 1
@@ -95,3 +95,14 @@ class V_fc_test_hyper(V):
         softmax = nn.Softmax()
         prob = softmax(out_units)
         return(prob[:,1].data)
+
+    def load_hyperparam(self,list_hyperparam):
+        for i in range(len(self.list_hyperparam)):
+            self.list_hyperparam[i].data.copy_(list_hyperparam[i])
+        return()
+
+    def get_hyperparam(self):
+        out = []
+        for i in range(len(self.list_hyperparam)):
+            out.append(self.list_hyperparam.data.clone())
+        return(out)
