@@ -1,4 +1,4 @@
-import numpy,statsmodels
+import numpy
 from post_processing.variances import marginal_var
 from scipy.signal import fftconvolve
 
@@ -105,7 +105,8 @@ def variogram_brute_force(inp):
 def ess_stan(mcmc_samples_tensor):
     #mcmc_samples_tensor = split_chains(mcmc_samples_tensor)
     vario_g = variogram(mcmc_samples_tensor)
-    vars = marginal_var(mcmc_samples_tensor).transpose()
+    vars = marginal_var(mcmc_samples_tensor)[0].transpose()
+    vars = numpy.expand_dims(vars, axis=1)
     store_lags = 1 - vario_g/(2*vars)
     sum_lags = numpy.zeros(store_lags.shape[0])
     for i in range(len(sum_lags)):

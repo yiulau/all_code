@@ -6,6 +6,7 @@ import pandas as pd
 from torch.autograd import Variable, Function
 from explicit.general_util import logsumexp_torch
 from distributions.neural_nets.util import gamma_density
+from general_util.pytorch_random import generate_gamma
 precision_type = 'torch.DoubleTensor'
 #precision_type = 'torch.FloatTensor'
 torch.set_default_tensor_type(precision_type)
@@ -37,10 +38,23 @@ class V_fc_test_hyper(V):
         self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type("torch.LongTensor")
         self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(precision_type)
         # include
+        # the two lists need to match
         self.list_hyperparam = [self.hidden_in_log_sigma,self.hidden_out_log_sigma]
-
+        self.list_param = [self.hidden_in,self.hidden_out]
         return()
 
+    def update_hyperparam(self):
+        alpha_tensor = torch.zeros(len(self.list_hyperparam))
+        beta_tensor = torch.zeros(len(self.list_hyperparam))
+        for i in range(len(self.list_hyperparam)):
+            n = len(self.list_param[i].data.flatten())
+            norm = ((self.list_param[i].data)*(self.list_param[i].data)).sum()
+            alpha_tensor[i] = n*0.5 + 1
+            beta_tensor[i] = norm *0.5 + 1
+        new_hyperparam_val = generate_gamma(alpha=alpha_tensor,beta=beta_tensor)
+        for i in range(len(self.list_hyperparam)):
+            self.list_hyperparam[i].data.copy_(new_hyperparam_val[i])
+        return()
     def forward(self):
 
         sigmoid = torch.nn.Sigmoid()

@@ -1,6 +1,6 @@
 import numpy
 
-from python2R.mcse_rpy2 import mcse_repy2 as mc_se
+#from python2R.mcse_rpy2 import mcse_repy2 as mc_se
 from post_processing.ESS_nuts import diagnostics_stan
 
 def check_mean_var(mcmc_samples,correct_mean,correct_cov,diag_only=False):

@@ -35,9 +35,9 @@ mcmc_samples = sampler1.get_samples(permuted=False)
 #print(mcmc_samples.shape)
 #print("mcmc mean {}".format(numpy.mean(mcmc_samples,axis=0)))
 print(ess_stan(mcmc_samples))
-from python2R.ess_rpy2 import ess_repy2
-mcmc_samples_mixed = sampler1.get_samples(permuted=True)
-print(ess_repy2(mcmc_samples_mixed))
+#from python2R.ess_rpy2 import ess_repy2
+mcmc_samples_mixed = sampler1.get_samples(permuted=False)
+#print(ess_repy2(mcmc_samples_mixed))
 exit()
 #print(numpy.cov(mcmc_samples,rowvar=False))
 
