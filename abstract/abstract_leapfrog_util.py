@@ -27,11 +27,10 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
     #with open('debugqp.pkl', 'wb') as f:
     #    pickle.dump(out, f)
     #exit()
-    gleapfrog_stat_dict = {"divergent":False,"explode_grad":False}
+    gleapfrog_stat_dict = {"explode_grad":False}
     V_dq,explode_grad = Ham.V.dq(q.flattened_tensor)
     if explode_grad:
         gleapfrog_stat_dict["explode_grad"] = True
-        gleapfrog_stat_dict["divergent"] = True
         return(None,None,gleapfrog_stat_dict)
     p.flattened_tensor -= V_dq * 0.5 * epsilon
     #print("first p abstract{}".format(p.flattened_tensor))
@@ -42,7 +41,6 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
     V_dq, explode_grad = Ham.V.dq(q.flattened_tensor)
     if explode_grad:
         gleapfrog_stat_dict["explode_grad"] = True
-        gleapfrog_stat_dict["divergent"] = True
         return (None, None, gleapfrog_stat_dict)
     p.flattened_tensor -= V_dq * 0.5 * epsilon
     #print("second p abstract {}".format(p.flattened_tensor))

@@ -1,17 +1,17 @@
 import numpy,math,time
 def marginal_var(mcmc_samples_tensor):
     # warmup already discarded
-    # need to split in two
+    # chains already split in two
     num_chains = mcmc_samples_tensor.shape[0]
     num_samples = mcmc_samples_tensor.shape[1]
     dim = mcmc_samples_tensor.shape[2]
-    new_shape = (num_chains*2,num_samples//2,dim)
-    num_samples = new_shape[1]
-    num_chains = new_shape[0]
-    split_mcmc_samples_tensor = mcmc_samples_tensor.reshape(new_shape)
-    chain_means_matrix = split_mcmc_samples_tensor.sum(axis=1,keepdims=True)/num_samples
+    # new_shape = (num_chains*2,num_samples//2,dim)
+    # num_samples = new_shape[1]
+    # num_chains = new_shape[0]
+    # split_mcmc_samples_tensor = mcmc_samples_tensor.reshape(new_shape)
+    chain_means_matrix = mcmc_samples_tensor.sum(axis=1,keepdims=True)/num_samples
     total_means_vec = chain_means_matrix.sum(axis=0,keepdims=False)/num_chains
-    chain_vars_matrix = numpy.square(split_mcmc_samples_tensor - chain_means_matrix)
+    chain_vars_matrix = numpy.square(mcmc_samples_tensor - chain_means_matrix)
     chain_vars_matrix = chain_vars_matrix.sum(axis=1,keepdims=False)/(num_samples-1)
     B_vec = num_samples*(numpy.square(chain_means_matrix - total_means_vec)).sum(axis=0,keepdims=False)/(num_chains-1)
     W_vec = chain_vars_matrix.sum(axis=0)/(num_chains)
@@ -19,7 +19,7 @@ def marginal_var(mcmc_samples_tensor):
     estimated_var_vec = (num_samples-1)*W_vec/num_samples + B_vec/num_samples
     Rhat_vec = numpy.sqrt(estimated_var_vec/W_vec)
 
-    return(estimated_var_vec,Rhat_vec)
+    return(estimated_var_vec[0],Rhat_vec[0])
 
 
 def single_marginal_var(sample_matrix):
@@ -45,6 +45,9 @@ def single_marginal_var(sample_matrix):
     rhat = math.sqrt(estimated_var/W)
     return(estimated_var,rhat)
 
+
+#input_tensor = numpy.random.randn(8,1000,2)
+#out = marginal_var(input_tensor)
 
 #
 # def bt_seq_var():

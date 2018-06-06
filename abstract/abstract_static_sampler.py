@@ -53,7 +53,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print("epsilon is {}".format(epsilon))
     for i in range(evolve_L):
         q, p, stat = Ham.integrator(q, p, epsilon, Ham)
-        divergent = stat["divergent"]
+        divergent = stat["explode_grad"]
         explode_grad = stat["explode_grad"]
         #print(q.flattened_tensor)
         #print(p.flattened_tensor)
