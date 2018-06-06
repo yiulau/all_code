@@ -6,7 +6,6 @@ import pandas as pd
 from torch.autograd import Variable, Function
 from explicit.general_util import logsumexp_torch
 from distributions.neural_nets.util import gamma_density
-
 precision_type = 'torch.DoubleTensor'
 #precision_type = 'torch.FloatTensor'
 torch.set_default_tensor_type(precision_type)
@@ -32,12 +31,13 @@ class V_fc_test_hyper(V):
         self.num_units = 10
 
         self.hidden_in = nn.Parameter(torch.zeros(self.num_units,self.dim),requires_grad=True)
-        self.hidden_in_log_sigma = nn.Parameter(torch.zeros(1),requires_grad=True)
+        self.hidden_in_log_sigma = Variable(torch.zeros(1),requires_grad=False)
         self.hidden_out = nn.Parameter(torch.zeros(2,self.num_units),requires_grad=True)
-        self.hidden_out_log_sigma = nn.Parameter(torch.zeros(1),requires_grad=True)
+        self.hidden_out_log_sigma = Variable(torch.zeros(1),requires_grad=False)
         self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type("torch.LongTensor")
         self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(precision_type)
         # include
+        self.list_hyperparam = [self.hidden_in_log_sigma,self.hidden_out_log_sigma]
 
         return()
 
@@ -81,33 +81,3 @@ class V_fc_test_hyper(V):
         softmax = nn.Softmax()
         prob = softmax(out_units)
         return(prob[:,1].data)
-
-
-
-# abs_address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
-# df = pd.read_csv(abs_address, header=0, sep=" ")
-# # print(df)
-# dfm = df.as_matrix()
-# # print(dfm)
-# # print(dfm.shape)
-# y_np = dfm[:, 8]
-# y_np = y_np.astype(numpy.int64)
-# X_np = dfm[:, 1:8]
-# input_data = {"X_np":X_np,"y_np":y_np}
-#
-# test_v = V_fc_test_hyper(input_data)
-
-
-# import time
-# start = time.time()
-# for i in range(100):
-#     test_v.hidden_in.data.normal_()
-#     test_v.hidden_in_log_sigma.data.normal_()
-#     test_v.hidden_out.data.normal_()
-#     test_v.hidden_out_log_sigma.data.normal_()
-#     out = test_v.forward()
-#     print(out)
-#     out.backward()
-# end = time.time() - start
-#
-# print("total {}".format(end))

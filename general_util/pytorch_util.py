@@ -48,7 +48,7 @@ class welford_float(object):
 
 def isnan(x):
     # input should be a tensor
-    return(sum(x!=x)>0)
+    return((x!=x).sum()>0)
 
 
 

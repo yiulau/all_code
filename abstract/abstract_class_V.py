@@ -54,6 +54,8 @@ class V(nn.Module):
         # check for exploding gradient
         explode_grad = False
         for i in range(len(g)):
+            #print(g)
+            #exit()
             explode_grad = explode_grad or isnan(g[i].data)
             if explode_grad:
                 return(None,True)

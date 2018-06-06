@@ -222,6 +222,33 @@ class mcmc_sampler(object):
             for i in range(self.num_chains):
                 output[i,:,:] = self.store_chains[i]["chain_obj"].get_samples(warmup=self.warmup_per_chain)
             return(output)
+
+    def get_samples_p_diag(self, permuted=True):
+        # outputs dict
+        output = {"samples":None,"diganostics":None}
+        if permuted:
+            temp_list = []
+            diag_list = []
+            for chain in self.store_chains:
+                temp_list.append(chain["chain_obj"].get_samples(warmup=self.warmup_per_chain))
+                diag_list.append(chain["chain_obj"].get_diagnostics(warmup=self.warmup_per_chain))
+            samples_output = temp_list[0]
+            diag_output = diag_list[0]
+            if len(temp_list) > 0:
+                for i in range(1, len(temp_list)):
+                    samples_output = numpy.concatenate([samples_output, temp_list[i]], axis=0)
+                    diag_output = diag_output + diag_list[i]
+            output.update({"samples":samples_output,"diagnostics":diag_output})
+            return (output)
+        else:
+            chain_shape = self.store_chains[0]["chain_obj"].get_samples(warmup=self.warmup_per_chain).shape
+            samples_output = numpy.zeros((self.num_chains, chain_shape[0], chain_shape[1]))
+            diag_list = [None]*self.num_chains
+            for i in range(self.num_chains):
+                samples_output[i, :, :] = self.store_chains[i]["chain_obj"].get_samples(warmup=self.warmup_per_chain)
+                diag_list[i] = self.store_chains[i]["chain_obj"].get_diagnostics(warmup=self.warmup_per_chain)
+            output.update({"samples":samples_output,"diagnostics":diag_list})
+            return (output)
 # metadata only matters after sampling has started
 class sampler_metadata(object):
     def __init___(self,mcmc_sampler_obj):
@@ -470,6 +497,19 @@ class one_chain_obj(object):
         store_matrix = store_torch_matrix.numpy()
         return(store_matrix)
 
+
+    def get_diagnostics(self,warmup=None):
+        if warmup is None:
+            warmup = self.chain_setting["warmup"]
+        num_out = len(self.store_samples) - warmup
+        assert num_out >=1
+        out = [None]*num_out
+        for j in range(num_out):
+            print(j+warmup)
+            out[j] = self.store_samples[j+warmup]["log"]
+        return(out)
+
+
     # def restart(self,adapter_out):
     #     # return to start state
     #     # load samplemeta
@@ -491,8 +531,9 @@ class log_class(object):
         self.store = {}
         self.start_time = time.time()
     def snapshot(self):
-        self.time_since_creation = self.get_time_since_creation()
-        return(self)
+        store_dict = copy.deepcopy(self.store)
+        store_dict.update({"time_since_start":self.get_time_since_creation()})
+        return(store_dict)
 
     def get_time_since_creation(self):
         return(time.time()-self.start_time)

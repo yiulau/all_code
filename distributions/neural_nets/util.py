@@ -104,6 +104,8 @@ def map_prediction(target_dataset,v_nn_obj,mcmc_samples,type,memory_efficient=Fa
 
 
 
-
+def gamma_density(x,alpha,beta):
+     out =  (alpha-1)*torch.log(x) - x/beta
+     return(out)
 
 
