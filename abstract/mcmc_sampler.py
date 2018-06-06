@@ -406,13 +406,11 @@ class one_chain_obj(object):
 
         if not self.chain_ready:
             raise ValueError("need to run prepare this chain")
-        temp = self.chain_setting["thin"]
-        #print("yes")
-        #exit()
+        cur = self.chain_setting["thin"]
         for counter in range(self.chain_setting["num_samples"]):
         #for counter in range(5):
-            temp -= 1
-            if not temp>0.1:
+            cur -= 1
+            if not cur>0.1:
                 keep = True
                 cur = self.chain_setting["thin"]
             else:
