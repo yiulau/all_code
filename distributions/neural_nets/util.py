@@ -116,24 +116,25 @@ class setup_parameter(object):
         self.prior_obj = prior_obj
         assert not hasattr(obj,name)
         if prior_obj.model_param=="cp":
-            pass
+            self.w_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)
         else:
-            pass
+            self.z_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)
 
         if prior_obj.name == "hs":
             if prior_obj.prior_cp=="ncp":
-                self.z_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)
+                #self.z_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)
                 self.local_r1_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)
                 self.log_local_r2_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)
                 self.global_r1_obj = nn.Parameter(torch.zeros(1),requires_grad=True)
                 self.log_global_r2_obj = nn.Parameter(torch.zeros(1),requires_grad=True)
 
             else:
-                pass
+                self.local_lamb_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)
+                self.global_lamb_obj = nn.Parameter(torch.zeros(1),requires_grad=True)
 
         elif prior_obj.name =="rhorseshoe":
             if prior_obj.prior_cp=="ncp":
-                self.z_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
+                #self.z_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
                 self.local_r1_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
                 self.log_local_r2_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
                 self.global_r1_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
@@ -141,7 +142,9 @@ class setup_parameter(object):
                 self.c_z = nn.Parameter(torch.zeros(1),requires_grad=True)
                 self.c_log_tau = nn.Parameter(torch.zeros(1),requires_grad=True)
             else:
-                pass
+                self.local_lamb_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)
+                self.global_lamb_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)
+
         else:
             raise ValueError("unknown prior")
 
@@ -203,4 +206,3 @@ class prior(object):
         self.hyper_param = hyper_param
 
 
-    def

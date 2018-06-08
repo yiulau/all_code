@@ -10,9 +10,18 @@ def generate_gamma(alpha,beta):
     #out = m.sample()
     return(out)
 
-def log_gamma_density(x,alpha,beta):
+def log_inv_gamma_density(x,alpha,beta):
     out = -(alpha+1)*torch.log(x) - beta/x
     return(out)
+
+
+def log_student_t_density(x,nu,mu,sigma):
+    out = -(nu+1)*0.5*torch.log(1+((x-mu)/sigma)*((x-mu)/sigma)/nu)
+    return(out)
+
+# def log_inv_gamma_density(x,alpha,beta):
+#     out = -(alpha+1)*torch.log(x) - beta/x
+#     return(out)
 # alpha_tensor = torch.tensor([0.1,1,3.3])
 # beta_tensor = torch.tensor([0.1,13,12])
 # #
