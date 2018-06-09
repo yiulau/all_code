@@ -1,4 +1,5 @@
 from distributions.logistic_regressions.logistic_horseshoe import class_generator
+from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch
 import pandas as pd
 
@@ -14,8 +15,8 @@ X_np = dfm[:, 1:8]
 input_data = {"X_np":X_np,"y_np":y_np}
 
 
-
-v_generator = class_generator(input_data)
+prior_obj = prior_generator("horseshoe_1")
+v_generator = class_generator(input_data,prior_obj)
 
 
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict

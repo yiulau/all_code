@@ -10,7 +10,7 @@ precision_type = 'torch.DoubleTensor'
 torch.set_default_tensor_type(precision_type)
 
 
-def class_generator(input_npdata):
+def class_generator(input_npdata,prior_obj):
     class V_logistic_regression_hs(V):
         def __init__(self):
             self.y_np = input_npdata["y_np"]
@@ -21,7 +21,7 @@ def class_generator(input_npdata):
             self.num_ob = self.X_np.shape[0]
             self.explicit_gradient = False
             self.need_higherorderderiv = True
-            self.beta_obj = horseshoe_1(obj=self,name="beta",shape=[self.dim])
+            self.beta_obj = prior_obj.generator(obj=self,name="beta",shape=[self.dim])
             self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type(precision_type)
             self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(precision_type)
             # include
