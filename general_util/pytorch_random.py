@@ -17,6 +17,7 @@ def log_inv_gamma_density(x,alpha,beta):
 
 def log_student_t_density(x,nu,mu,sigma):
     out = -(nu+1)*0.5*torch.log(1+((x-mu)/sigma)*((x-mu)/sigma)/nu)
+    out = out.sum()
     return(out)
 
 # def log_inv_gamma_density(x,alpha,beta):

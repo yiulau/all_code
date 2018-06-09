@@ -97,3 +97,19 @@ class base_prior(object):
                 out = z_out + local_r1_out + global_r1_out + local_r2_out + global_r2_out
 
         return (out)
+
+
+class base_prior_new(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def setup_parameter(self):
+        return()
+
+    @abc.abstractmethod
+    def get_val(self):
+        return()
+
+    @abc.abstractmethod
+    def get_out(self):
+        return()

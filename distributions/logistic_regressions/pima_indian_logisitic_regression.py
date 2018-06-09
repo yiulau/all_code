@@ -23,7 +23,7 @@ class V_pima_inidan_logit(V_logistic_regression):
         abs_address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
         df = pd.read_csv(abs_address, header=0, sep=" ")
         # print(df)
-        dfm = df.as_matrix()
+        dfm = df.values
         # print(dfm)
         # print(dfm.shape)
         y_np = dfm[:, 8]

@@ -4,9 +4,9 @@ import torch
 from general_util.pytorch_random import log_student_t_density
 # horseshoe prior cp parametrization for the model weight
 # cp parametrization for local lamb and global tau
-class horseshoe1(base_prior):
+class horseshoe_2(base_prior):
     def __init__(self):
-        super(horseshoe1, self).__init__()
+        super(horseshoe_2, self).__init__()
 
     def get_val(self):
         return(self.w_obj)
@@ -17,7 +17,7 @@ class horseshoe1(base_prior):
         global_tau = torch.exp(self.log_global_tau_obj)
         local_lamb_out = log_student_t_density(x=local_lamb,nu=1,mu=0,sigma=1) + self.log_local_lamb_obj.sum()
         global_tau_out = log_student_t_density(x=global_tau,nu=1,mu=0,sigma=1) + self.log_global_tau_obj.sum()
-        w_out = (self.w_obj*self.w_obj/(local_lamb*local_lamb*global_tau*global_tau)).sum()*0.5
+        w_out = -(self.w_obj*self.w_obj/(local_lamb*local_lamb*global_tau*global_tau)).sum()*0.5
 
         out = w_out + local_lamb_out + global_tau_out
         return(out)
