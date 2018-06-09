@@ -1,6 +1,6 @@
 import torchvision
 import torchvision.transforms as transforms
-import torch,numpy,os
+import torch,numpy,os,pickle
 import matplotlib.pyplot as plt
 from sys import getsizeof
 abs_address = os.environ["PYTHONPATH"] + "/data/"
@@ -37,22 +37,18 @@ input_size = 28
 for i, (images, labels) in enumerate(train_loader):
     raw_train_X,raw_train_target = images,labels
 
-print(raw_train_X.shape)
-
-plot_image(raw_train_X[0,0,:,:])
-exit()
-#print(raw_train_X.view(60000,28,28).shape)
-print(raw_train_target.shape)
+# print(raw_train_X.shape)
+#
+# plot_image(raw_train_X[0,0,:,:])
+# exit()
+# #print(raw_train_X.view(60000,28,28).shape)
+# print(raw_train_target.shape)
 # exit(exit)
 #train_X_matrix = raw_train_X.numpy()
 #train_y_vector = raw_train_target.numpy()
 
 #print(train_X_matrix[0,:,:].shape)
 #
-#plt.gray()
-#plt.matshow(train_X_matrix[0,:,:].reshape((28,28)))
-#plt.show()
-#exit()
 #for i, (images, labels) in enumerate(test_loader):
 #    raw_test_X,raw_test_target = images,labels
 
@@ -71,24 +67,18 @@ print(raw_train_target.shape)
 # raw_data = {"train_X_matrix":raw_train_X,"train_y_vector":raw_train_target}
 
 
+dataset = {"input":raw_train_X,"target":raw_train_target}
 # for both digits data and mnist data : extract a class-balanced subset of points
 
-def subset_dataset(dataset,size_per_class):
-    # dataset
-    X = dataset["input"]
-    y= dataset["target"]
-    num_classes = len(numpy.unique(y))
-    final_indices = []
-    for i in range(num_classes):
-        index_to_choose_from = [index for index in range(len(y)) if y[index]==i]
-        assert len(index_to_choose_from)>=size_per_class
-        final_indices+=numpy.random.choice(index_to_choose_from,size=size_per_class,replace=False).tolist()
 
-    outX = X[final_indices,:]
-    outy = y[final_indices]
 
-    out = {"input":outX,"target":y}
-    return(out)
+
+#subset_data = subset_dataset(dataset,10,23)
+
+# abs_address = os.environ["PYTHONPATH"] + "/input_data/subset_mnist.pkl"
+#
+# with open(abs_address, 'wb') as f:
+#     pickle.dump(subset_data, f)
 
 
 

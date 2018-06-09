@@ -7,7 +7,7 @@ from sklearn.datasets import load_digits
 # digits 8 x 8 classification (10 classes)
 #(1797,64)
 #digits = load_digits()
-##print(digits.data.shape)
+#print(digits.data.shape)
 #X = digits["data"]
 #y = digits["target"]
 
@@ -89,12 +89,12 @@ from sklearn.datasets import load_digits
 #################################################################################################
 # australian data logisitc regression
 #(690,14) -> (690,42)
-#df = pd.read_csv("./australian.dat",header=None,sep=" ")
+df = pd.read_csv("./australian.dat",header=None,sep=" ")
 #y = df[14]
 #print(y)
 #df = df.drop(14, 1)
 #print(df.shape)
-#exit()
+exit()
 # columns selected are categorical . convert to dummy variables
 #df2 = pd.get_dummies(df,columns=[0,3,4,5,7,8,10,11])
 #print(df2)

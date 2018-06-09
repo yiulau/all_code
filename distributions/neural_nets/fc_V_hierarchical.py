@@ -18,7 +18,10 @@ class V_fc_test_hyper(V):
             df = pd.read_csv(abs_address, header=0, sep=" ")
             dfm = df.as_matrix()
             y_np = dfm[:, 8]
-            y_np = y_np.astype(numpy.int64)
+            if precision_type=="torch.DoubleTensor":
+                y_np = y_np.astype(numpy.int64)
+            else:
+                y_np = y_np.astype(numpy.int32)
             X_np = dfm[:, 1:8]
             input_npdata = {"X_np":X_np,"y_np":y_np}
         self.y_np = input_npdata["y_np"]
