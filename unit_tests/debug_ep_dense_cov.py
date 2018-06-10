@@ -5,13 +5,13 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from experiments.experiment_obj import tuneinput_class
 
-from experiments.correctdist_experiments.prototype import check_mean_var
+from experiments.correctdist_experiments.prototype import check_mean_var_stan
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False)
 
 input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":["dual"],"second_order":[False],"cov":["adapt"],
-              "evolve_L":[10],"metric_name":["diag_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
+              "evolve_L":[10],"metric_name":["dense_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
 
 ep_dual_metadata_argument = {"name":"epsilon","target":0.65,"gamma":0.05,"t_0":10,
                         "kappa":0.75,"obj_fun":"accept_rate","par_type":"fast"}

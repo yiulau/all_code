@@ -11,6 +11,7 @@ from explicit.general_util import logsumexp_torch
 from experiments.neural_net_experiments.gibbs_vs_together_hyperparam import update_param_and_hyperparam_one_step
 from abstract.mcmc_sampler import log_class
 from input_data.convert_data_to_dict import get_data_dict
+from post_processing.test_error import map_prediction,test_error
 precision_type = 'torch.DoubleTensor'
 #precision_type = 'torch.FloatTensor'
 torch.set_default_tensor_type(precision_type)
@@ -46,6 +47,7 @@ class V_hierarchical_logistic_gibbs(V):
         return()
 
     def forward(self):
+        print("sigma {}".format(self.sigma))
         beta = self.beta
         sigma = self.sigma
         likelihood = torch.dot(beta, torch.mv(torch.t(self.X), self.y)) - \
@@ -56,7 +58,12 @@ class V_hierarchical_logistic_gibbs(V):
         posterior = prior + likelihood
         out = -posterior
         return(out)
-
+    def predict(self,test_samples):
+        X = torch.from_numpy(test_samples)
+        out = torch.zeros(X.shape[0],2)
+        out[:,1] = (torch.sigmoid(torch.mv(X, self.beta.data)))
+        out[:,0] = 1-out[:,1]
+        return(out)
     def load_hyperparam(self,list_hyperparam):
         # input needs to be list of tensors
         for i in range(len(self.list_hyperparam)):
@@ -107,11 +114,24 @@ init_q_point = point(V=v_obj)
 init_hyperparam = [torch.abs(torch.randn(1))]
 log_obj = log_class()
 
-print(init_q_point.flattened_tensor)
+#print(init_q_point.flattened_tensor)
 
-out = update_param_and_hyperparam_one_step(init_q_point,init_hyperparam,Ham,0.1,10,log_obj)
+num_samples = 1000
+dim = len(init_q_point.flattened_tensor)
+mcmc_samples = torch.zeros(num_samples,dim)
+for i in range(num_samples):
+    outq,out_hyperparam = update_param_and_hyperparam_one_step(init_q_point,init_hyperparam,Ham,0.1,10,log_obj)
+    init_q_point.flattened_tensor.copy_(outq.flattened_tensor)
+    init_q_point.load_flatten()
+    init_hyperparam = out_hyperparam
 
-print(out.flattened_tensor)
+mcmc_samples = mcmc_samples.numpy()
+
+
+te1,predicted1 = test_error(data_dict,v_obj=v_obj,mcmc_samples=mcmc_samples,type="classification",memory_efficient=False)
+
+print(te1)
+#print(out.flattened_tensor)
 
 
 

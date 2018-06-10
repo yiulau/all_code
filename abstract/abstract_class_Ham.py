@@ -47,7 +47,11 @@ class Hamiltonian(object):
         #print(q_point.list_tensor)
         #print(self.V.flattened_tensor)
         #print(self.T.flattened_tensor)
-        out = self.V.evaluate_scalar() + self.T.evaluate_scalar()
+        V = self.V.evaluate_scalar()
+        T = self.T.evaluate_scalar()
+        print("V {}".format(V))
+        print("T {}".format(T))
+        out = V + T
         #self.diagnostics.add_num_H_eval(1)
         return(out)
 

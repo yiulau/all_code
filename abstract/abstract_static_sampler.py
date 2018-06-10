@@ -36,7 +36,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print(q.flattened_tensor)
     #print(p.flattened_tensor)
     current_H = Ham.evaluate(q,p)
-
+    #print("start q {}".format(init_q.flattened_tensor))
     print("startH {}".format(current_H))
 
 
@@ -117,6 +117,8 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
         log_obj.store.update({"divergent":divergent})
         log_obj.store.update({"num_transitions":num_transitions})
         log_obj.store.update({"explode_grad":explode_grad})
+    #print("second time q {}".format(init_q.flattened_tensor))
+    #print("return q {}".format(return_q.flattened_tensor))
     return(return_q,return_p,init_p,return_H,accepted,accept_rate,divergent,num_transitions)
 
 

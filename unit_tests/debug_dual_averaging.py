@@ -5,7 +5,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from experiments.experiment_obj import tuneinput_class
 
-from experiments.correctdist_experiments.prototype import check_mean_var
+from experiments.correctdist_experiments.prototype import check_mean_var_stan
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1000,is_float=False,isstore_to_disk=False)

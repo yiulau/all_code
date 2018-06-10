@@ -1,5 +1,5 @@
 import time
-
+from abstract.abstract_class_point import point
 from abstract.abstract_class_Ham import Hamiltonian
 from abstract.abstract_nuts_util import *
 #from abstract.abstract_static_sampler import *
@@ -30,8 +30,8 @@ class sampler_one_step(object):
         self.metric_name = tune_dict["metric_name"]
         self.criterion = tune_dict["criterion"]
         self.v_obj = self.v_fun()
-        self.v_obj.q_point = init_point
-
+        #self.v_obj.q_point = init_point
+        self.v_obj.load_point(init_point)
         #if hasattr(tune_param_objs_dict,"alpha"):
         if "alpha" in tune_param_objs_dict:
             alpha_val = tune_param_objs_dict["alpha"].get_val()
@@ -82,15 +82,15 @@ class sampler_one_step(object):
     def run(self):
         if hasattr(self,"log_obj"):
             #print("yes")
-            out = self.one_step_function(input_point_obj=self.Ham.V.q_point,Ham_obj = self.Ham,
+            out = self.one_step_function(input_point_obj=point(V=self.Ham.V),Ham_obj = self.Ham,
                                          tune_param_objs_dict=self.tune_param_objs_dict,log_obj=self.log_obj)
             #out = self.one_step_function(self.Ham.V.q_point,self.Ham,self.tuneable_param_dict,self.log_obj)
         else:
-            out = self.one_step_function(input_point_obj=self.Ham.V.q_point, Ham_obj=self.Ham,
+            out = self.one_step_function(input_point_obj=point(V=self.Ham.V), Ham_obj=self.Ham,
                                          tune_param_objs_dict=self.tune_param_objs_dict)
             #out = self.one_step_function(self.Ham.V.q_point, self.Ham, self.tuneable_param_dict)
-        self.Ham.V.q_point = out[0]
-        return(self.Ham.V.q_point.point_clone())
+        self.Ham.V.load_point(out[0])
+        return(out[0].point_clone())
 
 
 

@@ -306,12 +306,16 @@ class adapt_cov_state(object):
             #print("iter {}, sample_dict {}".format(iter,sample_dict["q"].flattened_tensor))
             self.update_cov(sample_dict)
             #self.tuning_obj.integrator.set_metric(self.m_2)
-            data_cov = self.m_2 / (self.iter - 1)
+            #data_cov = self.m_2 / (self.iter - 1)
+            data_cov = self.m_2/(self.iter-1)
+            n = data_cov.shape[0]
             #print("data cov {}".format(data_cov))
             try:
                 if len(data_cov.shape)>1:
+                    data_cov = (n / (n + 5.)) * data_cov + 1e-3 * (5 / (n + 5)) * torch.eye(n, n)
                     momentum_cov = torch.inverse(data_cov)
                 else:
+                    data_cov = (n / (n + 5.)) * data_cov + 1e-3 * (5 / (n + 5))
                     momentum_cov = 1/data_cov
 
                 print(momentum_cov)

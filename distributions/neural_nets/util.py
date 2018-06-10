@@ -206,3 +206,4 @@ class prior(object):
         self.hyper_param = hyper_param
 
 
+

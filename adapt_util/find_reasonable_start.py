@@ -1,9 +1,10 @@
 import math,numpy
+from abstract.abstract_class_point import point
 def find_reasonable_ep(Ham):
     # integrator can be leapfrog or gleapfrog using any possible metric
     counter = 0
     #q,p = one_chain_obj.cur_q,one_chain_obj.cur_p
-    q = Ham.V.q_point.point_clone()
+    q = point(V=Ham.V)
     p = Ham.T.generate_momentum(q)
 
     integrator = Ham.integrator

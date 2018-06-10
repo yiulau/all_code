@@ -2,22 +2,25 @@ import torch
 import torch.nn as nn
 from abstract.abstract_class_V import V
 from torch.autograd import Variable
-
+from input_data.convert_data_to_dict import get_data_dict
 from explicit.general_util import logsumexp_torch
 
 precision_type = 'torch.DoubleTensor'
 #precision_type = 'torch.FloatTensor'
 torch.set_default_tensor_type(precision_type)
 
-class V_logistic_regression(V):
-    def __init__(self,input_npdata):
-        self.y_np = input_npdata["y_np"]
-        self.X_np = input_npdata["X_np"]
-        super(V_logistic_regression, self).__init__()
+
+class V_linear_regression(V):
+    def __init__(self):
+
+        super(V_linear_regression, self).__init__()
     def V_setup(self):
+        input_npdata = get_data_dict("boston")
+        self.y_np = input_npdata["target"]
+        self.X_np = input_npdata["input"]
         self.dim = self.X_np.shape[1]
         self.num_ob = self.X_np.shape[0]
-        self.explicit_gradient = True
+        self.explicit_gradient = False
         self.need_higherorderderiv = True
         self.beta = nn.Parameter(torch.zeros(self.dim),requires_grad=True)
         self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type(precision_type)
@@ -28,8 +31,9 @@ class V_logistic_regression(V):
         return()
 
     def forward(self):
-        likelihood = torch.dot(self.beta, torch.mv(torch.t(self.X), self.y)) - \
-                     torch.sum(logsumexp_torch(Variable(torch.zeros(self.num_ob)), torch.mv(self.X, self.beta)))
+        print(len(self.beta))
+
+        likelihood = -(((self.y - self.X.mv(self.beta))*(self.y-self.X.mv(self.beta)))).sum()*0.5
         prior = -torch.dot(self.beta, self.beta)/(self.sigma*self.sigma) * 0.5
         posterior = prior + likelihood
         out = -posterior
@@ -37,9 +41,8 @@ class V_logistic_regression(V):
 
     def predict(self,test_samples):
         X = torch.from_numpy(test_samples)
-        out = torch.zeros(X.shape[0],2)
-        out[:,1] = (torch.sigmoid(torch.mv(X, self.beta.data)))
-        out[:,0] = 1-out[:,1]
+        out = torch.zeros(X.shape[0])
+        out = torch.mv(X, self.beta.data)
         return(out)
     def load_explicit_gradient(self):
         out = torch.zeros(self.dim)

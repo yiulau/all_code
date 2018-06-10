@@ -13,7 +13,7 @@ def get_objective_fun(fun_name):
 def average_accept_rate(store_samples):
     accept_rate_list = [None]*len(store_samples)
     for i in range(len(accept_rate_list)):
-        accept_rate_list[i] = store_samples[i]["log"].store["accept_rate"]
+        accept_rate_list[i] = store_samples[i]["log"]["accept_rate"]
 
     out = numpy.mean(accept_rate_list)
     return(out)

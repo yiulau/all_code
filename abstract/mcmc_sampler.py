@@ -73,6 +73,7 @@ class mcmc_sampler(object):
         if not hasattr(self,"sampler_id"):
             self.sampler_id = 0
 
+        self.metadata = sampler_metadata(mcmc_sampler_obj=self)
 
     def prepare_chains(self):
         # same init = True means the chains will have the same initq, does not affect tuning parameters
@@ -205,6 +206,21 @@ class mcmc_sampler(object):
 
 
         return(out)
+
+    def remove_failed_chains(self):
+        assert self.allow_restart
+        success_indices = []
+        num_restart = []
+        for i in range(self.num_chains):
+            num_restart.append(self.store_chains[i]["chain_obj"].num_restarts)
+            if not self.store_chains[i]["chain_obj"].enough_restarts:
+                success_indices.append(i)
+
+        self.metadata.num_restarts += sum(num_restart)
+        self.metadata.num_chains_removed = self.num_chains - len(success_indices)
+        self.store_chains = self.store_chains[success_indices]
+        self.num_chains = len(self.store_chains)
+        return()
     def get_samples(self,permuted=True):
         # outputs numpy matrix
         if permuted:
@@ -251,10 +267,11 @@ class mcmc_sampler(object):
             return (output)
 # metadata only matters after sampling has started
 class sampler_metadata(object):
-    def __init___(self,mcmc_sampler_obj):
+    def __init__(self,mcmc_sampler_obj):
         self.mcmc_sampler_obj = mcmc_sampler_obj
         self.total_time = 0
-
+        self.num_chains_removed = 0
+        self.num_restarts = 0
     def store_to_disk(self):
         if self.store_address is None:
             self.store_address = "mcmc_sampler.pkl"
@@ -346,6 +363,10 @@ class one_chain_obj(object):
         self.chain_ready = False
         self.tune_settings_dict = tune_settings_dict
         self.store_log_obj = []
+        if self.chain_setting["allow_restart"]:
+            self.num_restarts = 0
+            self.enough_restarts = False
+
 
 
         #print(self.sampling_metadata.__dict__)
@@ -387,7 +408,7 @@ class one_chain_obj(object):
         #self.sampler_one_step = sampler_one_step(self.tune_param_objs_dict,init_point)
         self.sampler_one_step = sampler_one_step(tune_param_objs_dict=self.tune_param_objs_dict,init_point=init_point,
                                                  tune_dict=tune_dict)
-
+        self.init_obj = initialization(V_obj=self.sampler_one_step.v_obj,q_point=init_point)
         if "epsilon" in self.tune_param_objs_dict:
             ep_obj = self.tune_param_objs_dict["epsilon"]
             ep_obj.Ham = self.sampler_one_step.Ham
@@ -446,6 +467,8 @@ class one_chain_obj(object):
             #print(self.tune_param_objs_dict["epsilon"].get_val())
 
             out = self.sampler_one_step.run()
+            #print(out.flattened_tensor)
+            #exit()
             #self.adapter.log_obj = self.log_obj
             sample_dict = {"q":out,"iter":counter,"log":self.log_obj.snapshot()}
             self.store_log_obj.append(sample_dict["log"])
@@ -453,15 +476,28 @@ class one_chain_obj(object):
                 self.add_sample(sample_dict=sample_dict)
                 if self.is_to_disk_now(counter):
                     self.store_to_disk()
-            if counter < self.chain_setting["tune_l"]+1:
-                out.iter = counter
-                out = self.adapt(sample_dict)
+            if counter < self.chain_setting["tune_l"]:#+1:
+                #out.iter = counter
+                self.adapt(sample_dict)
                 # if self.chain_setting["allow_restart"]:
                 #     if out["restart"]:
                 #         self.restart(out)
 
+            elif counter == self.chain_setting["warm_up"]:
+                accumulate_accept_rate = 0
+                for i in range(counter-100,counter):
+                    accumulate_accept_rate += self.store_log_obj[i]["accept_rate"]
+                accumulate_accept_rate = accumulate_accept_rate/100
+                if accumulate_accept_rate < 0.1:
+                    #print("definite restart")
+                    #exit()
+                    self.restart()
+                    if self.enough_restarts:
+                        break
+
             #print("tune_l is {}".format(self.chain_setting["tune_l"]))
-            #print(out.flattened_tensor)
+            #print(out)
+            print(out.flattened_tensor)
             print("iter is {}".format(counter))
             ep= self.tune_param_objs_dict["epsilon"].get_val()
             print("epsilon val {}".format(self.tune_param_objs_dict["epsilon"].get_val()))
@@ -510,19 +546,21 @@ class one_chain_obj(object):
         return(out)
 
 
-    # def restart(self,adapter_out):
-    #     # return to start state
-    #     # load samplemeta
-    #     # erase saved samples (if any)
-    #     # run
-    #     self.store_samples = []
-    #     self.prepare_this_chain()
-    #     self.adapter.update_setting(adapter_out)
-    #     self.metadata.load(adapter_out)
-    #     if not self.metadata.enough_restarts:
-    #         self.restart_run()
-    #
-    #     return()
+    def restart(self):
+         # return to start state
+         # load samplemeta
+         # erase saved samples (if any)
+         # run
+         self.store_samples = []
+         self.prepare_this_chain()
+         self.num_restarts+=1
+         if self.num_restarts > self.chain_setting["max_num_restarts"]:
+             self.enough_restarts = True
+         if not self.enough_restarts:
+             self.init_obj.initialize()
+             self.run()
+
+         return()
 
 # log_obj should keep information about dual_obj, and information about tuning parameters
 # created at the start of each transition. discarded at the end of each transition
@@ -551,12 +589,12 @@ class initialization(object):
             self.initialize()
 
     def initialize(self):
-        self.V_obj.q_point.flattened_tensor.copy_(torch.randn(len(self.V_obj.q.flattened_tensor))*1.41)
-        self.V_obj.q_point.load_flatten()
+        self.V_obj.flattened_tensor.copy_(torch.randn(len(self.V_obj.flattened_tensor))*1.41)
+        self.V_obj.load_flattened_tensor_to_param()
         return()
 
 
-def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment_id=None,tune_l=5,warm_up=5,allow_restart=True):
+def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment_id=None,tune_l=5,warm_up=5,allow_restart=True,max_num_restarts=3):
 
         # one for every chain. in everything sampling object, in every experiment
         # parallel chains sampling from the same distribution shares sampling_obj
@@ -567,7 +605,7 @@ def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment
         # period for saving samples
         out = {"experiment_id":experiment_id,"sampler_id":sampler_id,"chain_id":chain_id}
         out.update({"num_samples":num_samples,"thin":thin,"tune_l":tune_l,"warm_up":warm_up})
-        out.update({"allow_restart":allow_restart})
+        out.update({"allow_restart":allow_restart,"max_num_restarts":max_num_restarts})
         return(out)
 
 

@@ -153,12 +153,12 @@ def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tdepth=5,log_obj=None,d
         #print("abstract v {}".format(v))
         if v < 0:
             q_left, p_left, _, _, q_prime,p_prime, s_prime, log_w_prime,ave_dp,num_div_prime = abstract_BuildTree_nuts_xhmc(q_left, p_left, -1, j, epsilon, Ham,
-                                                                            xhmc_delta,H_0)
+                                                                            xhmc_delta,H_0,diagn_dict)
         else:
 
 
             _, _, q_right, p_right, q_prime,p_prime, s_prime, log_w_prime,ave_dp,num_div_prime = abstract_BuildTree_nuts_xhmc(q_right, p_right, 1, j, epsilon, Ham,
-                                                                              xhmc_delta,H_0)
+                                                                              xhmc_delta,H_0,diagn_dict)
         # if j == 2:
         #     print("abstract q_prime {}".format(q_prime.flattened_tensor))
         #
