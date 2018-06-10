@@ -5,7 +5,7 @@ def generate_gamma(alpha,beta):
     alpha_np = alpha.numpy()
     beta_np = beta.numpy()
     out_np = numpy.random.gamma(shape=alpha_np,scale=1/beta_np)
-    out = torch.from_numpy(out_np).type(alpha.dtype)
+    out = torch.from_numpy(out_np).type(alpha.type())
     #m = Gamma(concentration=alpha,rate=beta)
     #out = m.sample()
     return(out)

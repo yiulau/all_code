@@ -106,3 +106,4 @@ class V_fc_test_hyper(V):
         for i in range(len(self.list_hyperparam)):
             out.append(self.list_hyperparam.data.clone())
         return(out)
+

@@ -597,7 +597,5 @@ def default_init_q_point_list(v_fun,num_chains,same_init=False):
             temp_point.load_flatten()
             init_q_point_list[i] = temp_point
 
-
-
     return(init_q_point_list)
 

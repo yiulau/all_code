@@ -4,7 +4,7 @@ import torch.nn as nn
 from abstract.abstract_class_V import V
 from torch.autograd import Variable
 
-from all_code.explicit.general_util import logsumexp_torch
+from explicit.general_util import logsumexp_torch
 
 precision_type = 'torch.DoubleTensor'
 #precision_type = 'torch.FloatTensor'
