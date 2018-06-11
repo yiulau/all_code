@@ -142,7 +142,7 @@ class experiment(object):
 
 class tuneinput_class(object):
     permissible_var_names = ("v_fun", "dynamic", "windowed", "second_order", "criterion", "metric_name", "epsilon", "evolve_t",
-                             "evolve_L", "alpha", "xhmc_delta", "cov")
+                             "evolve_L", "alpha", "xhmc_delta", "cov","max_tree_depth")
 
     permissible_var_values = {"dynamic": (True, False)}
     permissible_var_values.update({"windowed":(True,False)})
@@ -163,7 +163,7 @@ class tuneinput_class(object):
         self.param_name_list = []
         for param_name,val_list in input_dict.items():
             if not param_name in self.permissible_var_names:
-                print(param_name)
+                #print(param_name)
                 raise ValueError("not one of permissible attributes")
             elif len(val_list)==0:
                 raise ValueError("can't have empty list ")

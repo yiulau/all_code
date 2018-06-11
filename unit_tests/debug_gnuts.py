@@ -1,11 +1,10 @@
 from abstract.abstract_nuts_util import abstract_GNUTS
 from abstract.abstract_class_Ham import Hamiltonian
-from abstract.abstract_leapfrog_ult_util import abstract_leapfrog_ult
 from abstract.metric import metric
 from abstract.abstract_class_point import point
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 import torch,numpy,os,pickle
-from experiments.correctdist_experiments.prototype import check_mean_var
+from experiments.correctdist_experiments.prototype import check_mean_var_stan
 
 v_obj = V_pima_inidan_logit()
 metric_obj = metric("unit_e",v_obj)
@@ -36,7 +35,7 @@ correct_mean = correct["correct_mean"]
 correct_cov = correct["correct_cov"]
 correct_diag_cov = correct_cov.diagonal()
 
-output = check_mean_var(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
+output = check_mean_var_stan(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
 mean_check,cov_check = output["mcmc_mean"],output["mcmc_Cov"]
 pc_mean,pc_cov = output["pc_of_mean"],output["pc_of_cov"]
 print(mean_check)

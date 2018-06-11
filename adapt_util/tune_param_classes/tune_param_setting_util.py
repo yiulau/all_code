@@ -34,8 +34,8 @@ def opt_default_arguments(name_list,par_type,obj_fun=None,bounds_list=None):
     return(output)
 def adapt_cov_default_arguments(par_type,dim):
     return({"par_type":par_type,"name":"cov","dim":dim})
-def other_default_arguments():
-    output = {"maximum_second_per_sample":0.5}
+def other_default_arguments(maxmimum_second_per_sample=0.5):
+    output = {"maximum_second_per_sample":maxmimum_second_per_sample}
     return(output)
 def tuning_settings(dual_arguments,opt_arguments,adapt_cov_arguments,other_arguments):
     # dual_arguments a list

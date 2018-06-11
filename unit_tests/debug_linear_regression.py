@@ -27,13 +27,19 @@ mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chai
 #               "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
 
 input_dict = {"v_fun":[V_linear_regression],"epsilon":["dual"],"second_order":[False],
-              "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
+              "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[True],"windowed":[False],"criterion":[None]}
+input_dict = {"v_fun":[V_linear_regression],"epsilon":["dual"],"second_order":[False],
+              "metric_name":["unit_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"]}
+input_dict = {"v_fun":[V_linear_regression],"epsilon":["dual"],"second_order":[False],"cov":["adapt"],
+              "metric_name":["dense_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"]}
+
 ep_dual_metadata_argument = {"name":"epsilon","target":0.8,"gamma":0.05,"t_0":10,
                         "kappa":0.75,"obj_fun":"accept_rate","par_type":"fast"}
 dual_args_list = [ep_dual_metadata_argument]
 
 other_arguments = other_default_arguments()
 adapt_cov_arguments = [adapt_cov_default_arguments(par_type="slow",dim=13)]
+
 tune_settings_dict = tuning_settings(dual_args_list,[],adapt_cov_arguments,other_arguments)
 
 tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()

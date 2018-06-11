@@ -6,7 +6,7 @@ from explicit.general_util import logsumexp, stable_sum
 from general_util.time_diagnostics import time_diagnositcs
 
 
-def abstract_NUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):
+def abstract_NUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
     # input and output are point objects
     Ham.diagnostics = time_diagnositcs()
     p_init = Ham.T.generate_momentum(init_q)
@@ -45,7 +45,7 @@ def abstract_NUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):
             log_w = logsumexp(log_w,log_w_prime)
             s = s_prime and abstract_NUTS_criterion(q_left,q_right,p_left,p_right)
             j = j + 1
-            s = s and (j<max_tdepth)
+            s = s and (j<max_tree_depth)
         else:
             s = False
         num_div += num_div_prime
@@ -64,7 +64,7 @@ def abstract_NUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):
         log_obj.store.update({"tree_depth":j})
         log_obj.store.update({"num_transitions":math.pow(2,j)})
     return(q_prop,p_prop,p_init,-log_w,accepted,accept_rate,divergent,j)
-def abstract_GNUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):
+def abstract_GNUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
     # sum_p should be a tensor instead of variable
 
     Ham.diagnostics = time_diagnositcs()
@@ -108,9 +108,13 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):
             p_sright = Ham.p_sharp_fun(q_right, p_right)
             s = s_prime and abstract_gen_NUTS_criterion(p_sleft,p_sright,sum_p)
             j = j + 1
-            s = s and (j < max_tdepth)
+            s = s and (j < max_tree_depth)
         else:
             s = False
+            accept_rate = 0
+            divergent = True
+
+
         num_div +=num_div_prime
     Ham.diagnostics.update_time()
     if num_div > 0 :
@@ -126,7 +130,7 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tdepth=5,log_obj=None):
         log_obj.store.update({"tree_depth":j})
         log_obj.store.update({"num_transitions":math.pow(2,j)})
     return(q_prop,p_prop,p_init,-log_w,accepted,accept_rate,divergent,j)
-def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tdepth=5,log_obj=None,debug_dict=None):
+def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tree_depth=5,log_obj=None,debug_dict=None):
     Ham.diagnostics = time_diagnositcs()
     #seedid = 30
     #numpy.random.seed(seedid)

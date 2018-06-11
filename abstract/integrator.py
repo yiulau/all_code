@@ -19,10 +19,18 @@ class sampler_one_step(object):
         # for param_name, obj in tune_param_objs_dict.items():
         #     val = obj.get_val()
         #     setattr(self,param_name,val)
+        self.other_params = {}
         self.v_fun = tune_dict["v_fun"]
         self.dynamic = tune_dict["dynamic"]
         if self.dynamic:
             self.windowed = None
+            if "max_tree_depth" in tune_dict:
+                assert tune_dict["max_tree_depth"] > 3
+                self.max_tree_depth = tune_dict["max_tree_depth"]
+            else:
+                self.max_tree_depth = 10
+
+            self.other_params.update({"max_tree_depth":self.max_tree_depth})
         else:
             self.windowed = tune_dict["windowed"]
             assert self.windowed==True or self.windowed==False
@@ -61,7 +69,7 @@ class sampler_one_step(object):
         #for i in range(len(self.tuneable_param)):
         #    self.tuneable_param_dict.update({self.tuneable_param[i]:getattr(self,self.tuneable_param[i])})
 
-        self.one_step_function = wrap(self.one_step_function)
+        self.one_step_function = wrap(raw_sampler_one_step=self.one_step_function,other_parameters=self.other_params)
     def evolve(self):
         start = time.time()
         self.run()
@@ -118,7 +126,7 @@ class sampler_one_step(object):
         return (out,tuneable_par)
 
 
-def wrap(raw_sampler_one_step):
+def wrap(raw_sampler_one_step,other_parameters):
     # want output to be function so that takes input point object and tune_param_dict
     # tune_par_setting = tuple = (Tunable,value,tune_by)
     # Tunable is a boolean variable . True means the variable will be tuned. False if fixed
@@ -143,6 +151,9 @@ def wrap(raw_sampler_one_step):
             tune_param_dict.update({"log_obj":log_obj})
         tune_param_dict.update({"init_q":input_point_obj})
         tune_param_dict.update({"Ham":Ham_obj})
+        if "max_tree_depth" in other_parameters:
+            tune_param_dict.update({"max_tree_depth":other_parameters["max_tree_depth"]})
+
         #print(tune_param_dict)
         #exit()
         #print(tune_param_dict)
