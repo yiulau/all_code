@@ -160,10 +160,13 @@ import math
 store = torch.zeros(100,10)
 store[0,:] = q.data.clone()
 for cur in range(1,100):
+    print("cur {}".format(cur))
     p_tensor = generate_momentum(q)
     p = Variable(p_tensor,requires_grad=True)
     begin_H = H(q,p,alpha)
     for i in range(10):
+        print("i {}".format(i))
+        print("in q {}".format(q.data))
         outq, outp = explicit_generalized_leapfrog(q, p, 0.1, alpha, 0.1, V)
         #outq_a, outp_a, stat = abstract_generalized_leapfrog(q_point, p_point, 0.1, Ham)
         q,p = outq,outp

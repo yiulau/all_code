@@ -52,15 +52,20 @@ def eigen(H):
     try:
         #print(H)
         out = torch.eig(H,True)
+        lam, Q = out
+        lam = lam[:, 0]
+        return (lam, Q)
     except:
+        #print(H)
         ValueError("H {}".format(H))
+        return(None)
     #print(lam)
     #print(sum(lam[:,1]))
     #print(sum(lam[:,1]==0))
     #exit()
     #print(out)
     #exit()
-    lam,Q = out
+    #lam,Q = out
     # all eigenvalues are real ie no complex eigen values
     # all_real = not sum(lam[:,1]!=0)>0
     # #assert all_real,"complex parts {}".format(lam[:,1])
@@ -76,7 +81,7 @@ def eigen(H):
     #         raise ValueError("all eigenvalues real yet decomposition not accurate")
     # else:
     #     pass
-    lam = lam[:,0]
+    #lam = lam[:,0]
     #print(recompose_H)
     #print(H)
     #diff = ((recompose_H - H)*(recompose_H-H)).sum()
