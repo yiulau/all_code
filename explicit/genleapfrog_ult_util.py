@@ -58,6 +58,8 @@ def eigen(H):
     #print(sum(lam[:,1]))
     #print(sum(lam[:,1]==0))
     #exit()
+    #print(out)
+    #exit()
     lam,Q = out
     # all eigenvalues are real ie no complex eigen values
     # all_real = not sum(lam[:,1]!=0)>0
@@ -220,6 +222,10 @@ def J(lam,alpha,length):
     jacobian_thresh = 0.001
     lower_softabs_thresh = 0.0001
     upper_softabs_thresh = 1000
+    softabs_lamb = softabs_map(lam,alpha)
+    #print(lam)
+    #print(softabs_lamb)
+    #exit()
     J = torch.zeros(length,length)
     i = 0
     while i < length:
@@ -241,11 +247,11 @@ def J(lam,alpha,length):
                     # 1 if lam > 0 , -1 otherwise
                     J[i,j] = 2*float(lam[i]>0)-1
                 else:
-
+                    #J[i,j] = coth(alp_lam)+lam[i]*(1-(coth(alp_lam))**2)*alpha
                     J[i,j] = (coth(alpha * lam[i]) + lam[i] * (1 - (coth(alpha * lam[i]))**2) * alpha)
             else:
-
-                J[i,j] = (lam[i]*coth(alpha*lam[i]) - lam[j]*coth(alpha*lam[j]))/(lam[i]-lam[j])
+                J[i,j] = softabs_lamb[i]-softabs_lamb[j]/(lam[i]-lam[j])
+                #J[i,j] = (lam[i]*coth(alpha*lam[i]) - lam[j]*coth(alpha*lam[j]))/(lam[i]-lam[j])
             J[j,i] = J[i,j]
             j = j + 1
 

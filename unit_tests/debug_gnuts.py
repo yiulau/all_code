@@ -18,7 +18,7 @@ q_point.load_flatten()
 chain_l=1000
 store_samples = torch.zeros(chain_l,len(inputq))
 for i in range(chain_l):
-    out = abstract_GNUTS(init_q=q_point,epsilon=0.1,Ham=Ham,max_tdepth=10)
+    out = abstract_GNUTS(init_q=q_point,epsilon=0.1,Ham=Ham,max_tree_depth=10)
     store_samples[i,:] = out[0].flattened_tensor.clone()
     q_point = out[0]
 

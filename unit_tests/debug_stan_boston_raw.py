@@ -17,10 +17,10 @@ data = get_data_dict("boston")
 data_stan = dict(y=data["target"],X=data["input"],N=data["input"].shape[0],K=data["input"].shape[1])
 
 #control_dict = dict({"adapt_engaged":True,"metric":"unit_e",})
-fit = mod.sampling(data=data_stan, seed=30)
+fit = mod.sampling(data=data_stan, seed=330)
 #fit = mod.sampling(data=data_stan, seed=20,control=control_dict,algorithm="HMC",iter=4000)
 
-print(fit)
+print(fit.summary())
 exit()
 la = fit.extract(permuted=True)
 print(la.keys())
