@@ -35,9 +35,12 @@ sampler1.remove_failed_chains()
 
 print("num chains removed {}".format(sampler1.metadata.num_chains_removed))
 print("num restarts {}".format(sampler1.metadata.num_restarts))
-mcmc_samples = sampler1.get_samples(permuted=True)
+mcmc_samples = sampler1.get_samples(permuted=False)
+
+out = sampler1.get_samples_p_diag(permuted=False)
+
 with open("debug_test_error_mcmc.pkl", 'wb') as f:
-    pickle.dump(mcmc_samples, f)
+    pickle.dump(out, f)
 exit()
 #print(mcmc_samples.shape)
 #print("mcmc mean {}".format(numpy.mean(mcmc_samples,axis=0)))

@@ -145,6 +145,7 @@ def split_chains(mcmc_samples_tensor):
 
 
 def diagnostics_stan(mcmc_samples_tensor):
+    # mcmc_samples_tensor dimension is [num_chains,num_samples_per_chain,model_dim]
     mcmc_samples_tensor = split_chains(mcmc_samples_tensor)
     vario_g = variogram(mcmc_samples_tensor)
     var,Rhat = marginal_var(mcmc_samples_tensor)

@@ -119,9 +119,9 @@ def check_mean_var_stan(mcmc_samples, correct_mean, correct_cov, diag_only=False
     # first treat the means
     mean_reasonable = mean_abs_diff < 3 * mcmc_mean_mcse
     mean_results = numpy.empty(len(mcmc_mean),dtype=object)
-    print(mean_reasonable)
-    print(mcmc_mean_mcse)
-    print(mcmc_mean_rhat)
+    #print(mean_reasonable)
+    #print(mcmc_mean_mcse)
+    #print(mcmc_mean_rhat)
     for i in range(len(mean_results)):
 
 

@@ -221,7 +221,7 @@ class mcmc_sampler(object):
         self.store_chains = self.store_chains[success_indices]
         self.num_chains = len(self.store_chains)
         return()
-    def get_samples(self,permuted=True):
+    def get_samples(self,permuted=False):
         # outputs numpy matrix
         if permuted:
             temp_list = []
@@ -265,6 +265,8 @@ class mcmc_sampler(object):
                 diag_list[i] = self.store_chains[i]["chain_obj"].get_diagnostics(warmup=self.warmup_per_chain)
             output.update({"samples":samples_output,"diagnostics":diag_list})
             return (output)
+
+
 # metadata only matters after sampling has started
 class sampler_metadata(object):
     def __init__(self,mcmc_sampler_obj):
@@ -510,7 +512,7 @@ class one_chain_obj(object):
             print("number of leapfrog steps {}".format(self.log_obj.store["num_transitions"]))
             print("accept_rate {}".format(self.log_obj.store["accept_rate"]))
             print("divergent is {}".format(self.log_obj.store["divergent"]))
-
+            print("H is {}".format(self.log_obj.store["prop_H"]))
 
         return()
     def add_sample(self,sample_dict):
