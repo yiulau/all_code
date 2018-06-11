@@ -7,18 +7,19 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from experiments.experiment_obj import tuneinput_class
 from distributions.two_d_normal import V_2dnormal
-from experiments.correctdist_experiments.prototype import check_mean_var
+from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from post_processing.ESS_nuts import ess_stan
+from post_processing.get_diagnostics import percent_diagnostics
 seedid = 30
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=1000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=0,
-                                   warmup_per_chain=10,is_float=False,isstore_to_disk=False)
+                                   warmup_per_chain=200,is_float=False,isstore_to_disk=False)
 
 # input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],
 #               "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
 
-input_dict = {"v_fun":[V_2dnormal],"epsilon":[1.5],"second_order":[False],
+input_dict = {"v_fun":[V_2dnormal],"epsilon":[0.1],"second_order":[False],
               "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
 
 tune_settings_dict = tuning_settings([],[],[],[])
@@ -39,12 +40,16 @@ print(diagnostics)
 
 print(len(diagnostics))
 
-sum = 0
-total_terms = 0
-for i in range(len(diagnostics)):
-    for j in range(len(diagnostics[i])):
-        sum += diagnostics[i][j]["divergent"]
-        total_terms +=1
+# sum = 0
+# total_terms = 0
+# for i in range(len(diagnostics)):
+#     for j in range(len(diagnostics[i])):
+#         sum += diagnostics[i][j]["divergent"]
+#         total_terms +=1
 
 
-print("percent divergent {}".format(sum/total_terms))
+# print("percent divergent {}".format(sum/total_terms))
+print("percent divergent {}".format(percent_diagnostics(diagnostics,"divergent")))
+
+print("percent accepted {}".format(percent_diagnostics(diagnostics,"accepted")))
+

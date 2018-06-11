@@ -12,7 +12,7 @@ from explicit.genleapfrog_ult_util import generalized_leapfrog as explicit_gener
 from explicit.genleapfrog_ult_util import getH, eigen, softabs_map
 import os
 torch.set_default_tensor_type("torch.DoubleTensor")
-seedid = 33
+seedid = 333
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 #y_np= numpy.random.binomial(n=1,p=0.5,size=num_ob)
@@ -120,7 +120,7 @@ def H(q,p,alpha):
 
 dim = 10
 inputq = torch.randn(dim)
-
+inputq[dim-1]=3.1
 q = Variable(inputq,requires_grad=True)
 inputp = generate_momentum(q)
 
@@ -156,6 +156,25 @@ v_obj = V_pima_inidan_logit()
 #debug_dict.update({"abstract":Ham.V.y.data.clone()})
 #diff_term = ((debug_dict["abstract"]-debug_dict["explicit"])*(debug_dict["abstract"]-debug_dict["explicit"])).sum()
 #print("H_diff {}".format(diff_term))
+from explicit.genleapfrog_ult_util import getdH
+# p_tensor = generate_momentum(q)
+# p = Variable(p_tensor,requires_grad=True)
+# begin_H = H(q,p,alpha)
+# print("begin H {}".format(begin_H))
+# for i in range(30):
+#     #print("i {}".format(i))
+#     #print("in q {}".format(q.data))
+#     print("H {}".format(H(q, p, alpha)))
+#     # dV,H_,dH = getdH(q,V)
+#     # lam, Q = eigen(H_.data)
+#     # print("lam {}".format(lam))
+#     # print("eigen success ")
+#     outq, outp = explicit_generalized_leapfrog(q, p, 0.01, alpha, 0.00001, V)
+#     # outq_a, outp_a, stat = abstract_generalized_leapfrog(q_point, p_point, 0.1, Ham)
+#     q, p = outq, outp
+# end_H = H(q, p, alpha)
+# print("end_H {}".format(end_H))
+# exit()
 import math
 store = torch.zeros(100,10)
 store[0,:] = q.data.clone()
@@ -165,9 +184,11 @@ for cur in range(1,100):
     p = Variable(p_tensor,requires_grad=True)
     begin_H = H(q,p,alpha)
     for i in range(10):
-        print("i {}".format(i))
-        print("in q {}".format(q.data))
-        outq, outp = explicit_generalized_leapfrog(q, p, 0.1, alpha, 0.1, V)
+        #print("i {}".format(i))
+        #print("in q {}".format(q.data))
+        #print("y {}".format(q.data[dim-1]))
+        #print("H {}".format(H(q,p,alpha)))
+        outq, outp = explicit_generalized_leapfrog(q, p, 0.001, alpha, 0.001, V)
         #outq_a, outp_a, stat = abstract_generalized_leapfrog(q_point, p_point, 0.1, Ham)
         q,p = outq,outp
     end_H = H(q,p,alpha)
@@ -181,8 +202,7 @@ for cur in range(1,100):
     print("accept_rate {}".format(accept_rate))
     print("begin H {}".format(begin_H))
     print("end H {}".format(end_H))
-
-
+    print("y {}".format(q.data[dim - 1]))
     #q_point,p_point = outq_a,outp_a
 #outq,outp = explicit_generalized_leapfrog(q,p,0.1,alpha,0.1,V)
 #outq_a,outp_a,stat = abstract_generalized_leapfrog(q_point,p_point,0.1,Ham)

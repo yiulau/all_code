@@ -28,7 +28,8 @@ from adapt_util.tune_param_classes.tune_param_class import tune_param_objs_creat
 # integration time t is also a slow parameter, because diagnostics (ESS) for its performance can only be calculated by looking
 # at a number of samples
 
-def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=None,warmup_per_chain=None,is_float=False,isstore_to_disk=False,same_init=False,allow_restart=True):
+def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=None,warmup_per_chain=None,is_float=False,isstore_to_disk=False,same_init=False,allow_restart=True,max_num_restarts=10):
+
         # mcmc_id should be a dictionary
         out = {}
         if warmup_per_chain is None:
@@ -38,7 +39,7 @@ def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu
         out.update({"num_chains":num_chains,"num_cpu":num_cpu,"thin":thin,"warmup_per_chain":warmup_per_chain})
         out.update({"is_float":is_float,"isstore_to_disk":isstore_to_disk,"mcmc_id":mcmc_id})
         out.update({"num_samples_per_chain":samples_per_chain,"same_init":same_init,"tune_l_per_chain":tune_l_per_chain})
-        out.update({"allow_restart":allow_restart})
+        out.update({"allow_restart":allow_restart,"max_num_restarts":max_num_restarts})
         return(out)
 
 class mcmc_sampler(object):
@@ -83,6 +84,10 @@ class mcmc_sampler(object):
         self.warmup_per_chain = self.mcmc_settings_dict["warmup_per_chain"]
         self.tune_l_per_chain = self.mcmc_settings_dict["tune_l_per_chain"]
         self.allow_restart = self.mcmc_settings_dict["allow_restart"]
+        if self.allow_restart:
+            self.max_num_restarts = self.mcmc_settings_dict["max_num_restarts"]
+        else:
+            self.max_num_restarts = 0
         for i in range(self.num_chains):
             #if same_init:
              #   initialization_obj = initialization()
@@ -93,7 +98,7 @@ class mcmc_sampler(object):
             this_chain_setting = one_chain_settings_dict(sampler_id=self.sampler_id,chain_id=i,
                                                      experiment_id=self.experiment_id,
                                                      num_samples=self.num_samples_per_chain,
-                                                     warm_up=self.warmup_per_chain,tune_l=self.tune_l_per_chain,allow_restart=self.allow_restart)
+                                                     warm_up=self.warmup_per_chain,tune_l=self.tune_l_per_chain,allow_restart=self.allow_restart,max_num_restarts=self.max_num_restarts)
             this_tune_dict = self.tune_dict.copy()
             this_chain_obj = one_chain_obj(init_point=self.init_q_point_list[i],
                                            tune_dict=self.tune_dict,chain_setting=this_chain_setting,
@@ -486,16 +491,19 @@ class one_chain_obj(object):
                 #         self.restart(out)
 
             elif counter == self.chain_setting["warm_up"]:
-                accumulate_accept_rate = 0
-                for i in range(counter-100,counter):
-                    accumulate_accept_rate += self.store_log_obj[i]["accept_rate"]
-                accumulate_accept_rate = accumulate_accept_rate/100
-                if accumulate_accept_rate < 0.1:
-                    #print("definite restart")
-                    #exit()
-                    self.restart()
-                    if self.enough_restarts:
-                        break
+                if self.chain_setting["allow_restart"]:
+                    accumulate_accept_rate = 0
+                    for i in range(counter-100,counter):
+                        accumulate_accept_rate += self.store_log_obj[i]["accept_rate"]
+                    accumulate_accept_rate = accumulate_accept_rate/100
+                    if accumulate_accept_rate < 0.1:
+                        # if self.num_restarts >5:
+                        #     print(accumulate_accept_rate)
+                        #     exit()
+                        #exit()
+                        self.restart()
+                        if self.enough_restarts:
+                            break
 
             #print("tune_l is {}".format(self.chain_setting["tune_l"]))
             #print(out)
@@ -554,6 +562,7 @@ class one_chain_obj(object):
          # erase saved samples (if any)
          # run
          self.store_samples = []
+         self.store_log_obj = []
          self.prepare_this_chain()
          self.num_restarts+=1
          if self.num_restarts > self.chain_setting["max_num_restarts"]:

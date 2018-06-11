@@ -63,6 +63,7 @@ def abstract_NUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
         log_obj.store.update({"divergent":divergent})
         log_obj.store.update({"tree_depth":j})
         log_obj.store.update({"num_transitions":math.pow(2,j)})
+        log_obj.store.update({"hit_max_tree_depth":j>=max_tree_depth})
     return(q_prop,p_prop,p_init,-log_w,accepted,accept_rate,divergent,j)
 def abstract_GNUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
     # sum_p should be a tensor instead of variable
@@ -129,6 +130,7 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
         log_obj.store.update({"explode_grad":diagn_dict["explode_grad"]})
         log_obj.store.update({"tree_depth":j})
         log_obj.store.update({"num_transitions":math.pow(2,j)})
+        log_obj.store.update({"hit_max_tree_depth":j>=max_tree_depth})
     return(q_prop,p_prop,p_init,-log_w,accepted,accept_rate,divergent,j)
 def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tree_depth=5,log_obj=None,debug_dict=None):
     Ham.diagnostics = time_diagnositcs()
@@ -184,7 +186,7 @@ def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tree_depth=5,log_obj=No
             log_w = oo[1]
             s = s_prime and abstract_xhmc_criterion(ave,xhmc_delta,math.pow(2,j))
             j = j + 1
-            s = s and (j < max_tdepth)
+            s = s and (j < max_tree_depth)
         else:
             s = False
 
@@ -202,6 +204,7 @@ def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tree_depth=5,log_obj=No
         log_obj.store.update({"explode_grad":diagn_dict["explode_grad"]})
         log_obj.store.update({"tree_depth":j})
         log_obj.store.update({"num_transitions":math.pow(2,j)})
+        log_obj.store.update({"hit_max_tree_depth": j >= max_tree_depth})
     #print("abstract num_div {}".format(num_div))
     #debug_dict.update({"abstract": j})
 

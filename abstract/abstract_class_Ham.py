@@ -49,8 +49,12 @@ class Hamiltonian(object):
         #print(self.T.flattened_tensor)
         V = self.V.evaluate_scalar()
         T = self.T.evaluate_scalar()
-        print("V {}".format(V))
-        print("T {}".format(T))
+        assert T>0
+        assert V>0
+        if V+T<0:
+            raise ValueError("very wrong negative H")
+        #print("V {}".format(V))
+        #print("T {}".format(T))
         out = V + T
         #self.diagnostics.add_num_H_eval(1)
         return(out)

@@ -323,9 +323,10 @@ def generalized_leapfrog(q,p,epsilon,alpha,delta,V,debug_dict=None):
     pprime = p.data.clone()
     deltap = delta + 0.5
     count = 0
-    while (deltap > delta) and (count < 5):
+    while (deltap > delta) and (count < 10):
         pprime.copy_(rho - epsilon * 0.5 * dtaudq(p.data,dH,Q,lam,alpha))
         deltap = torch.max(torch.abs(p.data-pprime))
+        #print(deltap)
         p.data.copy_(pprime)
         count = count + 1
 
@@ -333,18 +334,21 @@ def generalized_leapfrog(q,p,epsilon,alpha,delta,V,debug_dict=None):
     qprime = q.data.clone()
     deltaq = delta + 0.5
 
+    #print("p {}".format(p.data))
     _,H_ = getH(sigma,V)
 
     olam,oQ = eigen(H_.data)
 
     #olam,oQ = eigen(getH(sigma,V).data)
     count = 0
-    while (deltaq > delta) and (count < 5):
+    q_init = sigma.data + 0.5 * epsilon * dtaudp(p.data, alpha, olam, oQ)
+    while (deltaq > delta) and (count < 10):
         _,H_ = getH(q,V)
         lam,Q = eigen(H_.data)
-        qprime.copy_(sigma.data + 0.5 * epsilon * dtaudp(p.data,alpha,olam,oQ) + 0.5 * epsilon* dtaudp(p.data,alpha,lam,Q))
+        qprime.copy_(q_init + 0.5 * epsilon* dtaudp(p.data,alpha,lam,Q))
         deltaq = torch.max(torch.abs(q.data-qprime))
         q.data.copy_(qprime)
+        #print(deltaq)
         count = count + 1
 
     dV,H_,dH = getdH(q,V)
@@ -355,6 +359,9 @@ def generalized_leapfrog(q,p,epsilon,alpha,delta,V,debug_dict=None):
     p.data -= 0.5 * dtaudq(p.data,dH,Q,lam,alpha) * epsilon
     p.data -= 0.5 * dphidq(lam,alpha,dH,Q,dV.data) * epsilon
     #debug_dict.update({"explicit":p.data.clone()})
+    #print("q {}".format(q.data))
+
+    #print("p {}".format(p.data))
     return(q,p)
 
 def generalized_leapfrog_tensor(q,p,epsilon,alpha,delta,V):

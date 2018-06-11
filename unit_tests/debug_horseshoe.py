@@ -1,6 +1,6 @@
 from distributions.logistic_regressions.logistic_horseshoe import class_generator
 from distributions.neural_nets.priors.prior_util import prior_generator
-import os, numpy,torch
+import os, numpy,torch,pickle
 import pandas as pd
 
 abs_address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"

@@ -25,7 +25,7 @@ class sampler_one_step(object):
         if self.dynamic:
             self.windowed = None
             if "max_tree_depth" in tune_dict:
-                assert tune_dict["max_tree_depth"] > 3
+                assert tune_dict["max_tree_depth"] > 0
                 self.max_tree_depth = tune_dict["max_tree_depth"]
             else:
                 self.max_tree_depth = 10
