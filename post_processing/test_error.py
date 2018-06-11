@@ -90,14 +90,19 @@ def map_prediction(target_dataset,v_nn_obj,mcmc_samples,type,memory_efficient=Fa
             store_prediction = torch.zeros(num_target_samples)
             store_prediction_uncertainty = torch.zeros(num_target_samples)
             for i in range(num_target_samples):
-                temp = []*num_mcmc_samples
+                temp = torch.zeros(num_mcmc_samples)
+                new_sample = target_dataset["input"][i:i+1,:]
                 for j in range(num_mcmc_samples):
-                    new_sample = target_dataset["input"][i:i+1,:]
-                    out_predicted = v_nn_obj.predict(new_sample)
-                    temp[j] = out_predicted
+                    v_nn_obj.flattened_tensor.copy_(torch.from_numpy(mcmc_samples[j, :]))
+                    v_nn_obj.load_flattened_tensor_to_param()
 
-                store_prediction[i] = numpy.mean(temp)
-                store_prediction_uncertainty[i] = numpy.var(temp)
+                    out_predicted = v_nn_obj.predict(new_sample)
+                    #print(out_predicted)
+                    #exit()
+                    temp[j] = out_predicted[0]
+
+                store_prediction[i] = temp.mean()
+                store_prediction_uncertainty[i] = temp.var()
         else:
             store_prediction = torch.zeros(num_target_samples)
             store_prediction_uncertainty = torch.zeros(num_target_samples)
@@ -119,5 +124,5 @@ def test_error(target_dataset,v_obj,mcmc_samples,type,memory_efficient=False):
     if type=="classification":
         error = sum(predicted!=correct_target)/len(predicted)
     else:
-        error = sum((predicted - correct_target)*(predicted - correct_target))
+        error = sum((predicted - correct_target)*(predicted - correct_target))/len(predicted)
     return(error,predicted)
