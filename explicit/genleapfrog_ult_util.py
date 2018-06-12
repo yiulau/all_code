@@ -312,7 +312,7 @@ def generalized_leapfrog(q,p,epsilon,alpha,delta,V,debug_dict=None):
     #print("dH explicit{}".format(dH))
 
     lam, Q = eigen(H_.data)
-
+    print("lam {}".format(lam))
     #print("second q explicit {}".format(q.data))
     #print("second p explicit {}".format(p.data))
     p.data -= epsilon * 0.5 * dphidq(lam,alpha,dH,Q,dV.data)

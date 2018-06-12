@@ -12,7 +12,7 @@ from explicit.genleapfrog_ult_util import generalized_leapfrog as explicit_gener
 from explicit.genleapfrog_ult_util import getH, eigen, softabs_map
 import os
 torch.set_default_tensor_type("torch.DoubleTensor")
-seedid = 333
+seedid = 33
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 #y_np= numpy.random.binomial(n=1,p=0.5,size=num_ob)
@@ -77,7 +77,9 @@ def generate_momentum(q):
     # print(temp)
     # exit()
     return (out)
-n = 10
+#n = 10
+dim = 20
+n = dim
 def V(q):
     # returns -log posterior
     x = q[:(n-1)]
@@ -118,7 +120,7 @@ def H(q,p,alpha):
     return(V(q).data[0] + T(q,alpha)(p))
 
 
-dim = 10
+
 inputq = torch.randn(dim)
 inputq[dim-1]=3.1
 q = Variable(inputq,requires_grad=True)
@@ -176,7 +178,7 @@ from explicit.genleapfrog_ult_util import getdH
 # print("end_H {}".format(end_H))
 # exit()
 import math
-store = torch.zeros(100,10)
+store = torch.zeros(100,dim)
 store[0,:] = q.data.clone()
 for cur in range(1,100):
     print("cur {}".format(cur))
@@ -188,7 +190,7 @@ for cur in range(1,100):
         #print("in q {}".format(q.data))
         #print("y {}".format(q.data[dim-1]))
         #print("H {}".format(H(q,p,alpha)))
-        outq, outp = explicit_generalized_leapfrog(q, p, 0.001, alpha, 0.001, V)
+        outq, outp = explicit_generalized_leapfrog(q, p, 0.1, alpha, 0.001, V)
         #outq_a, outp_a, stat = abstract_generalized_leapfrog(q_point, p_point, 0.1, Ham)
         q,p = outq,outp
     end_H = H(q,p,alpha)

@@ -24,7 +24,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from experiments.experiment_obj import tuneinput_class
 from distributions.two_d_normal import V_2dnormal
-from experiments.correctdist_experiments.prototype import check_mean_var
+from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from post_processing.ESS_nuts import ess_stan
 seedid = 30
 numpy.random.seed(seedid)

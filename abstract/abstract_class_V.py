@@ -48,9 +48,9 @@ class V(nn.Module):
     #     else:
     #         self.load_explicit_gradient()
 
-    def dq(self,q_flattened_tensor):
+    def dq(self,q_flattened_tensor,input_data=None):
         self.load_flattened_tensor_to_param(q_flattened_tensor)
-        g = grad(self.forward(), self.list_var)
+        g = grad(self.forward(input=input_data), self.list_var)
         # check for exploding gradient
         explode_grad = False
         for i in range(len(g)):

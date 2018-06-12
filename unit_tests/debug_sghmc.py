@@ -10,6 +10,9 @@ Ham = Hamiltonian(V=v_obj,metric=metric)
 
 full_data = get_data_dict("pima_indian")
 init_q_point = point(V=v_obj)
-sghmc_sampler(init_q_point=init_q_point,epsilon=0.1,L=10,Ham=Ham,alpha=0.01,eta=0.1*1e-5,
-              betahat=0,full_data=full_data,num_samples=1000,thin=0,burn_in=200)
+out = sghmc_sampler(init_q_point=init_q_point,epsilon=0.01,L=10,Ham=Ham,alpha=0.01,eta=0.01,
+              betahat=0,full_data=full_data,num_samples=1000,thin=0,burn_in=200,batch_size=50)
+
+
+
 

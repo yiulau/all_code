@@ -2,14 +2,15 @@ import torch
 import torch.nn as nn
 from abstract.abstract_class_V import V
 from torch.autograd import Variable
-
+from distributions.bayes_model_class import bayes_model_class
 from explicit.general_util import logsumexp_torch
 
 precision_type = 'torch.DoubleTensor'
 #precision_type = 'torch.FloatTensor'
 torch.set_default_tensor_type(precision_type)
 
-class V_logistic_regression(V):
+class V_logistic_regression(bayes_model_class):
+#class V_logistic_regression(V):
     def __init__(self,input_npdata):
         self.y_np = input_npdata["y_np"]
         self.X_np = input_npdata["X_np"]
@@ -27,9 +28,18 @@ class V_logistic_regression(V):
 
         return()
 
-    def forward(self):
-        likelihood = torch.dot(self.beta, torch.mv(torch.t(self.X), self.y)) - \
-                     torch.sum(logsumexp_torch(Variable(torch.zeros(self.num_ob)), torch.mv(self.X, self.beta)))
+    def forward(self,input=None):
+        if input is None:
+            X = self.X
+            y = self.y
+
+        else:
+            X = Variable(input["input"],requires_grad=False)
+            y = Variable(input["target"],requires_grad=False)
+
+        num_ob = X.shape[0]
+        likelihood = torch.dot(self.beta, torch.mv(torch.t(X), y)) - \
+                     torch.sum(logsumexp_torch(Variable(torch.zeros(num_ob)), torch.mv(X, self.beta)))
         prior = -torch.dot(self.beta, self.beta)/(self.sigma*self.sigma) * 0.5
         posterior = prior + likelihood
         out = -posterior
