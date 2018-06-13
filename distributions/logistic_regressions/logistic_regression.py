@@ -5,24 +5,27 @@ from torch.autograd import Variable
 from distributions.bayes_model_class import bayes_model_class
 from explicit.general_util import logsumexp_torch
 
-precision_type = 'torch.DoubleTensor'
-#precision_type = 'torch.FloatTensor'
-torch.set_default_tensor_type(precision_type)
+# precision_type = 'torch.DoubleTensor'
+# #precision_type = 'torch.FloatTensor'
+# torch.set_default_tensor_type(precision_type)
 
 class V_logistic_regression(bayes_model_class):
 #class V_logistic_regression(V):
-    def __init__(self,input_npdata):
+    def __init__(self,input_npdata,precision_type):
         self.y_np = input_npdata["y_np"]
         self.X_np = input_npdata["X_np"]
-        super(V_logistic_regression, self).__init__()
+        #print(precision_type)
+        #print(self.precision_type)
+        #exit()
+        super(V_logistic_regression, self).__init__(precision_type=precision_type)
     def V_setup(self):
         self.dim = self.X_np.shape[1]
         self.num_ob = self.X_np.shape[0]
         self.explicit_gradient = True
         self.need_higherorderderiv = True
         self.beta = nn.Parameter(torch.zeros(self.dim),requires_grad=True)
-        self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type(precision_type)
-        self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(precision_type)
+        self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type(self.precision_type)
+        self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(self.precision_type)
         # include
         self.sigma =1
 
@@ -34,10 +37,13 @@ class V_logistic_regression(bayes_model_class):
             y = self.y
 
         else:
-            X = Variable(input["input"],requires_grad=False)
-            y = Variable(input["target"],requires_grad=False)
-
+            X = Variable(input["input"],requires_grad=False).type(self.precision_type)
+            y = Variable(input["target"],requires_grad=False).type(self.precision_type)
         num_ob = X.shape[0]
+        # print(self.precision_type)
+        # print(self.beta)
+        # #print(X.data)
+        # exit()
         likelihood = torch.dot(self.beta, torch.mv(torch.t(X), y)) - \
                      torch.sum(logsumexp_torch(Variable(torch.zeros(num_ob)), torch.mv(X, self.beta)))
         prior = -torch.dot(self.beta, self.beta)/(self.sigma*self.sigma) * 0.5
@@ -45,6 +51,15 @@ class V_logistic_regression(bayes_model_class):
         out = -posterior
         return(out)
 
+    def log_p_y_given_theta(self, observed_point, posterior_point):
+        self.load_point(posterior_point)
+        X = Variable(observed_point["input"], requires_grad=False).type(self.precision_type)
+        y = Variable(observed_point["target"], requires_grad=False).type(self.precision_type)
+        num_ob = X.shape[0]
+        likelihood = torch.dot(self.beta, torch.mv(torch.t(X), y)) - \
+                     torch.sum(logsumexp_torch(Variable(torch.zeros(num_ob)), torch.mv(X, self.beta)))
+
+        return(likelihood.data[0])
     def predict(self,test_samples):
         X = torch.from_numpy(test_samples)
         out = torch.zeros(X.shape[0],2)

@@ -34,3 +34,5 @@ list_mcmc_point = convert_mcmc_tensor_to_list_points(chains_combined_mcmc_tensor
 out_waic = WAIC(list_mcmc_point,train_data,V_pima_inidan_logit())
 
 print(out_waic)
+
+# need to specify likelihood including the normalizing constant

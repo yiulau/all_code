@@ -11,13 +11,18 @@ from general_util.pytorch_util import isnan
 
 class V(nn.Module):
     #def __init__(self,explicit_gradient):
-    def __init__(self):
+    def __init__(self,precision_type):
         super(V, self).__init__()
+        self.precision_type=precision_type
         self.V_setup()
+        #print(self.precision_type)
+        #print(self.X)
+        #exit()
         if self.explicit_gradient is None:
             raise ValueError("self.explicit_gradient need to be defined in V_setup")
 
         #################################################################################
+
         self.decides_if_flattened()
         self.V_higherorder_setup()
         #self.q_point = point(V=self)
@@ -50,7 +55,10 @@ class V(nn.Module):
 
     def dq(self,q_flattened_tensor,input_data=None):
         self.load_flattened_tensor_to_param(q_flattened_tensor)
-        g = grad(self.forward(input=input_data), self.list_var)
+        if input_data is None:
+            g = grad(self.forward(),self.list_var)
+        else:
+            g = grad(self.forward(input=input_data), self.list_var)
         # check for exploding gradient
         explode_grad = False
         for i in range(len(g)):

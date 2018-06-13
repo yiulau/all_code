@@ -12,7 +12,7 @@ from adapt_util.tune_param_classes.tuning_param_obj import tuning_param_states
 from general_util.memory_util import to_pickle_memory
 from abstract.abstract_class_point import point
 from adapt_util.tune_param_classes.tune_param_class import tune_param_objs_creator
-
+from general_util.pytorch_util import convert_q_point_list
 
 # number of samples
 # thinning
@@ -55,13 +55,20 @@ class mcmc_sampler(object):
         self.num_chains = self.mcmc_settings_dict["num_chains"]
         self.same_init = self.mcmc_settings_dict["same_init"]
         self.store_chains = numpy.empty(self.num_chains, object)
+        if self.mcmc_settings_dict["is_float"]:
+            self.precision_type = "torch.FloatTensor"
+        else:
+            self.precision_type = "torch.DoubleTensor"
+        torch.set_default_tensor_type(self.precision_type)
         if init_q_point_list is None:
             self.init_q_point_list = default_init_q_point_list(v_fun=self.tune_dict["v_fun"],
                                                                num_chains=self.num_chains,
-                                                               same_init=self.same_init)
+                                                               same_init=self.same_init,precision_type=self.precision_type)
         else:
             self.init_q_point_list= init_q_point_list
-
+            convert_q_point_list(q_point_list=init_q_point_list,precision_type=self.precision_type)
+        #print(mcmc_settings_dict.keys())
+        #exit()
         #self.Ham = Ham
         if not experiment_obj is None:
             self.experiment_id = experiment_obj.id
@@ -88,6 +95,7 @@ class mcmc_sampler(object):
             self.max_num_restarts = self.mcmc_settings_dict["max_num_restarts"]
         else:
             self.max_num_restarts = 0
+        self.is_float = self.mcmc_settings_dict["is_float"]
         for i in range(self.num_chains):
             #if same_init:
              #   initialization_obj = initialization()
@@ -96,9 +104,11 @@ class mcmc_sampler(object):
             #print(self.init_q_point_list[i].flattened_tensor)
 
             this_chain_setting = one_chain_settings_dict(sampler_id=self.sampler_id,chain_id=i,
-                                                     experiment_id=self.experiment_id,
-                                                     num_samples=self.num_samples_per_chain,
-                                                     warm_up=self.warmup_per_chain,tune_l=self.tune_l_per_chain,allow_restart=self.allow_restart,max_num_restarts=self.max_num_restarts)
+                                                         experiment_id=self.experiment_id,
+                                                         num_samples=self.num_samples_per_chain,
+                                                         warm_up=self.warmup_per_chain,tune_l=self.tune_l_per_chain,
+                                                         allow_restart=self.allow_restart,
+                                                         max_num_restarts=self.max_num_restarts,is_float=self.is_float)
             this_tune_dict = self.tune_dict.copy()
             this_chain_obj = one_chain_obj(init_point=self.init_q_point_list[i],
                                            tune_dict=self.tune_dict,chain_setting=this_chain_setting,
@@ -375,11 +385,15 @@ class one_chain_obj(object):
             self.enough_restarts = False
 
 
+        #print(chain_setting.keys())
+        #exit()
+
 
         #print(self.sampling_metadata.__dict__)
         #for param,val in self.sampling_metadata.__dict__.items():
         #    setattr(self,param,val)
         self.tune_dict = tune_dict
+
 
         #if tuning_param_settings is None:
         #    self.tuning_param_settings = tuning_param_settings(tune_dict)
@@ -605,7 +619,7 @@ class initialization(object):
         return()
 
 
-def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment_id=None,tune_l=5,warm_up=5,allow_restart=True,max_num_restarts=3):
+def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment_id=None,tune_l=5,warm_up=5,allow_restart=True,max_num_restarts=3,is_float=False):
 
         # one for every chain. in everything sampling object, in every experiment
         # parallel chains sampling from the same distribution shares sampling_obj
@@ -616,7 +630,7 @@ def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment
         # period for saving samples
         out = {"experiment_id":experiment_id,"sampler_id":sampler_id,"chain_id":chain_id}
         out.update({"num_samples":num_samples,"thin":thin,"tune_l":tune_l,"warm_up":warm_up})
-        out.update({"allow_restart":allow_restart,"max_num_restarts":max_num_restarts})
+        out.update({"allow_restart":allow_restart,"max_num_restarts":max_num_restarts,"is_float":is_float})
         return(out)
 
 
@@ -624,8 +638,8 @@ def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment
 
 
 
-def default_init_q_point_list(v_fun,num_chains,same_init=False):
-    v_obj = v_fun()
+def default_init_q_point_list(v_fun,num_chains,same_init=False,precision_type="torch.DoubleTensor"):
+    v_obj = v_fun(precision_type=precision_type)
     init_q_point_list = [None]*num_chains
     if same_init:
         #print("yes")

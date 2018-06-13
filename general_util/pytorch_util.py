@@ -111,3 +111,17 @@ def general_load_flattened_tensor_to_param(obj,flattened_tensor=None):
             cur = cur + obj.store_lens[i]
         obj.load_param_to_flattened()
     return()
+
+
+def convert_q_point_list(q_point_list,precision_type):
+    assert precision_type in ("torch.DoubleTensor","torch.FloatTensor")
+    for i in len(q_point_list):
+        q_point=  q_point_list[i]
+        if q_point.need_flatten:
+            for j in range(len(q_point.list_tensor)):
+                q_point.list_tensor[j] = q_point.list_tensor[j].type(precision_type)
+            q_point.flattened_tensor = q_point.flattened_tensor.type(precision_type)
+        else:
+            assert hex(id(q_point.flattened_tensor)) == hex(id(q_point.list_tensor[0]))
+            q_point.list_tensor[0] = q_point.list_tensor[0].type(precision_type)
+            q_point.flattened_tensor = q_point.list_tensor[0]

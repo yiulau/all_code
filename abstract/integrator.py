@@ -37,7 +37,8 @@ class sampler_one_step(object):
         self.second_order = tune_dict["second_order"]
         self.metric_name = tune_dict["metric_name"]
         self.criterion = tune_dict["criterion"]
-        self.v_obj = self.v_fun()
+        precision_type = init_point.flattened_tensor.type()
+        self.v_obj = self.v_fun(precision_type=precision_type)
         #self.v_obj.q_point = init_point
         self.v_obj.load_point(init_point)
         #if hasattr(tune_param_objs_dict,"alpha"):

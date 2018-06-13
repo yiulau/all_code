@@ -2,12 +2,14 @@ from abstract.abstract_class_V import V
 import torch,math
 import torch.nn as nn
 from torch.autograd import Variable
-precision_type = 'torch.DoubleTensor'
-#precision_type = 'torch.FloatTensor'
-torch.set_default_tensor_type(precision_type)
+# precision_type = 'torch.DoubleTensor'
+# #precision_type = 'torch.FloatTensor'
+# torch.set_default_tensor_type(precision_type)
 
 
 class V_2dnormal(V):
+    def __init__(self,precision_type="torch.DoubleTensor"):
+        super(V, self).__init__(precision_type=precision_type)
     def V_setup(self):
         self.n = 2
         self.explicit_gradient = False
