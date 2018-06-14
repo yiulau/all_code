@@ -2,7 +2,7 @@ import os, pickle,torchvision,torch, numpy
 import pandas as pd
 import torchvision.transforms as transforms
 from sklearn import preprocessing
-def get_data_dict(dataset_name):
+def get_data_dict(dataset_name,standardize_predictor=True):
     permissible_vals = ["pima_indian","boston","subset_mnist","subset_cifar10","logistic_mnist","logistic_cifar10","logistic_8x8mnist"]
     permissible_vals += ["australian","german","heart","diabetes","breast","8x8mnist"]
 
@@ -158,7 +158,8 @@ def get_data_dict(dataset_name):
         X = subset_mnist_dict["input"][index_to_choose_from,:]
         y = y[index_to_choose_from]
 
-    #X = preprocessing.scale(X)
+    if standardize_predictor:
+        X = preprocessing.scale(X)
     out_datadict.update({"input": X, "target": y})
 
     return(out_datadict)

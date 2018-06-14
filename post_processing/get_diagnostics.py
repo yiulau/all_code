@@ -28,3 +28,6 @@ def percent_diagnostics(diagnostics,statistic_name):
     out = sum/total_terms
     return(out)
 
+
+def get_short_diagnostics(diagnostics):
+    return()

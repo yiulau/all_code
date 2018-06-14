@@ -30,5 +30,4 @@ sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_se
 out = sampler1.start_sampling()
 
 
-
 mcmc_samples = sampler1.get_samples(permuted=False)

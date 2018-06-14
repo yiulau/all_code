@@ -119,3 +119,13 @@ class point(object):
             self.flattened_tensor[cur:(cur + self.store_lens[i])].copy_(self.list_tensor[i].view(-1))
             cur = cur + self.store_lens[i]
 
+    def clone_cast_type(self,precision_type):
+        assert precision_type in ("torch.FloatTensor","torch.DoubleTensor")
+        new_list_tensor = [None]*len(self.list_tensor)
+        for i in range(len(new_list_tensor)):
+            new_list_tensor[i] = self.list_tensor[i].type(precision_type)
+
+        out_point = point(list_tensor=new_list_tensor,pointtype=self.pointtype,need_flatten=self.need_flatten)
+        return(out_point)
+
+
