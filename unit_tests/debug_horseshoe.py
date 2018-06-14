@@ -15,7 +15,7 @@ X_np = dfm[:, 1:8]
 input_data = {"X_np":X_np,"y_np":y_np}
 
 
-prior_obj = prior_generator("horseshoe_1")
+prior_obj = prior_generator("gaussian_inv_gamma_2")
 v_generator = class_generator(input_data,prior_obj)
 
 
@@ -26,11 +26,11 @@ from experiments.experiment_obj import tuneinput_class
 from distributions.two_d_normal import V_2dnormal
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from post_processing.ESS_nuts import ess_stan
-seedid = 30
+seedid = 33350
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=100,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=0,
-                                   warmup_per_chain=10,is_float=False,isstore_to_disk=False)
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=1000,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=0,
+                                   warmup_per_chain=100,is_float=False,isstore_to_disk=False,allow_restart=False)
 
 # input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],
 #               "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
@@ -65,7 +65,7 @@ correct_cov = correct["correct_cov"]
 correct_diag_cov = correct_cov.diagonal()
 print("exact mean {}".format(correct_mean))
 
-output = check_mean_var(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
+output = check_mean_var_stan(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
 mean_check,cov_check = output["mcmc_mean"],output["mcmc_Cov"]
 pc_mean,pc_cov = output["pc_of_mean"],output["pc_of_cov"]
 print(mean_check)

@@ -21,8 +21,8 @@ class horseshoe_4(base_prior):
         local_r2 = torch.exp(self.log_local_lamb_obj)
         global_r2 = torch.exp(self.log_global_tau_obj)
 
-        local_r2_out = log_inv_gamma_density(x=local_r2, nu=1, mu=0, sigma=1) + self.log_local_lamb_obj.sum()
-        global_r2_out = log_inv_gamma_density(x=global_r2, nu=1, mu=0, sigma=1) + self.log_global_tau_obj.sum()
+        local_r2_out = log_inv_gamma_density(x=local_r2, alpha=0.5, beta=0.5) + self.log_local_lamb_obj.sum()
+        global_r2_out = log_inv_gamma_density(x=global_r2, alpha=0.5,beta=0.5) + self.log_global_tau_obj.sum()
         tau = self.global_r1_obj * torch.sqrt(global_r2)
         lamb = self.local_r1_obj * torch.sqrt(local_r2)
 

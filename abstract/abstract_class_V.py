@@ -14,6 +14,7 @@ class V(nn.Module):
     def __init__(self,precision_type):
         super(V, self).__init__()
         self.precision_type=precision_type
+        torch.set_default_tensor_type(self.precision_type)
         self.V_setup()
         #print(self.precision_type)
         #print(self.X)

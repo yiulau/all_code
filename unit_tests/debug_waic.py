@@ -12,8 +12,10 @@ with open("debug_test_error_mcmc.pkl", 'rb') as f:
 #exit()
 train_data = get_data_dict("pima_indian")
 
-v_obj = V_pima_inidan_logit()
+v_obj = V_pima_inidan_logit(precision_type="torch.DoubleTensor")
 
+#print(v_obj.beta)
+#exit()
 # out0 = v_obj.forward()
 #
 # out_sum = 0
@@ -31,7 +33,7 @@ mcmc_tensor = torch.from_numpy(mcmc_samples["samples"])
 chains_combined_mcmc_tensor = mcmc_tensor.view(-1,7)
 list_mcmc_point = convert_mcmc_tensor_to_list_points(chains_combined_mcmc_tensor,v_obj)
 
-out_waic = WAIC(list_mcmc_point,train_data,V_pima_inidan_logit())
+out_waic = WAIC(list_mcmc_point,train_data,v_obj)
 
 print(out_waic)
 

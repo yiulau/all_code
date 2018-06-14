@@ -5,8 +5,9 @@ from general_util.pytorch_random import log_student_t_density
 # horseshoe prior cp parametrization for the model weight
 # cp parametrization for local lamb and global tau
 class horseshoe_2(base_prior):
-    def __init__(self):
-        super(horseshoe_2, self).__init__()
+    def __init__(self,obj,name,shape):
+        self.setup_parameter(obj,name,shape)
+        #super(horseshoe_2, self).__init__()
 
     def get_val(self):
         return(self.w_obj)

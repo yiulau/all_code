@@ -12,6 +12,7 @@ def generate_gamma(alpha,beta):
 
 def log_inv_gamma_density(x,alpha,beta):
     out = -(alpha+1)*torch.log(x) - beta/x
+    out = out.sum()
     return(out)
 
 

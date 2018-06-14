@@ -17,8 +17,8 @@ class gaussian_inv_gamma_1(base_prior_new):
 
     def get_out(self):
         precision = torch.exp(self.log_precision_obj)
-        precision_out = log_inv_gamma_density(x=precision,nu=1,mu=0,sigma=1) + self.log_precision_obj.sum()
-        w_out = -(self.z_obj*self.z_obj*precision).sum()*0.5
+        precision_out = log_inv_gamma_density(x=precision,alpha=1,beta=1) + self.log_precision_obj.sum()
+        w_out = -(self.w_obj*self.w_obj*precision).sum()*0.5
         out = w_out + precision_out
         return(out)
 

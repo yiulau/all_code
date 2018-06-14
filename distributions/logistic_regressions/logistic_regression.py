@@ -55,6 +55,8 @@ class V_logistic_regression(bayes_model_class):
         self.load_point(posterior_point)
         X = Variable(observed_point["input"], requires_grad=False).type(self.precision_type)
         y = Variable(observed_point["target"], requires_grad=False).type(self.precision_type)
+        #print(self.beta.type)
+        #exit()
         num_ob = X.shape[0]
         likelihood = torch.dot(self.beta, torch.mv(torch.t(X), y)) - \
                      torch.sum(logsumexp_torch(Variable(torch.zeros(num_ob)), torch.mv(X, self.beta)))

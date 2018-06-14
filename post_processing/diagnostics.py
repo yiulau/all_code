@@ -1,7 +1,7 @@
 import numpy,torch
 from abstract.abstract_class_point import point
 # bfmi-e
-
+import math
 def bfmi_e(vector_of_energy):
     e_bar = numpy.mean(vector_of_energy)
     denom = numpy.square(vector_of_energy - e_bar).sum()
@@ -17,11 +17,11 @@ def lpd(p_y_given_theta,posterior_samples,observed_data):
     torch_target = torch.from_numpy(observed_data["target"])
     out = 0
     for i in range(n):
-        temp = 0
+        temp = [None]*S
         observed_point = {"input":torch_input[i:i+1,:],"target":torch_target[i:i+1]}
         for j in range(S):
-            temp +=p_y_given_theta(observed_point,posterior_samples[j])
-        out += temp
+            temp[j]=p_y_given_theta(observed_point,posterior_samples[j])
+        out += math.log(sum(temp)/S)
     return(out)
 
 # def lpd_efficient(p_y_given_theta,posterior_samples,observed_data):
