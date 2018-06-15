@@ -6,7 +6,7 @@ from distributions.neural_nets.priors.horseshoe_ard import horseshoe_ard
 from distributions.neural_nets.priors.gaussian_inv_gamma_1 import gaussian_inv_gamma_1
 from distributions.neural_nets.priors.gaussian_inv_gamma_2 import gaussian_inv_gamma_2
 from distributions.neural_nets.priors.standard_normal import standard_normal
-def prior_generator(name):
+def prior_generator(name,**kwargs):
     if name=="horseshoe_1":
         out = horseshoe_1
     elif name=="horseshoe_2":
@@ -29,6 +29,9 @@ def prior_generator(name):
 
     elif name=="standard_normal":
         out = standard_normal
+
+    elif name=="normal":
+        out = normal(var=kwargs["var"])
     return(out)
 
 

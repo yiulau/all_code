@@ -82,7 +82,3 @@ def choose_optimal_L(v_fun,fixed_ep,L_list,windowed):
 
 
 
-
-
-
-
