@@ -1,23 +1,30 @@
 import abc, numpy, pickle, os,copy
 from abstract.mcmc_sampler import mcmc_sampler_settings_dict,mcmc_sampler
-def experiment_setting_dict(chain_length,num_repeat,num_chains_per_sampler,save_name):
-    out = {"chain_length":chain_length,"num_repeat":num_repeat}
+def experiment_setting_dict(chain_length,save_name,
+                            tune_l,warm_up,num_chains_per_sampler=1,num_cpu_per_sampler=1,
+                            is_float=False,thin=1,allow_restart=False,max_num_restarts=5):
+    out = {"chain_length":chain_length}
     out.update({"num_chains_per_sampler":num_chains_per_sampler})
-    out.update({"save_name":save_name})
+    out.update({"allow_restart":allow_restart,"max_num_restarts":max_num_restarts,"is_float":is_float,"thin":thin})
+    out.update({"num_cpu_per_sampler":num_cpu_per_sampler,"tune_l":tune_l,"warm_up":warm_up})
+
+
     return(out)
-def resume_experiment(save_name):
-    experiment_obj = pickle.load(open(save_name, 'rb'))
-    experiment_obj.run()
-    return()
+# def resume_experiment(save_name):
+#     experiment_obj = pickle.load(open(save_name, 'rb'))
+#     experiment_obj.run()
+#     return()
 class experiment(object):
     #__metaclass__ = abc.ABCMeta
 
-    def __init__(self,input_object=None,experiment_setting=None):
+    def __init__(self,input_object=None,experiment_setting=None,fun_per_sampler=None):
 
+        self.fun_per_sampler = fun_per_sampler
         self.experiment_setting = experiment_setting
         self.input_object = input_object
         self.tune_param_grid = self.input_object.tune_param_grid
         self.store_grid_obj = numpy.empty(self.input_object.grid_shape,dtype=object)
+        self.experiment_result_grid_obj = numpy.empty(self.input_object.grid_shape,dtype=object)
         #loop through each point in the grid and initiate an sampling_object
         it = numpy.nditer(self.store_grid_obj, flags=['multi_index',"refs_ok"])
         cur = 0
@@ -28,9 +35,18 @@ class experiment(object):
             self.id_to_multi_index.append(it.multi_index)
             self.multi_index_to_id.update({it.multi_index: cur})
             tune_dict = self.tune_param_grid[it.multi_index]
-            sampling_metaobj = mcmc_sampler_settings_dict(mcmc_id = cur,num_chains=self.experiment_setting["num_chains_per_sampler"])
+            sampling_metaobj = mcmc_sampler_settings_dict(mcmc_id = cur,
+                                                          num_chains=self.experiment_setting["num_chains_per_sampler"],
+                                                          num_cpu=self.experiment_setting["num_cpu_per_sampler"],
+                                                          thin=self.experiment_setting["thin"],
+                                                          tune_l_per_chain=self.experiment_setting["tune_l"],
+                                                          warmup_per_chain=self.experiment_setting["warm_up"],
+                                                          is_float=self.experiment_setting["is_float"],
+                                                          allow_restart=self.experiment_setting["allow_restart"],
+                                                          max_num_restarts=self.experiment_setting["max_num_restarts"])
             grid_pt_metadict = {"mcmc_id":cur,"started":False,"completed":False,"saved":False}
             self.store_grid_obj[it.multi_index] = {"sampler":mcmc_sampler(tune_dict,sampling_metaobj),"metadata":grid_pt_metadict}
+            self.experiment_result_grid_obj[it.multi_index] = {}
             it.iternext()
             cur +=1
 
@@ -72,11 +88,16 @@ class experiment(object):
             #self.store_grid_obj[it.multi_index]["metadata"]
             sampler = self.store_grid_obj[it.multi_index]["sampler"]
             self.store_grid_obj[it.multi_index]["metadata"].update({"started": True})
-            result = sampler.start_sampling()
-            self.store_grid_obj[it.multi_index].update({"result": result})
+            sampler.start_sampling()
+            fun_output = self.fun_per_sampler(ran_sampler=sampler)
+            self.experiment_result_grid_obj[it.multi_index].update({"fun_output": fun_output})
             self.store_grid_obj[it.multi_index]["metadata"].update({"completed": True,"saved":True})
-            self.saves_progress()
+            #self.saves_progress()
             it.iternext()
+
+        # save_name = self.experiment_setting["save_name"]
+        # with open(save_name, 'wb') as f:
+        #     pickle.dump(self.experiment_result_grid_obj, f)
         return()
 
     def run_specific(self,list_of_multi_index_id=None,list_mcmc_id=None):
@@ -94,19 +115,24 @@ class experiment(object):
                 input_id = id
             sampler = self.store_grid_obj[input_id]["sampler"]
             self.store_grid_obj[input_id]["metadata"].update({"started":True})
-            result = sampler.start_sampling()
-            self.store_grid_obj[input_id].update({"result": result})
+            sampler.start_sampling()
+            fun_output = self.fun_per_sampler(ran_sampler=sampler)
+            self.experiment_result_grid_obj[input_id].update({"fun_output": fun_output})
             self.store_grid_obj[input_id]["metadata"].update({"completed": True,"saved":True})
-            self.saves_progress()
+            #self.saves_progress()
 
+        # save_name = self.experiment_setting["save_name"]
+        # with open(save_name, 'wb') as f:
+        #     pickle.dump(self.experiment_result_grid_obj, f)
+        return()
     def clone(self):
         # clone experiment object at pre-sampling state
         out = experiment(input_object=self.input_object.clone(),experiment_setting=copy.deepcopy(self.experiment_setting))
         return(out)
-    def saves_progress(self):
-        save_name = self.experiment_setting["save_name"]
-        with open(save_name, 'wb') as f:
-            pickle.dump(self, f)
+    # def saves_progress(self):
+    #     save_name = self.experiment_setting["save_name"]
+    #     with open(save_name, 'wb') as f:
+    #         pickle.dump(self, f)
 
 
 

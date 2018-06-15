@@ -1,22 +1,31 @@
-from distributions.logistic_regressions.logistic_horseshoe import class_generator
+#from distributions.logistic_regressions.logistic_horseshoe import class_generator
+from distributions.linear_regressions.linear_regression_horseshoe import class_generator
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch,pickle
 import pandas as pd
 
-abs_address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
-df = pd.read_csv(abs_address, header=0, sep=" ")
-# print(df)
-dfm = df.values
-# print(dfm)
-# print(dfm.shape)
-y_np = dfm[:, 8]
-y_np = y_np.astype(numpy.int64)
-X_np = dfm[:, 1:8]
+# abs_address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
+# df = pd.read_csv(abs_address, header=0, sep=" ")
+# # print(df)
+# dfm = df.values
+# # print(dfm)
+# # print(dfm.shape)
+# y_np = dfm[:, 8]
+# y_np = y_np.astype(numpy.int64)
+# X_np = dfm[:, 1:8]
+
+non_zero_num_p = 10
+full_p = 50
+num_samples = 60
+X_np = numpy.random.randn(num_samples,full_p)*5
+true_beta = numpy.zeros(full_p)
+true_beta[:non_zero_num_p] = numpy.random.randn(non_zero_num_p)*5
+y_np = X_np.dot(true_beta) + numpy.random.randn(num_samples)
 input_data = {"X_np":X_np,"y_np":y_np}
 
 
-prior_obj = prior_generator("gaussian_inv_gamma_2")
-v_generator = class_generator(input_data,prior_obj)
+prior_generator_fun = prior_generator("horseshoe_1")
+v_generator = class_generator(input_data,prior_generator_fun)
 
 
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict

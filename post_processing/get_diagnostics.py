@@ -1,4 +1,7 @@
 import numpy
+from post_processing.ESS_nuts import diagnostics_stan
+
+
 def get_diagnostics_from_sample(diagnostics_obj,permuted,name):
     assert name in ("prop_H","accepted","accept_rate","divergent","num_transitions","explode_grad")
     if permuted:
@@ -28,6 +31,15 @@ def percent_diagnostics(diagnostics,statistic_name):
     out = sum/total_terms
     return(out)
 
+# used in float vs double experiments
+# find if the chains correspond to same distribution wtih Gelman Rhat statistics
+def get_short_diagnostics(mcmc_samples_tensor):
+    # return min ESS, percent of parameters Rhat <1.1, ESJD
+    full_diagnostics = diagnostics_stan(mcmc_samples_tensor)
+    ess = full_diagnostics["ess"]
+    min_ess  = min(ess)
+    rhat_vec = full_diagnostics["rhat"]
+    percent_rhat = sum(rhat_vec<1.1)/(len(rhat_vec))
+    out = {"min_ess":min_ess,"percent_rhat":percent_rhat}
+    return(out)
 
-def get_short_diagnostics(diagnostics):
-    return()

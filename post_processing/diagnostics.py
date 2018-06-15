@@ -1,5 +1,7 @@
 import numpy,torch
 from abstract.abstract_class_point import point
+
+from post_processing.util import combine_chains
 # bfmi-e
 import math
 def bfmi_e(vector_of_energy):
@@ -59,3 +61,13 @@ def convert_mcmc_tensor_to_list_points(mcmc_tensor,v_obj):
         this_point.load_flatten()
         out[i] = this_point
     return(out)
+
+
+def esjd(mcmc_tensor):
+    # if more than one chain, combine into one long chain
+    if len(mcmc_tensor.shape)>2:
+        combined_mcmc_tensor = combine_chains(mcmc_tensor)
+    else:
+        combined_mcmc_tensor = mcmc_tensor
+
+

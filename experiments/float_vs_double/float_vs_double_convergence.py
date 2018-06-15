@@ -1,4 +1,4 @@
-# mix chains
+# mix chains, see if they pass test Gelman-Rubin
 import numpy,torch
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *
@@ -56,5 +56,8 @@ def convergence_diagnostics(v_fun):
 
     short_diagnostics_combined = get_short_diagnostics(combined_samples)
 
-    return(short_diagnostics_combined)
+    out = {"diag_combined":short_diagnostics_combined,"diag_float":short_diagnostics_float,"diag_double":short_diagnostics_double}
+    return(out)
+
+
 

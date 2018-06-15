@@ -23,16 +23,16 @@ class opt_state(object):
         return(best_X)
 
 
-opt_state_obj = opt_state([[0.1,0.5],[1,19]],[0.2,10])
-
-out = opt_state_obj.update(-0.1)
-
-print(out)
-
-out2 = opt_state_obj.update(-0.2)
-print(out2)
-
-
+# opt_state_obj = opt_state([[0.1,0.5],[1,19]],[0.2,10])
+#
+# out = opt_state_obj.update(-0.1)
+#
+# print(out)
+#
+# out2 = opt_state_obj.update(-0.2)
+# print(out2)
+#
+#
 
 
 

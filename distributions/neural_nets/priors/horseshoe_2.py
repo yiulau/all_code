@@ -1,4 +1,4 @@
-from distributions.neural_nets.priors.base_class import base_prior
+from distributions.neural_nets.priors.base_class import base_prior_new
 import torch.nn as nn
 import torch
 from general_util.pytorch_random import log_student_t_density
