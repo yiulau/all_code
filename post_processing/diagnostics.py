@@ -19,7 +19,7 @@ def lpd(p_y_given_theta,posterior_samples,observed_data):
     torch_target = torch.from_numpy(observed_data["target"])
     out = 0
     for i in range(n):
-        temp = [None]*S
+        temp = numpy.zeros(S)
         observed_point = {"input":torch_input[i:i+1,:],"target":torch_target[i:i+1]}
         for j in range(S):
             temp[j]=p_y_given_theta(observed_point,posterior_samples[j])
@@ -33,7 +33,7 @@ def lpd(p_y_given_theta,posterior_samples,observed_data):
 #     return()
 def pwaic(log_p_y_given_theta,posterior_samples,observed_data):
     S = len(posterior_samples)
-    n = len(observed_data["target"])
+    n = len(observed_data["input"].shape[0])
     torch_input = torch.from_numpy(observed_data["input"])
     torch_target = torch.from_numpy(observed_data["target"])
     out = 0
@@ -48,8 +48,31 @@ def pwaic(log_p_y_given_theta,posterior_samples,observed_data):
 def WAIC(posterior_samples,observed_data,V):
     # posterior samples a list of len num_samples each containing point _obj
     # observed_data a dict with "input" and "target" keys containing np array
-    elppd = lpd(V.p_y_given_theta,posterior_samples,observed_data) - pwaic(V.log_p_y_given_theta,posterior_samples,observed_data)
-    out = -2*elppd
+    elpd = lpd(V.p_y_given_theta,posterior_samples,observed_data) - pwaic(V.log_p_y_given_theta,posterior_samples,observed_data)
+    out = -2*elpd
+    return(out)
+
+
+def elpd_waic_vec(posterior_samples,observed_data,V):
+    n = len(observed_data["input"].shape[0])
+    S = len(posterior_samples)
+    store_waic_i_vec = numpy.zeros(n)
+    torch_input = torch.from_numpy(observed_data["input"])
+    torch_target = torch.from_numpy(observed_data["target"])
+    for i in range(n):
+        observed_point = {"input":torch_input[i:i+1,:],"target":torch_target[i:i+1]}
+        temp_lpd = numpy.zeros(S)
+        temp_pwaic = numpy.zeros(S)
+        for j in range(S):
+            temp_lpd[j]= V.p_y_given_theta(observed_point,posterior_samples[j])
+            temp_pwaic[j] = V.log_p_y_given_theta(observed_point, posterior_samples[j])
+        store_waic_i_vec = math.log(sum(temp_lpd)/S) - numpy.var(temp_pwaic)
+
+    return(store_waic_i_vec)
+
+def se_elpd_waic(elpd_waic_vec):
+    n = len(elpd_waic_vec)
+    out = math.sqrt(n*numpy.var(elpd_waic_vec))
     return(out)
 
 def convert_mcmc_tensor_to_list_points(mcmc_tensor,v_obj):
