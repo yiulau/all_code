@@ -61,11 +61,11 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
             temp_H = Ham.evaluate(q, p)
             #print("H is {}".format(temp_H))
             if(current_H < temp_H and abs(temp_H-current_H)>500 or divergent):
-                #print("yeye")
-                #print(i)
-                #print(temp_H)
-                #print(current_H)
-                #exit()
+                print("yeye")
+                print(i)
+                print(temp_H)
+                print(current_H)
+                exit()
                 return_q = init_q
                 return_H = current_H
                 accept_rate = 0
@@ -107,6 +107,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #accept_rate = math.exp(min(0, current_H - endH))
     #print("accept_rate {}".format(accept_rate))
     print("divergent inside {}".format(divergent))
+    print("explode grad {}".format(explode_grad))
     if not divergent and not explode_grad:
         print("endH {}".format(Ham.evaluate(q,p)))
     #exit()

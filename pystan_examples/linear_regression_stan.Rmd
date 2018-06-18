@@ -1,0 +1,67 @@
+---
+title: "linear_regression"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(reticulate)
+use_condaenv("py36")
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+py_config()
+```
+```{python}
+#from input_data.convert_data_to_dict import get_data_dict
+import os, sys
+sys.path.append("/home/yiulau/PycharmProjects/all_code")
+from input_data.convert_data_to_dict import get_data_dict
+
+#print(os.environ["PYTHONPATH"])
+dataset = get_data_dict("boston")
+X = dataset["input"]
+y = dataset["target"]
+#print(X.shape)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r}
+
+datasets = import("sklearn.datasets")
+out = datasets$load_boston()
+X = out$data
+y = out$target
+
+print(dim(X))
+
+```
+
+```{r}
+X = py$X
+y = py$y
+print(dim(X))
+print(dim(y))
+N = dim(X)[1]
+K = dim(X)[2]
+data = list(X=X,y=y,N=N,K=K)
+library(rstan)
+address = "/home/yiulau/PycharmProjects/all_code/stan_code/linear_regression.stan"
+model = stan_model(file=address)
+
+o = sampling(model,data=list(y=y,X=X,N=N,K=K))
+
+print(o)
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -5,15 +5,15 @@ from torch.autograd import Variable
 from input_data.convert_data_to_dict import get_data_dict
 from explicit.general_util import logsumexp_torch
 
-precision_type = 'torch.DoubleTensor'
-#precision_type = 'torch.FloatTensor'
-torch.set_default_tensor_type(precision_type)
+# precision_type = 'torch.DoubleTensor'
+# #precision_type = 'torch.FloatTensor'
+# torch.set_default_tensor_type(precision_type)
 
 
 class V_linear_regression(V):
-    def __init__(self):
+    def __init__(self,precision_type="torch.DoubleTensor"):
 
-        super(V_linear_regression, self).__init__()
+        super(V_linear_regression, self).__init__(precision_type=precision_type)
     def V_setup(self):
         input_npdata = get_data_dict("boston")
         self.y_np = input_npdata["target"]
@@ -23,8 +23,8 @@ class V_linear_regression(V):
         self.explicit_gradient = False
         self.need_higherorderderiv = True
         self.beta = nn.Parameter(torch.zeros(self.dim),requires_grad=True)
-        self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type(precision_type)
-        self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(precision_type)
+        self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type(self.precision_type)
+        self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(self.precision_type)
         # include
         self.sigma =1
 
@@ -35,6 +35,9 @@ class V_linear_regression(V):
 
         likelihood = -(((self.y - self.X.mv(self.beta))*(self.y-self.X.mv(self.beta)))).sum()*0.5
         prior = -torch.dot(self.beta, self.beta)/(self.sigma*self.sigma) * 0.5
+        print("likelihood {}".format(likelihood))
+        print("prior {}".format(prior))
+        print("beta {}".format(self.beta))
         posterior = prior + likelihood
         out = -posterior
         return(out)

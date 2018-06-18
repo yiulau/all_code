@@ -32,6 +32,42 @@ def generate_cho_problem_data(number_of_ob):
 
     return(out)
 
+def generate_horseshoe_test_data_toy(A,num_samples,num_true_p):
+    non_zeros = numpy.ones(num_true_p)*A
+    y = numpy.zeros(num_samples)
+    y[:num_true_p] = non_zeros
+    y += numpy.random.randn(num_samples)
+    return(y)
+
+def generate_horseshoe_test_binary():
+
+    n = 30
+    y = numpy.zeros(n)
+    X = numpy.zeros((n,100))
+    for i in range(n):
+        z = numpy.random.randn(1)
+        if z > 0:
+            y[i] = 1
+            X[i,0] = 1 + numpy.random.randn(1)*0.5
+            X[i,1] = 1 + numpy.random.randn(1)*0.5
+            X[i,2:] = numpy.random.randn(98)
+        else:
+            y[i] = 0
+            X[i,0] = -1 + numpy.random.randn(1)*0.5
+            X[i,1] = -1 + numpy.random.randn(1)*0.5
+            X[i,2:] = numpy.random.randn(98)
+
+    out = {"input":X,"target":y}
+
+    return(out)
 # generate_cho_problem_data(100)
 #
 # print(generate_robot_arms_data(100))
+
+out = generate_cho_problem_data(400)
+
+#print(out)
+
+out = generate_horseshoe_test_binary()
+
+print(out)
