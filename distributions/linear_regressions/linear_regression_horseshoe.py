@@ -1,89 +1,41 @@
 import torch
-import torch.nn as nn
-from abstract.abstract_class_V import V
+from distributions.bayes_model_class import bayes_model_class
 from torch.autograd import Variable
-from distributions.neural_nets.util import prior
+from distributions.neural_nets.priors.prior_util import prior_generator
 from explicit.general_util import logsumexp_torch
 from distributions.neural_nets.priors.horseshoe_1 import horseshoe_1
-precision_type = 'torch.DoubleTensor'
+#precision_type = 'torch.DoubleTensor'
 #precision_type = 'torch.FloatTensor'
-torch.set_default_tensor_type(precision_type)
+#torch.set_default_tensor_type(precision_type)
 
 
-def class_generator(input_npdata,prior_generator_fun):
-    class V_linear_regression_hs(V):
-        def __init__(self,precision_type):
-            self.y_np = input_npdata["y_np"]
-            self.X_np = input_npdata["X_np"]
-            super(V_linear_regression_hs, self).__init__(precision_type=precision_type)
-        def V_setup(self):
-            self.dim = self.X_np.shape[1]
-            self.num_ob = self.X_np.shape[0]
-            self.explicit_gradient = False
-            self.need_higherorderderiv = False
-            prior_obj = prior_generator_fun(obj=self,name="beta",shape=[self.dim])
-            #self.beta_obj = prior_obj.generator(obj=self,name="beta",shape=[self.dim])
-            self.beta_obj = prior_obj
-            self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type(precision_type)
-            self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(precision_type)
-            # include
-            #self.sigma =1
+class V_linear_regression_hs(bayes_model_class):
+    def __init__(self,input_data,precision_type):
 
-            return()
+        super(V_linear_regression_hs, self).__init__(input_data=input_data,precision_type=precision_type)
+    def V_setup(self):
+        self.dim = self.X_np.shape[1]
+        self.num_ob = self.X_np.shape[0]
+        self.explicit_gradient = False
+        self.need_higherorderderiv = False
+        hs_prior_generator_fun = prior_generator("horseshoe_3")
+        prior_obj = hs_prior_generator_fun(obj=self,name="beta",shape=[self.dim])
+        #self.beta_obj = prior_obj.generator(obj=self,name="beta",shape=[self.dim])
+        self.beta_obj = prior_obj
+        self.y = Variable(torch.from_numpy(self.input_data["target"]),requires_grad=False).type(self.precision_type)
+        self.X = Variable(torch.from_numpy(self.input_data["input"]),requires_grad=False).type(self.precision_type)
+        # include
+        #self.sigma =1
 
-        def forward(self):
-            beta = self.beta_obj.get_val()
+        return()
 
-            likelihood = -(self.y - torch.mv(self.X,beta))*(self.y-torch.mv(self.X,beta)).sum()*0.5
-            prior = self.beta_obj.get_out()
-            posterior = prior + likelihood
-            out = -posterior
-            return(out)
+    def forward(self):
+        beta = self.beta_obj.get_val()
 
-        # def load_explicit_gradient(self):
-        #     out = torch.zeros(self.dim)
-        #     X = self.X.data
-        #     beta = self.beta.data
-        #     y = self.y.data
-        #     pihat = torch.sigmoid(torch.mv(X, beta))
-        #     out = -X.t().mv(y - pihat) + beta
-        #     return(out)
-        #
-        # def load_explicit_H(self):
-        #     # write down explicit hessian
-        #     out = torch.zeros(self.dim,self.dim)
-        #     X = self.X.data
-        #     beta = self.beta.data
-        #     y = self.y.data
-        #     pihat = torch.sigmoid(torch.mv(X, beta))
-        #     out = torch.mm(X.t(), torch.mm(X.t(), torch.diag(pihat * (1. - pihat))).t()) + torch.diag(
-        #         torch.ones(len(beta)))
-        #
-        #     return(out)
-        #
-        #
-        # def load_explicit_dH(self):
-        #     # write down explicit 3 rd derivatives
-        #     out = torch.zeros(self.dim,self.dim,self.dim)
-        #     X = self.X.data
-        #     beta = self.beta.data
-        #     y = self.y.data
-        #     pihat = torch.sigmoid(torch.mv(X, beta))
-        #     for i in range(self.dim):
-        #         out[i, :, :] = (
-        #         torch.mm(X.t(), torch.diag(pihat * (1. - pihat))).mm(torch.diag(1. - 2 * pihat) * X[:, i]).mm(X))
-        #
-        #     return(out)
-        #
-        # def load_explicit_diagH(self):
-        #     out = self.load_explicit_H()
-        #     return (torch.diag(out))
-        # def load_explicit_graddiagH(self):
-        #     temp = self.load_explicit_dH()
-        #     out = torch.zeros(self.dim,self.dim)
-        #     for i in range(self.dim):
-        #         out[i,:] = torch.diag(temp[i,:,:])
-        #     #out = out.t()
-        #     return(out)
+        likelihood = -(self.y - torch.mv(self.X,beta))*(self.y-torch.mv(self.X,beta)).sum()*0.5
+        prior = self.beta_obj.get_out()
+        posterior = prior + likelihood
+        out = -posterior
+        return(out)
 
-    return(V_linear_regression_hs)
+

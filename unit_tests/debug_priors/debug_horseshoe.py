@@ -1,5 +1,6 @@
 #from distributions.logistic_regressions.logistic_horseshoe import class_generator
-from distributions.linear_regressions.linear_regression_horseshoe import class_generator
+from distributions.linear_regressions.linear_regression_horseshoe import V_linear_regression_hs
+from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch,pickle
 import pandas as pd
@@ -21,12 +22,12 @@ X_np = numpy.random.randn(num_samples,full_p)*5
 true_beta = numpy.zeros(full_p)
 true_beta[:non_zero_num_p] = numpy.random.randn(non_zero_num_p)*5
 y_np = X_np.dot(true_beta) + numpy.random.randn(num_samples)
-input_data = {"X_np":X_np,"y_np":y_np}
+input_data = {"input":X_np,"target":y_np}
 
 
-prior_generator_fun = prior_generator("horseshoe_1")
-v_generator = class_generator(input_data,prior_generator_fun)
-
+#prior_generator_fun = prior_generator("horseshoe_1")
+#v_generator = class_generator(input_data,prior_generator_fun)
+v_generator =wrap_V_class_with_input_data(class_constructor=V_linear_regression_hs,input_data=input_data)
 
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *

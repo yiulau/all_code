@@ -1,11 +1,13 @@
-from distributions.neural_nets.priors.base_class import base_prior
+from distributions.neural_nets.priors.base_class import base_prior_new
 import torch.nn as nn
 import torch
 from general_util.pytorch_random import log_student_t_density,log_inv_gamma_density
 # horseshoe prior ncp parametrization for the model weight
 # ncp parametrization for local lamb and global tau
-class horseshoe_3(base_prior):
-    def __init__(self,obj,name,shape):
+class horseshoe_3(base_prior_new):
+    def __init__(self,obj,name,shape,global_scale=1,nu=1):
+        self.global_scale = global_scale
+        self.nu = nu
         self.setup_parameter(obj,name,shape)
         #super(horseshoe_3, self).__init__()
 
@@ -14,7 +16,7 @@ class horseshoe_3(base_prior):
         global_r2 = torch.exp(self.log_global_r2_obj)
         local_r1 = torch.exp(self.log_local_r1_obj)
         global_r1 = torch.exp(self.log_global_r2_obj)
-        tau = global_r1 * torch.sqrt(global_r2)
+        tau = global_r1 * torch.sqrt(global_r2) * self.global_scale
         lamb = local_r1 * torch.sqrt(local_r2)
         w_obj = self.z_obj * lamb * tau
         return(w_obj)
@@ -27,8 +29,8 @@ class horseshoe_3(base_prior):
         global_r1_out = -(global_r1*global_r1).sum()*0.5 + self.log_global_r1_obj.sum()
         local_r2 = torch.exp(self.log_local_r2_obj)
         global_r2 = torch.exp(self.log_global_r2_obj)
-        local_r2_out = log_inv_gamma_density(x=local_r2,alpha=1,beta=1) + self.log_local_r2_obj.sum()
-        global_r2_out = log_inv_gamma_density(x=global_r2,alpha=1,beta=1) + self.log_global_r2_obj.sum()
+        local_r2_out = log_inv_gamma_density(x=local_r2,alpha=0.5,beta=0.5) + self.log_local_r2_obj.sum()
+        global_r2_out = log_inv_gamma_density(x=global_r2,alpha=0.5*self.nu,beta=0.5*self.nu) + self.log_global_r2_obj.sum()
         out = z_out + local_r2_out + global_r2_out + local_r1_out + global_r1_out
         return(out)
 

@@ -5,11 +5,12 @@ from torch.autograd import Variable
 import pandas as pd
 from torch.autograd import Variable, Function
 from explicit.general_util import logsumexp_torch
-from distributions.neural_nets.util import gamma_density,setup_parameter
+from distributions.neural_nets.util import gamma_density
 
 precision_type = 'torch.DoubleTensor'
 #precision_type = 'torch.FloatTensor'
 torch.set_default_tensor_type(precision_type)
+from distributions.neural_nets.priors.prior_util import prior_generator
 
 class V_fc_test_hyper(V):
     def __init__(self,input_npdata=None):
@@ -30,9 +31,10 @@ class V_fc_test_hyper(V):
         self.explicit_gradient = True
         self.need_higherorderderiv = True
         self.num_units = 10
-        prior_obj = prior("horseshoe")
-        self.hidden_in = setup_parameter(obj=self,name="hidden_in",shape=(self.num_units,self.dim),prior=prior_obj)
-        self.hidden_out = setup_parameter(obj=self,name="hidden_out",shape=(2,self.num_units),prior=prior_obj)
+        prior_hidden_fn = prior_generator("horseshoe_1")
+        prior_out_fn = prior_generator("standard_normal")
+        self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim))
+        self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(2,self.num_units))
         #self.hidden_in_z = nn.Parameter(torch.zeros(self.num_units, self.dim), requires_grad=True)
         #self.hidden_out_z = nn.Parameter(torch.zeros(2,self.num_units),requires_grad=True)
 
