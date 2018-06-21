@@ -1,42 +1,31 @@
 import torch,numpy,os
 import torch.nn as nn
-from abstract.abstract_class_V import V
+from distributions.bayes_model_class import bayes_model_class
 from torch.autograd import Variable
 import pandas as pd
 from torch.autograd import Variable, Function
 from explicit.general_util import logsumexp_torch
-from distributions.neural_nets.util import gamma_density
+from distributions.neural_nets.util import log_inv_gamma_density
 from general_util.pytorch_random import generate_gamma
-precision_type = 'torch.DoubleTensor'
-#precision_type = 'torch.FloatTensor'
-torch.set_default_tensor_type(precision_type)
 
-class V_fc_test_hyper(V):
-    def __init__(self,input_npdata=None):
-        if input_npdata is None:
-            abs_address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
-            df = pd.read_csv(abs_address, header=0, sep=" ")
-            dfm = df.as_matrix()
-            y_np = dfm[:, 8]
-            y_np = y_np.astype(numpy.int64)
-            X_np = dfm[:, 1:8]
-            input_npdata = {"X_np":X_np,"y_np":y_np}
-        self.y_np = input_npdata["y_np"]
-        self.X_np = input_npdata["X_np"]
-        super(V_fc_test_hyper, self).__init__()
+# for gibbs sampler
+# inverse gamma prior for weight variances alpha =0.5 ,beta =0.5
+class V_fc_hierarchical_block(bayes_model_class):
+    def __init__(self,input_data,precision_type):
+        super(V_fc_hierarchical_block, self).__init__(input_data=input_data,precision_type=precision_type)
     def V_setup(self):
-        self.dim = self.X_np.shape[1]
-        self.num_ob = self.X_np.shape[0]
+        self.dim = self.input_data["input"].shape[1]
+        self.num_ob = self.input_data["input"].shape[0]
         self.explicit_gradient = True
         self.need_higherorderderiv = True
         self.num_units = 10
 
         self.hidden_in = nn.Parameter(torch.zeros(self.num_units,self.dim),requires_grad=True)
-        self.hidden_in_log_sigma = Variable(torch.zeros(1),requires_grad=False)
+        self.hidden_in_sigma2 = Variable(torch.zeros(1),requires_grad=False)
         self.hidden_out = nn.Parameter(torch.zeros(2,self.num_units),requires_grad=True)
-        self.hidden_out_log_sigma = Variable(torch.zeros(1),requires_grad=False)
+        self.hidden_out_sigma2 = Variable(torch.zeros(1),requires_grad=False)
         self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type("torch.LongTensor")
-        self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(precision_type)
+        self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(self.precision_type)
         # include
         # the two lists need to match
         self.list_hyperparam = [self.hidden_in_log_sigma,self.hidden_out_log_sigma]
@@ -51,7 +40,7 @@ class V_fc_test_hyper(V):
             norm = ((self.list_param[i].data)*(self.list_param[i].data)).sum()
             alpha_tensor[i] = n*0.5 + 1
             beta_tensor[i] = norm *0.5 + 1
-        new_hyperparam_val = generate_gamma(alpha=alpha_tensor,beta=beta_tensor)
+        new_hyperparam_val = 1/generate_gamma(alpha=alpha_tensor,beta=beta_tensor)
         for i in range(len(self.list_hyperparam)):
             self.list_hyperparam[i].data.copy_(new_hyperparam_val[i])
         return()
@@ -64,28 +53,28 @@ class V_fc_test_hyper(V):
         #criterion = nn.NLLLoss()
         criterion = nn.CrossEntropyLoss()
         neg_log_likelihood = criterion(out_units,self.y)
-        in_sigma = torch.exp(self.hidden_in_log_sigma)
-        out_sigma = torch.exp(self.hidden_out_log_sigma)
-        hidden_in_out = -(self.hidden_in * self.hidden_in).sum()*0.5/(in_sigma*in_sigma) - 2*self.hidden_in_log_sigma.sum()
+        in_sigma2 = self.hidden_in_sigma2
+        out_sigma2 = self.hidden_out_sigma2
+        hidden_in_out = -(self.hidden_in * self.hidden_in).sum()*0.5/(in_sigma2)
         # print(self.hidden_out_log_sigma)
         # print(self.hidden_in_log_sigma)
-        hidden_out_out = -(self.hidden_out * self.hidden_out).sum()*0.5/(out_sigma*out_sigma) - 2*self.hidden_out_log_sigma.sum()
-        in_sigma_out = gamma_density(in_sigma,1,1)
-        out_sigma_out = gamma_density(out_sigma,1,1)
+        hidden_out_out = -(self.hidden_out * self.hidden_out).sum()*0.5/(out_sigma2)
+        in_sigma2_out = log_inv_gamma_density(x=in_sigma2,alpha=0.5,beta=0.5)
+        out_sigma2_out = log_inv_gamma_density(x=out_sigma2,alpha=0.5,beta=0.5)
         #print("likelihood {}".format(likelihood))
         #print("hidden_in_out {}".format(hidden_in_out))
         # print("hidden_out_out {}".format(hidden_out_out))
         # print("in sigma out {}".format(in_sigma_out))
         # print("out sigma {}".format(out_sigma_out))
-        prior = hidden_in_out + hidden_out_out + in_sigma_out + out_sigma_out
+        prior = hidden_in_out + hidden_out_out + in_sigma2_out + out_sigma2_out
         #print("prior {}".format(prior))
         #print("neg_loglikelihood {}".format(neg_log_likelihood))
         neg_logposterior = -prior  + neg_log_likelihood
         out = neg_logposterior
         print("hidden in {} ".format(self.hidden_in))
         print("hidden_out {}".format(self.hidden_out))
-        print("sigma out {}".format(out_sigma))
-        print("sigma in {}".format(in_sigma))
+        print("sigma out {}".format(out_sigma2))
+        print("sigma in {}".format(in_sigma2))
         return(out)
 
     def predict(self):
@@ -101,9 +90,22 @@ class V_fc_test_hyper(V):
             self.list_hyperparam[i].data.copy_(list_hyperparam[i])
         return()
 
+
+    def log_p_y_given_theta(self, observed_point, posterior_point):
+        self.load_point(posterior_point)
+        X = Variable(torch.from_numpy(observed_point["input"]), requires_grad=False).type(self.precision_type)
+        y = Variable(torch.from_numpy(observed_point["target"]), requires_grad=False).type(self.precision_type)
+        hidden_units = torch.tanh((self.hidden_in.mm(X.t())))
+        out_units = self.hidden_out.mm(hidden_units).t()
+        criterion = nn.CrossEntropyLoss()
+        neg_log_likelihood = criterion(out_units, y)
+        out = -neg_log_likelihood
+        out = out.data[0]
+        return(out)
     def get_hyperparam(self):
         out = []
         for i in range(len(self.list_hyperparam)):
-            out.append(self.list_hyperparam.data.clone())
+            out.append(self.list_hyperparam[i].data.clone())
         return(out)
+
 

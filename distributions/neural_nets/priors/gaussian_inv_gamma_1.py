@@ -3,9 +3,11 @@ import torch.nn as nn
 import torch
 from general_util.pytorch_random import log_student_t_density,log_inv_gamma_density
 # gaussian-inv_gamma prior cp parametrization for the model weight
-#
+# only one sigma shared by all weights
 class gaussian_inv_gamma_1(base_prior_new):
-    def __init__(self,obj,name,shape):
+    def __init__(self,obj,name,shape,global_scale=1,global_df=1):
+        self.global_df = global_df
+        self.global_scale = global_scale
         self.setup_parameter(obj,name,shape)
         #super(horseshoe_1, self).__init__()
 
@@ -24,7 +26,7 @@ class gaussian_inv_gamma_1(base_prior_new):
 
     def setup_parameter(self,obj, name, shape):
         self.w_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
-        self.log_precision_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
+        self.log_precision_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
         setattr(obj,"w_obj",self.w_obj)
         setattr(obj,"log_precision_obj",self.log_precision_obj)
         return()

@@ -1,0 +1,81 @@
+from distributions.neural_nets.priors.base_class import base_prior_new
+import torch.nn as nn
+import torch
+from general_util.pytorch_random import log_student_t_density, log_inv_gamma_density
+
+
+# horseshoe prior ard for entire layer
+# one global scale parameter for the entire layer
+# local scale shared for each unit
+# ncp parametrization for the model weight
+# ncp parametrization for local lamb and global tau
+class gaussian_inv_gamma_ard(base_prior_new):
+    def __init__(self,obj,name,shape,global_scale=1,global_df=1):
+        self.global_df = global_df
+        self.global_scale = global_scale
+        self.setup_parameter(obj, name, shape)
+        super(gaussian_inv_gamma_ard, self).__init__()
+
+    def get_val(self):
+        w_row_list = [None]*self.num_units
+        for i in range(self.num_units):
+            param_dict = self.param_list_by_units[i]
+            sigma2 = torch.exp(param_dict["log_local_r2_obj"])
+            w_row = param_dict["z_obj"] * torch.sqrt(sigma2)
+            w_row_list[i] = w_row
+        w_obj = torch.cat(w_row_list,0)
+        return (w_obj)
+
+    def get_val_alt(self):
+        sigma2 = torch.exp(self.agg_log_sigma2_obj)
+        w_obj = self.agg_z_obj * torch.sqrt(sigma2)
+
+        return(w_obj)
+    def get_out(self):
+        out = 0
+        for i in range(self.num_units):
+            param_dict = self.param_list_by_units[i]
+            z_out = -(param_dict["z_obj"] * param_dict["z_obj"]).sum() * 0.5
+            sigma2 = torch.exp(param_dict["log_sigma2_obj"])
+            sigma2_out = log_inv_gamma_density(x=sigma2, alpha=0.5*self.global_df, beta=0.5*self.global_scale) + param_dict["log_sigma2_obj"].sum()
+            out += z_out + sigma2_out
+        return (out)
+    def get_out_alt(self):
+
+        z_out = -(self.agg_z_obj * self.agg_z_obj).sum() * 0.5
+        sigma2 = torch.exp(self.agg_log_sigma2_obj)
+        sigma2_out = log_inv_gamma_density(x=sigma2, alpha=0.5*self.global_df, beta=0.5*self.global_scale) + self.agg_log_sigma2_obj.sum()
+        out = z_out + sigma2_out
+        return(out)
+
+
+    def get_unit_scales(self):
+        # return sum tau lamb for weights entering each unit
+        local_r1 = torch.exp(self.agg_log_local_r1_obj)
+        local_r2 = torch.exp(self.agg_log_local_r2_obj)
+        global_r1 = torch.exp(self.log_global_r1_obj)
+        global_r2 = torch.exp(self.log_global_r2_obj)
+
+        tau = global_r1 * torch.sqrt(global_r2) * self.global_scale
+        lamb = local_r1 * torch.sqrt(local_r2)
+
+        out = torch.sqrt(tau * tau * lamb * lamb * self.in_units)
+        return(out)
+
+    def setup_parameter(self, obj, name, shape):
+
+        self.num_units = shape[0]
+        self.in_units = shape[1]
+        self.param_list_by_units = []
+
+        self.agg_z_obj = nn.Parameter(torch.zeros(self.num_units,self.in_units),requires_grad=True)
+        self.agg_log_sigma2_obj = nn.Parameter(torch.zeros(self.num_units,1),requires_grad=True)
+        for i in range(self.num_units):
+            z_obj = self.agg_z_obj[i,:]
+            log_sigma_obj = self.agg_log_sigma2_obj[i,0]
+            param_dict = {"z_obj":z_obj,"log_sigma2_obj":log_sigma_obj}
+            self.param_list_by_units.append(param_dict)
+
+        setattr(obj, "agg_z_obj", self.agg_z_obj)
+        setattr(obj, "log_sigma_obj", self.agg_log_sigma2_obj)
+        return ()

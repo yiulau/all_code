@@ -25,7 +25,7 @@ class horseshoe_3(base_prior_new):
         local_r1 = torch.exp(self.log_local_r1_obj)
         global_r1 = torch.exp(self.log_global_r2_obj)
         z_out = -(self.z_obj*self.z_obj).sum()*0.5
-        local_r1_out = -(local_r1*self.local_r1).sum()*0.5 + self.log_local_r1_obj.sum()
+        local_r1_out = -(local_r1*local_r1).sum()*0.5 + self.log_local_r1_obj.sum()
         global_r1_out = -(global_r1*global_r1).sum()*0.5 + self.log_global_r1_obj.sum()
         local_r2 = torch.exp(self.log_local_r2_obj)
         global_r2 = torch.exp(self.log_global_r2_obj)

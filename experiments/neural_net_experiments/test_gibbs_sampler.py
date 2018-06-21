@@ -2,4 +2,4 @@
 # two ways
 # one hand pick low epsilon then
 # two use dual averaging regardless
-#
+

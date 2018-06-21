@@ -1,35 +1,27 @@
 import torch,numpy,os
 import torch.nn as nn
-from abstract.abstract_class_V import V
+from distributions.bayes_model_class import bayes_model_class
 from torch.autograd import Variable
 import pandas as pd
 from torch.autograd import Variable, Function
 from explicit.general_util import logsumexp_torch
-from distributions.neural_nets.util import gamma_density
+from distributions.neural_nets.util import log_inv_gamma_density
 
-precision_type = 'torch.DoubleTensor'
-#precision_type = 'torch.FloatTensor'
-torch.set_default_tensor_type(precision_type)
+# precision_type = 'torch.DoubleTensor'
+# #precision_type = 'torch.FloatTensor'
+# torch.set_default_tensor_type(precision_type)
 
-class V_fc_test_hyper(V):
-    def __init__(self,input_npdata=None):
-        if input_npdata is None:
-            abs_address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
-            df = pd.read_csv(abs_address, header=0, sep=" ")
-            dfm = df.as_matrix()
-            y_np = dfm[:, 8]
-            if precision_type=="torch.DoubleTensor":
-                y_np = y_np.astype(numpy.int64)
-            else:
-                y_np = y_np.astype(numpy.int32)
-            X_np = dfm[:, 1:8]
-            input_npdata = {"X_np":X_np,"y_np":y_np}
-        self.y_np = input_npdata["y_np"]
-        self.X_np = input_npdata["X_np"]
-        super(V_fc_test_hyper, self).__init__()
+# one hidden layer
+# that is X ~ input > hidden units > output units ~ y
+# normal prior for weights
+# inverse gamma for weight variance alpha = 0.5 ,beta = 0.5
+class V_fc_test_hyper(bayes_model_class):
+    def __init__(self,input_data,precision_type):
+
+        super(V_fc_test_hyper, self).__init__(input_data=input_data,precision_type=precision_type)
     def V_setup(self):
-        self.dim = self.X_np.shape[1]
-        self.num_ob = self.X_np.shape[0]
+        self.dim = self.input_data["input"].shape[1]
+        self.num_ob = self.input_data["input"].shape[0]
         self.explicit_gradient = True
         self.need_higherorderderiv = True
         self.num_units = 10
@@ -38,16 +30,16 @@ class V_fc_test_hyper(V):
         self.hidden_in_log_sigma = nn.Parameter(torch.zeros(1),requires_grad=True)
         self.hidden_out = nn.Parameter(torch.zeros(2,self.num_units),requires_grad=True)
         self.hidden_out_log_sigma = nn.Parameter(torch.zeros(1),requires_grad=True)
-        self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type("torch.LongTensor")
-        self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(precision_type)
+        self.y = Variable(torch.from_numpy(self.input_data["target"]),requires_grad=False).type("torch.LongTensor")
+        self.X = Variable(torch.from_numpy(self.input_data["input"]),requires_grad=False).type(self.precision_type)
         # include
 
         return()
 
     def forward(self):
 
-        sigmoid = torch.nn.Sigmoid()
-        hidden_units = sigmoid((self.hidden_in.mm(self.X.t())))
+        #sigmoid = torch.nn.Sigmoid()
+        hidden_units = torch.tanh((self.hidden_in.mm(self.X.t())))
         out_units = self.hidden_out.mm(hidden_units).t()
 
         #criterion = nn.NLLLoss()
@@ -59,8 +51,8 @@ class V_fc_test_hyper(V):
         # print(self.hidden_out_log_sigma)
         # print(self.hidden_in_log_sigma)
         hidden_out_out = -(self.hidden_out * self.hidden_out).sum()*0.5/(out_sigma*out_sigma) - 2*self.hidden_out_log_sigma.sum()
-        in_sigma_out = gamma_density(in_sigma,1,1)
-        out_sigma_out = gamma_density(out_sigma,1,1)
+        in_sigma_out = log_inv_gamma_density(x=in_sigma,alpha=0.5,beta=0.5)
+        out_sigma_out = log_inv_gamma_density(x=out_sigma,alpha=0.5,beta=0.5)
         #print("likelihood {}".format(likelihood))
         #print("hidden_in_out {}".format(hidden_in_out))
         # print("hidden_out_out {}".format(hidden_out_out))
@@ -77,13 +69,26 @@ class V_fc_test_hyper(V):
         print("sigma in {}".format(in_sigma))
         return(out)
 
-    def predict(self):
-        sigmoid = torch.nn.Sigmoid()
-        hidden_units = sigmoid((self.hidden_in.mm(self.X.t())))
+    def predict(self,inputX):
+        X = Variable(torch.from_numpy(inputX),requires_grad=False).type(self.precision_type)
+
+        hidden_units = torch.tanh((self.hidden_in.mm(X.t())))
         out_units = self.hidden_out.mm(hidden_units).t()
         softmax = nn.Softmax()
         prob = softmax(out_units)
         return(prob[:,1].data)
+
+    def log_p_y_given_theta(self, observed_point, posterior_point):
+        self.load_point(posterior_point)
+        X = Variable(torch.from_numpy(observed_point["input"]), requires_grad=False).type(self.precision_type)
+        y = Variable(torch.from_numpy(observed_point["target"]),requires_grad=False).type(self.precision_type)
+        hidden_units = torch.tanh((self.hidden_in.mm(X.t())))
+        out_units = self.hidden_out.mm(hidden_units).t()
+        criterion = nn.CrossEntropyLoss()
+        neg_log_likelihood = criterion(out_units, y)
+        out = -neg_log_likelihood
+        out = out.data[0]
+        return(out)
 
 
 
