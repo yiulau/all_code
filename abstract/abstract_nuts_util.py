@@ -83,6 +83,7 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
     log_w = -Ham.evaluate(init_q,p_init)
     H_0 = -log_w
     accepted = False
+    accept_rate = 0
     divergent = False
     sum_p = p_init.flattened_tensor.clone()
     s = True
@@ -112,8 +113,8 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
             s = s and (j < max_tree_depth)
         else:
             s = False
-            accept_rate = 0
-            divergent = True
+            #accept_rate = 0
+            #divergent = True
 
 
         num_div +=num_div_prime
@@ -221,13 +222,14 @@ def abstract_BuildTree_nuts(q,p,v,j,epsilon,Ham,H_0,diagn_dict):
             # boolean True if there's no divergence.
             log_w_prime = -Ham.evaluate(q_prime, p_prime)
             H_cur = -log_w_prime
-            if abs(H_cur-H_0)<500:
+            if abs(H_cur-H_0)<1000:
                 continue_divergence = True
                 num_div = 0
             else:
                 diagn_dict.update({"divergent":divergent})
                 continue_divergnce = False
                 num_div = 1
+                raise ValueError("definitely divergent")
         else:
             continue_divergence = False
             num_div = 1
@@ -265,7 +267,7 @@ def abstract_BuildTree_gnuts(q,p,v,j,epsilon,Ham,H_0,diagn_dict):
         if not divergent:
             log_w_prime = -Ham.evaluate(q_prime, p_prime)
             H_cur = -log_w_prime
-            if (abs(H_cur - H_0) < 500):
+            if (abs(H_cur - H_0) < 1000):
                 continue_divergence = True
                 num_div = 0
             else:
@@ -276,7 +278,11 @@ def abstract_BuildTree_gnuts(q,p,v,j,epsilon,Ham,H_0,diagn_dict):
             log_w_prime = None
             continue_divergence = False
             num_div = 1
-        return q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(),p_prime.point_clone(), continue_divergence, log_w_prime,p_prime.flattened_tensor.clone(),num_div
+
+        if not continue_divergence:
+            return None, None, None, None, None,None, continue_divergence, log_w_prime, None, num_div
+        else:
+            return q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(),p_prime.point_clone(), continue_divergence, log_w_prime,p_prime.flattened_tensor.clone(),num_div
     else:
         # first half of subtree
         sum_p = torch.zeros(len(p.flattened_tensor))
@@ -306,7 +312,8 @@ def abstract_BuildTree_gnuts(q,p,v,j,epsilon,Ham,H_0,diagn_dict):
                 p_sright = Ham.p_sharp_fun(q_right,p_right)
                 s_prime = s_dprime and abstract_gen_NUTS_criterion(p_sleft, p_sright, sum_p)
                 log_w_prime = logsumexp(log_w_prime,log_w_dprime)
-
+            else:
+                s_prime = s_dprime and s_prime
 
         return q_left, p_left, q_right, p_right, q_prime,p_prime, s_prime, log_w_prime,sum_p,num_div_prime
 def abstract_BuildTree_nuts_xhmc(q,p,v,j,epsilon,Ham,xhmc_delta,H_0,diagn_dict):
@@ -318,7 +325,7 @@ def abstract_BuildTree_nuts_xhmc(q,p,v,j,epsilon,Ham,xhmc_delta,H_0,diagn_dict):
         if not divergent:
             log_w_prime = -Ham.evaluate(q_prime, p_prime)
             H_cur = -log_w_prime
-            if(abs(H_cur-H_0)<500):
+            if(abs(H_cur-H_0)<1000):
                 continue_divergence = True
                 num_div = 0
                 ave= Ham.dG_dt(q_prime,p_prime)

@@ -10,13 +10,21 @@ def find_reasonable_ep(Ham):
     integrator = Ham.integrator
     epsilon = 1
     H_cur = Ham.evaluate(q,p)
-    qprime,pprime,_ = integrator(q=q.point_clone(),p=p.point_clone(),epsilon=epsilon,Ham=Ham)
+    qprime,pprime,gleapfrog_stat = integrator(q=q.point_clone(),p=p.point_clone(),epsilon=epsilon,Ham=Ham)
+    if gleapfrog_stat["explode_grad"]:
+        prop_H = float("Inf")
+    else:
+        prop_H = Ham.evaluate(qprime,pprime)
+    a = 2 * (-prop_H + H_cur > math.log(0.5)) - 1
 
-    a = 2 * (-Ham.evaluate(qprime,pprime) + H_cur > math.log(0.5)) - 1
-    while a * (-Ham.evaluate(qprime,pprime) + H_cur) > (-a * math.log(2)):
+    while a * (-prop_H + H_cur) > (-a * math.log(2)):
         epsilon = math.exp(a) * epsilon
-        qprime,pprime,_ = integrator(q=q.point_clone(),p=p.point_clone(),epsilon=epsilon,Ham=Ham)
 
+        qprime,pprime,gleapfrog_stat = integrator(q=q.point_clone(),p=p.point_clone(),epsilon=epsilon,Ham=Ham)
+        if gleapfrog_stat["explode_grad"]:
+            prop_H = float("Inf")
+        else:
+            prop_H = Ham.evaluate(qprime, pprime)
         counter +=1
         if counter > 100:
             raise ValueError("find_reasonable_ep takes too long. check")

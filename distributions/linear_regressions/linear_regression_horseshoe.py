@@ -14,8 +14,8 @@ class V_linear_regression_hs(bayes_model_class):
 
         super(V_linear_regression_hs, self).__init__(input_data=input_data,precision_type=precision_type)
     def V_setup(self):
-        self.dim = self.X_np.shape[1]
-        self.num_ob = self.X_np.shape[0]
+        self.dim = self.input_data["input"].shape[1]
+        self.num_ob = self.input_data["input"].shape[0]
         self.explicit_gradient = False
         self.need_higherorderderiv = False
         hs_prior_generator_fun = prior_generator("horseshoe_3")
@@ -32,7 +32,7 @@ class V_linear_regression_hs(bayes_model_class):
     def forward(self):
         beta = self.beta_obj.get_val()
 
-        likelihood = -(self.y - torch.mv(self.X,beta))*(self.y-torch.mv(self.X,beta)).sum()*0.5
+        likelihood = -((self.y - torch.mv(self.X,beta))*(self.y-torch.mv(self.X,beta))).sum()*0.5
         prior = self.beta_obj.get_out()
         posterior = prior + likelihood
         out = -posterior

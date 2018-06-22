@@ -2,18 +2,22 @@ import pickle,os
 
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *
-from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
+#from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from experiments.experiment_obj import tuneinput_class
-
+from abstract.util import wrap_V_class_with_input_data
+from distributions.logistic_regressions.logistic_regression import V_logistic_regression
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
+from input_data.convert_data_to_dict import get_data_dict
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False)
 
-input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":["dual"],"second_order":[False],"cov":["adapt"],
-              "metric_name":["dense_e"],"dynamic":[True],"windowed":[False],"criterion":[None]}
+pima_indian_data = get_data_dict("pima_indian")
+V_pima_indian_logit = wrap_V_class_with_input_data(class_constructor=V_logistic_regression,input_data=pima_indian_data)
+input_dict = {"v_fun":[V_pima_indian_logit],"epsilon":["dual"],"second_order":[False],"cov":["adapt"],
+              "metric_name":["dense_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"]}
 
-ep_dual_metadata_argument = {"name":"epsilon","target":0.65,"gamma":0.05,"t_0":10,
+ep_dual_metadata_argument = {"name":"epsilon","target":0.85,"gamma":0.05,"t_0":10,
                         "kappa":0.75,"obj_fun":"accept_rate","par_type":"fast"}
 
 #ep_dual_metadata_argument = dual_default_arguments(name="epsilon")
@@ -33,7 +37,8 @@ ep_dual_metadata_argument = {"name":"epsilon","target":0.65,"gamma":0.05,"t_0":1
 
 
 #dual_arguments = [ep_dual_metadata_argument,evolve_L_opt_metadata_argument,alpha_opt_metadata_argument]
-adapt_cov_arguments = [adapt_cov_default_arguments(par_type="slow",dim=7)]
+
+adapt_cov_arguments = [adapt_cov_default_arguments(par_type="slow",dim=V_pima_indian_logit(precision_type="torch.DoubleTensor").get_model_dim())]
 dual_args_list = [ep_dual_metadata_argument]
 other_arguments = other_default_arguments()
 

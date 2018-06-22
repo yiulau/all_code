@@ -32,21 +32,26 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
     if explode_grad:
         gleapfrog_stat_dict["explode_grad"] = True
         return(None,None,gleapfrog_stat_dict)
-    p.flattened_tensor -= V_dq * 0.5 * epsilon
-    #print("first p abstract{}".format(p.flattened_tensor))
-    #print("first H abstract {}".format(Ham.evaluate(q,p)))
-    q.flattened_tensor += Ham.T.dp(p.flattened_tensor) * epsilon
-    #print("first q abstract {}".format(q.flattened_tensor))
-    #print("second H abstract {}".format(Ham.evaluate(q,p)))
-    V_dq, explode_grad = Ham.V.dq(q.flattened_tensor)
-    if explode_grad:
+    try:
+        p.flattened_tensor -= V_dq * 0.5 * epsilon
+        #print("first p abstract{}".format(p.flattened_tensor))
+        #print("first H abstract {}".format(Ham.evaluate(q,p)))
+        q.flattened_tensor += Ham.T.dp(p.flattened_tensor) * epsilon
+        #print("first q abstract {}".format(q.flattened_tensor))
+        #print("second H abstract {}".format(Ham.evaluate(q,p)))
+        V_dq, explode_grad = Ham.V.dq(q.flattened_tensor)
+        if explode_grad:
+            gleapfrog_stat_dict["explode_grad"] = True
+            return (None, None, gleapfrog_stat_dict)
+        p.flattened_tensor -= V_dq * 0.5 * epsilon
+        #print("second p abstract {}".format(p.flattened_tensor))
+        #print("final q abstract {}".format(q.flattened_tensor))
+        p.load_flatten()
+        q.load_flatten()
+    except:
+        q=None
+        p=None
         gleapfrog_stat_dict["explode_grad"] = True
-        return (None, None, gleapfrog_stat_dict)
-    p.flattened_tensor -= V_dq * 0.5 * epsilon
-    #print("second p abstract {}".format(p.flattened_tensor))
-    #print("final q abstract {}".format(q.flattened_tensor))
-    p.load_flatten()
-    q.load_flatten()
         #print(Ham.evaluate(q,p))
 
 

@@ -15,9 +15,9 @@ import pandas as pd
 # y_np = y_np.astype(numpy.int64)
 # X_np = dfm[:, 1:8]
 
-non_zero_num_p = 10
-full_p = 50
-num_samples = 60
+non_zero_num_p = 20
+full_p = 400
+num_samples = 100
 X_np = numpy.random.randn(num_samples,full_p)*5
 true_beta = numpy.zeros(full_p)
 true_beta[:non_zero_num_p] = numpy.random.randn(non_zero_num_p)*5
@@ -36,20 +36,27 @@ from experiments.experiment_obj import tuneinput_class
 from distributions.two_d_normal import V_2dnormal
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from post_processing.ESS_nuts import ess_stan
-seedid = 33350
+seedid = 333504
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=1000,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=0,
-                                   warmup_per_chain=100,is_float=False,isstore_to_disk=False,allow_restart=False)
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=1000,
+                                   warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
 
 # input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],
-#               "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
+#                "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
 
-input_dict = {"v_fun":[v_generator],"epsilon":[0.1],"second_order":[False],
-              "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
-
-tune_settings_dict = tuning_settings([],[],[],[])
-
+input_dict = {"v_fun":[v_generator],"epsilon":["dual"],"second_order":[False],"cov":["adapt"],"max_tree_depth":[5],
+               "metric_name":["diag_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"]}
+# input_dict = {"v_fun":[v_generator],"epsilon":[0.1],"second_order":[False],"evolve_L":[10],
+#               "metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
+ep_dual_metadata_argument = {"name":"epsilon","target":0.85,"gamma":0.05,"t_0":10,
+                         "kappa":0.75,"obj_fun":"accept_rate","par_type":"fast"}
+#
+adapt_cov_arguments = [adapt_cov_default_arguments(par_type="slow",dim=v_generator(precision_type="torch.DoubleTensor").get_model_dim())]
+dual_args_list = [ep_dual_metadata_argument]
+other_arguments = other_default_arguments()
+#tune_settings_dict = tuning_settings([],[],[],[])
+tune_settings_dict = tuning_settings(dual_args_list,[],adapt_cov_arguments,other_arguments)
 tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)

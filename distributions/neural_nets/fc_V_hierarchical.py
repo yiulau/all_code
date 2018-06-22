@@ -14,7 +14,8 @@ from distributions.neural_nets.util import log_inv_gamma_density
 # one hidden layer
 # that is X ~ input > hidden units > output units ~ y
 # normal prior for weights
-# inverse gamma for weight variance alpha = 0.5 ,beta = 0.5
+# separate inverse gamma for weight variance alpha = 0.5 ,beta = 0.5
+# for input-to-hidden and hidden-to-output weights
 class V_fc_test_hyper(bayes_model_class):
     def __init__(self,input_data,precision_type):
 

@@ -1,4 +1,5 @@
 import numpy,math
+# neal,mackay paper
 def generate_robot_arms_data(number_of_ob):
     numpy.random.seed(1)
     pos_num = numpy.random.binomial(number_of_ob,0.5)
@@ -6,9 +7,9 @@ def generate_robot_arms_data(number_of_ob):
     for i in range(number_of_ob):
         z = numpy.random.randn(1)
         if z > 0 :
-            x1[i] =  numpy.random.uniform(0.453, 1.932, 1)
+            x1[i] = numpy.random.uniform(0.453, 1.932, 1)
         else:
-            x1[i] =         x1_neg = numpy.random.uniform(-1.932,-0.453,1)
+            x1[i] = numpy.random.uniform(-1.932,-0.453,1)
 
 
     x2 = numpy.random.uniform(0.534,3.142,number_of_ob)
@@ -32,6 +33,7 @@ def generate_cho_problem_data(number_of_ob):
 
     return(out)
 
+# from rhorseshoe paper
 def generate_horseshoe_test_data_toy(A,num_samples,num_true_p):
     non_zeros = numpy.ones(num_true_p)*A
     y = numpy.zeros(num_samples)
@@ -39,6 +41,7 @@ def generate_horseshoe_test_data_toy(A,num_samples,num_true_p):
     y += numpy.random.randn(num_samples)
     return(y)
 
+#rhorseshoe paper
 def generate_horseshoe_test_binary():
 
     n = 30
@@ -60,6 +63,29 @@ def generate_horseshoe_test_binary():
     out = {"input":X,"target":y}
 
     return(out)
+#import torch
+# def generate_horseshoe_from_221_nn(num_samples):
+#     torch.random.manual_seed(103)
+#     hidden_w = torch.randn(2,2)
+#     hidden_bias = torch.randn(2)
+#     out_w = torch.randn(2,1)
+#     out_bias = torch.randn(1)
+#     X = torch.zeros(num_samples,2)
+#     y = numpy.zeros(num_samples)
+#     for i in range(num_samples):
+#         X[i,:] = torch.from_numpy(numpy.random.uniform(-1,1,2))
+#
+#     prob = torch.sigmoid(torch.sigmoid(X.mm(hidden_w)+hidden_bias).mm(out_w)+out_bias)
+#     prob = prob.numpy()
+#     print(prob)
+#
+#     for i in range(num_samples):
+#         y[i] = numpy.random.binomial(n=1,prob=prob[i],size=1)
+#
+#     out = {"input":X.numpy(),"target":y}
+#     return(out)
+#
+# out = generate_horseshoe_from_221_nn(20)
 # generate_cho_problem_data(100)
 #
 # print(generate_robot_arms_data(100))

@@ -11,41 +11,39 @@ from explicit.general_util import logsumexp_torch
 
 class V_logistic_regression(bayes_model_class):
 #class V_logistic_regression(V):
-    def __init__(self,input_npdata,precision_type):
-        self.y_np = input_npdata["y_np"]
-        self.X_np = input_npdata["X_np"]
+    def __init__(self,input_data,precision_type):
         #print(precision_type)
         #print(self.precision_type)
         #exit()
-        super(V_logistic_regression, self).__init__(precision_type=precision_type)
+        super(V_logistic_regression, self).__init__(input_data=input_data,precision_type=precision_type)
     def V_setup(self):
-        self.dim = self.X_np.shape[1]
-        self.num_ob = self.X_np.shape[0]
+        self.dim = self.input_data["input"].shape[1]
+        self.num_ob = self.input_data["input"].shape[0]
         self.explicit_gradient = True
         self.need_higherorderderiv = True
         self.beta = nn.Parameter(torch.zeros(self.dim),requires_grad=True)
-        self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type(self.precision_type)
-        self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(self.precision_type)
+        self.y = Variable(torch.from_numpy(self.input_data["target"]),requires_grad=False).type(self.precision_type)
+        self.X = Variable(torch.from_numpy(self.input_data["input"]),requires_grad=False).type(self.precision_type)
         # include
         self.sigma =1
 
         return()
 
-    def forward(self,input=None):
-        if input is None:
-            X = self.X
-            y = self.y
-
-        else:
-            X = Variable(input["input"],requires_grad=False).type(self.precision_type)
-            y = Variable(input["target"],requires_grad=False).type(self.precision_type)
-        num_ob = X.shape[0]
+    def forward(self):
+        # if input is None:
+        #     X = self.X
+        #     y = self.y
+        #
+        # else:
+        #     X = Variable(input["input"],requires_grad=False).type(self.precision_type)
+        #     y = Variable(input["target"],requires_grad=False).type(self.precision_type)
+        # num_ob = X.shape[0]
         # print(self.precision_type)
         # print(self.beta)
         # #print(X.data)
         # exit()
-        likelihood = torch.dot(self.beta, torch.mv(torch.t(X), y)) - \
-                     torch.sum(logsumexp_torch(Variable(torch.zeros(num_ob)), torch.mv(X, self.beta)))
+        likelihood = torch.dot(self.beta, torch.mv(torch.t(self.X), self.y)) - \
+                     torch.sum(logsumexp_torch(Variable(torch.zeros(self.num_ob)), torch.mv(self.X, self.beta)))
         prior = -torch.dot(self.beta, self.beta)/(self.sigma*self.sigma) * 0.5
         posterior = prior + likelihood
         out = -posterior

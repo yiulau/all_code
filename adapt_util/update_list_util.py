@@ -2,7 +2,8 @@
 # fmsmf
 def fmsmf(window_size=25,ini_buffer=75,end_buffer=50,min_medium_updates=5,min_slow_updates=2,tune_l=250):
     case = 1
-    fast_list = []
+    #fast_list = []
+    fast_list = list(range(tune_l))
     medium_list = []
     slow_list = []
 # if case==1:
@@ -17,7 +18,7 @@ def fmsmf(window_size=25,ini_buffer=75,end_buffer=50,min_medium_updates=5,min_sl
         overshoots = False
         while overshoots == False:
             if counter < ini_buffer:
-                fast_list.append(counter)
+                #fast_list.append(counter)
                 counter += 1
             elif counter < ini_buffer + min_medium_updates * window_size:
                 #print("yes")
@@ -28,7 +29,7 @@ def fmsmf(window_size=25,ini_buffer=75,end_buffer=50,min_medium_updates=5,min_sl
                 #print(ini_buffer + min_medium_updates * window_size)
                 if  temp < ini_buffer + min_medium_updates * window_size:
                     medium_list.append(counter)
-                    fast_list.append(counter)
+                    #fast_list.append(counter)
                     counter += window_size
                 else:
                     counter = ini_buffer + min_medium_updates * window_size
@@ -39,7 +40,7 @@ def fmsmf(window_size=25,ini_buffer=75,end_buffer=50,min_medium_updates=5,min_sl
                 if temp < tune_l - end_buffer - round(min_medium_updates * window_size * 3 / 4):
                     slow_list.append(counter)
                     medium_list.append(counter)
-                    fast_list.append(counter)
+                    #fast_list.append(counter)
                     counter += slow_window_size
                     slow_window_size *= 2
                 else:
@@ -50,13 +51,13 @@ def fmsmf(window_size=25,ini_buffer=75,end_buffer=50,min_medium_updates=5,min_sl
                 temp = counter + window_size
                 if temp < tune_l - end_buffer:
                     medium_list.append(counter)
-                    fast_list.append(counter)
+                    #fast_list.append(counter)
                     counter += window_size
                 else:
                     counter = tune_l - end_buffer
                     medium_list.append(counter)
             elif counter < tune_l:
-                fast_list.append(counter)
+                #fast_list.append(counter)
                 counter += 1
             else:
                 overshoots = True
@@ -69,7 +70,8 @@ def fmsmf(window_size=25,ini_buffer=75,end_buffer=50,min_medium_updates=5,min_sl
 # case2
 def fmf(window_size=25,ini_buffer=75,end_buffer=50,min_medium_updates=5,tune_l=250):
     case = 2
-    fast_list = []
+    #fast_list = []
+    fast_list = list(range(tune_l))
     medium_list = []
     slow_list = []
 # if case==1:
@@ -84,21 +86,21 @@ def fmf(window_size=25,ini_buffer=75,end_buffer=50,min_medium_updates=5,tune_l=2
         overshoots = False
         while overshoots == False:
             if counter < ini_buffer:
-                fast_list.append(counter)
+                #fast_list.append(counter)
                 counter += 1
 
             elif counter < tune_l - end_buffer:
                 temp = counter +  window_size
                 if temp < tune_l - end_buffer:
                     medium_list.append(counter)
-                    fast_list.append(counter)
+                    #fast_list.append(counter)
                     counter += window_size
                 else:
                     counter = tune_l - end_buffer
                     medium_list.append(counter)
 
             elif counter < tune_l:
-                fast_list.append(counter)
+                #fast_list.append(counter)
                 counter += 1
             else:
                 overshoots = True
@@ -113,7 +115,8 @@ def fmf(window_size=25,ini_buffer=75,end_buffer=50,min_medium_updates=5,tune_l=2
 # case3
 def fsf(window_size=25,ini_buffer=75,end_buffer=50,min_slow_updates=2,tune_l=250):
     case = 1
-    fast_list = []
+    #fast_list = []
+    fast_list = list(range(tune_l))
     medium_list = []
     slow_list = []
 # if case==1:
@@ -129,16 +132,16 @@ def fsf(window_size=25,ini_buffer=75,end_buffer=50,min_slow_updates=2,tune_l=250
         overshoots = False
         while overshoots == False:
             if counter < ini_buffer:
-                fast_list.append(counter)
+                #fast_list.append(counter)
                 counter += 1
 
             elif counter < tune_l - end_buffer:
-                print("counter {}".format(counter))
-                print(slow_window_size)
+                #print("counter {}".format(counter))
+                #print(slow_window_size)
                 temp = counter + slow_window_size
                 if temp < tune_l - end_buffer :
                     slow_list.append(counter)
-                    fast_list.append(counter)
+                    #fast_list.append(counter)
                     counter += slow_window_size
                     slow_window_size *= 2
                 else:
@@ -147,7 +150,7 @@ def fsf(window_size=25,ini_buffer=75,end_buffer=50,min_slow_updates=2,tune_l=250
 
 
             elif counter < tune_l:
-                fast_list.append(counter)
+                #fast_list.append(counter)
                 counter += 1
             else:
                 overshoots = True
@@ -304,8 +307,9 @@ def s(window_size=25,min_slow_updates=3,tune_l=250,ini_buffer=None):
                     counter += slow_window_size
                     slow_window_size *= 2
                 else:
-                    counter = tune_l
+                    counter = tune_l-1
                     slow_list.append(counter)
+                    overshoots=True
             else:
                 overshoots = True
     return(fast_list,medium_list,slow_list)

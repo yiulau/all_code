@@ -11,8 +11,8 @@ from distributions.neural_nets.util import gamma_density
 # #precision_type = 'torch.FloatTensor'
 # torch.set_default_tensor_type(precision_type)
 from distributions.neural_nets.priors.prior_util import prior_generator
-# standard normal prior for hidden to out units
-# horseshoe prior for input to hidden units
+# horseshoe prior for hidden to out units, scale = 1/num_hidden_units
+# standard normal prior for input to hidden units with variance 1/N_input
 class V_fc_test_hyper(bayes_model_class):
     def __init__(self,input_data,precision_type):
 
@@ -24,9 +24,9 @@ class V_fc_test_hyper(bayes_model_class):
         self.need_higherorderderiv = True
         self.num_units = 10
         prior_hidden_fn = prior_generator("horseshoe_3")
-        prior_out_fn = prior_generator("normal",var=1)
+        prior_out_fn = prior_generator("normal",var=1/self.num_units)
         self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim))
-        self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(2,self.num_units))
+        self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(2,self.num_units),global_scale=1/self.num_units)
         #self.hidden_in_z = nn.Parameter(torch.zeros(self.num_units, self.dim), requires_grad=True)
         #self.hidden_out_z = nn.Parameter(torch.zeros(2,self.num_units),requires_grad=True)
 

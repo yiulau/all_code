@@ -9,7 +9,8 @@ from distributions.neural_nets.util import log_inv_gamma_density
 from general_util.pytorch_random import generate_gamma
 
 # for gibbs sampler
-# inverse gamma prior for weight variances alpha =0.5 ,beta =0.5
+# separate inverse gamma prior for weight variances alpha =0.5 ,beta =0.5
+# for input-to-hidden and hidden-to-output weights
 class V_fc_hierarchical_block(bayes_model_class):
     def __init__(self,input_data,precision_type):
         super(V_fc_hierarchical_block, self).__init__(input_data=input_data,precision_type=precision_type)

@@ -28,6 +28,8 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     careful = True
     Ham.diagnostics = time_diagnositcs()
     divergent = False
+    accept_rate = 0
+    accepted = False
     explode_grad = False
     num_transitions = evolve_L
     q = init_q.point_clone()
@@ -36,6 +38,9 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print(q.flattened_tensor)
     #print(p.flattened_tensor)
     current_H = Ham.evaluate(q,p)
+    return_H = current_H
+    return_q = init_q
+    return_p = None
     #print("start q {}".format(init_q.flattened_tensor))
     print("startH {}".format(current_H))
 
@@ -52,6 +57,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print(p.flattened_tensor)
     #print("epsilon is {}".format(epsilon))
     for i in range(evolve_L):
+
         q, p, stat = Ham.integrator(q, p, epsilon, Ham)
         divergent = stat["explode_grad"]
         explode_grad = stat["explode_grad"]
@@ -60,12 +66,12 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
         if not explode_grad:
             temp_H = Ham.evaluate(q, p)
             #print("H is {}".format(temp_H))
-            if(current_H < temp_H and abs(temp_H-current_H)>500 or divergent):
-                print("yeye")
-                print(i)
-                print(temp_H)
-                print(current_H)
-                exit()
+            if(current_H < temp_H and abs(temp_H-current_H)>1000 or divergent):
+                # print("yeye")
+                # print(i)
+                # print(temp_H)
+                # print(current_H)
+                # exit()
                 return_q = init_q
                 return_H = current_H
                 accept_rate = 0
@@ -80,7 +86,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
 
     if not divergent and not explode_grad:
         proposed_H = Ham.evaluate(q,p)
-        if (current_H < proposed_H and abs(current_H - proposed_H) > 500):
+        if (current_H < proposed_H and abs(current_H - proposed_H) > 1000):
             return_q = init_q
             return_p = None
             return_H = current_H
@@ -138,6 +144,7 @@ def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_
     divergent = False
     num_transitions = evolve_L
     accepted = False
+    accept_rate = 0
     q = init_q
     p_init = Ham.T.generate_momentum(q)
     p = p_init.point_clone()

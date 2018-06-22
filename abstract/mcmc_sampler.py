@@ -28,7 +28,7 @@ from general_util.pytorch_util import convert_q_point_list
 # integration time t is also a slow parameter, because diagnostics (ESS) for its performance can only be calculated by looking
 # at a number of samples
 
-def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=None,warmup_per_chain=None,is_float=False,isstore_to_disk=False,same_init=False,allow_restart=True,max_num_restarts=10):
+def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=None,warmup_per_chain=None,is_float=False,isstore_to_disk=False,same_init=False,allow_restart=True,max_num_restarts=10,restart_end_buffer=100):
 
         # mcmc_id should be a dictionary
         out = {}
@@ -39,7 +39,7 @@ def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu
         out.update({"num_chains":num_chains,"num_cpu":num_cpu,"thin":thin,"warmup_per_chain":warmup_per_chain})
         out.update({"is_float":is_float,"isstore_to_disk":isstore_to_disk,"mcmc_id":mcmc_id})
         out.update({"num_samples_per_chain":samples_per_chain,"same_init":same_init,"tune_l_per_chain":tune_l_per_chain})
-        out.update({"allow_restart":allow_restart,"max_num_restarts":max_num_restarts})
+        out.update({"allow_restart":allow_restart,"max_num_restarts":max_num_restarts,"restart_end_buffer":restart_end_buffer})
         return(out)
 
 class mcmc_sampler(object):
@@ -93,6 +93,7 @@ class mcmc_sampler(object):
         self.allow_restart = self.mcmc_settings_dict["allow_restart"]
         if self.allow_restart:
             self.max_num_restarts = self.mcmc_settings_dict["max_num_restarts"]
+            assert self.mcmc_settings_dict["restart_end_buffer"] < self.warmup_per_chain
         else:
             self.max_num_restarts = 0
         self.is_float = self.mcmc_settings_dict["is_float"]
@@ -507,7 +508,8 @@ class one_chain_obj(object):
             elif counter == self.chain_setting["warm_up"]:
                 if self.chain_setting["allow_restart"]:
                     accumulate_accept_rate = 0
-                    for i in range(counter-100,counter):
+
+                    for i in range(counter-self.chain_setting["restart_end_buff"],counter):
                         accumulate_accept_rate += self.store_log_obj[i]["accept_rate"]
                     accumulate_accept_rate = accumulate_accept_rate/100
                     if accumulate_accept_rate < 0.1:

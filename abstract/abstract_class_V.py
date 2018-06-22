@@ -39,6 +39,9 @@ class V(nn.Module):
     #def load_explicit_gradient(self):
     #    raise NotImplementedError()
     #    return()
+    def get_model_dim(self):
+        out = len(self.flattened_tensor)
+        return(out)
     def evaluate_scalar(self,q_point=None):
         # return float or double
         if not q_point is None:
