@@ -14,7 +14,8 @@ class horseshoe_3(base_prior_new):
         self.nu = nu
         self.slab_df = slab_df
         self.slab_scale = slab_scale
-        self.setup_parameter(obj,name,shape)
+        self.name = name
+        self.setup_parameter(obj,shape)
         #super(horseshoe_3, self).__init__()
 
     def get_val(self):
