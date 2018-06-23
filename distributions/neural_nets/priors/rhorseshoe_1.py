@@ -13,49 +13,53 @@ class rhorseshoe_1(base_prior_new):
         self.nu = nu
         self.slab_df = slab_df
         self.slab_scale = slab_scale
-        self.setup_parameter(obj,name,shape)
+        self.name = name
+        self.setup_parameter(obj,shape)
         super(rhorseshoe_1, self).__init__()
 
 
     def get_val(self):
 
 
-        lamb = torch.exp(self.log_lamb_obj)
-        tau = torch.exp(self.log_tau_obj)
+        lamb2 = torch.exp(self.log_lamb2_obj)
+        tau2 = torch.exp(self.log_tau2_obj)
+
         c_r1 = torch.exp(self.log_c_r1_obj)
         c_r2 = torch.exp(self.log_c_r2_obj)
         c = c_r1 * torch.sqrt(c_r2)
-        lamb_tilde = c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb)
+        lamb_tilde2 = c * c * lamb2 / (c * c + tau2 * lamb2)
+        tau = torch.sqrt(tau2)
+        lamb_tilde = torch.sqrt(lamb_tilde2)
         w_obj = self.z_obj * lamb_tilde * tau
 
         return(w_obj)
 
     def get_out(self):
-        lamb = torch.exp(self.log_lamb_obj)
-        tau = torch.exp(self.log_tau_obj)
+        lamb2 = torch.exp(self.log_lamb2_obj)
+        tau2 = torch.exp(self.log_tau2_obj)
         c_r1 = torch.exp(self.log_c_r1_obj)
         c_r2 = torch.exp(self.log_c_r2_obj)
         #c = c_r1 * torch.sqrt(c_r2)
         z_out = -(self.z_obj*self.z_obj).sum()*0.5
-        lamb_out = log_student_t_density(x=lamb,nu=1,mu=0,sigma=1) + self.log_lamb_obj.sum()
-        tau_out = log_student_t_density(x=tau,nu=self.nu,mu=0,sigma=self.global_scale) + self.log_tau_obj.sum()
+        lamb2_out = log_student_t_density(x=lamb2,nu=1,mu=0,sigma=1) + self.log_lamb2_obj.sum()
+        tau2_out = log_student_t_density(x=tau2,nu=self.nu,mu=0,sigma=self.global_scale) + self.log_tau2_obj.sum()
         c_r1_out = -(c_r1 * c_r1).sum() * 0.5 + self.log_c_r1_obj
         c_alpha = self.slab_df / 2
         c_beta = self.slab_df * self.slab_scale * self.slab_scale / 2
         c_r2_out = log_inv_gamma_density(x=c_r2, alpha=c_alpha, beta=c_beta) + self.log_c_r2_obj.sum()
-        out = z_out + lamb_out + tau_out + c_r1_out + c_r2_out
+        out = z_out + lamb2_out + tau2_out + c_r1_out + c_r2_out
         return(out)
 
-    def setup_parameter(self,obj, name, shape):
+    def setup_parameter(self,obj, shape):
         self.z_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
-        self.log_lamb_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
-        self.log_tau_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
+        self.log_lamb2_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
+        self.log_tau2_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
         self.log_c_r1_obj = nn.Parameter(torch.zeros(1),requires_grad=True)
         self.log_c_r2_obj = nn.Parameter(torch.zeros(1),requires_grad=True)
 
         setattr(obj,"z_obj",self.z_obj)
-        setattr(obj,"log_lamb_obj",self.log_lamb_obj)
-        setattr(obj,"log_tau_obj",self.log_tau_obj)
+        setattr(obj,"log_lamb2_obj",self.log_lamb2_obj)
+        setattr(obj,"log_tau2_obj",self.log_tau2_obj)
         setattr(obj,"c_log_r1_obj",self.log_c_r1_obj)
         setattr(obj,"c_log_r2_obj",self.log_c_r2_obj)
         return()

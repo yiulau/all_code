@@ -22,7 +22,6 @@ class V_hs_toy(bayes_model_class):
 
     def forward(self):
         beta = self.beta_obj.get_val()
-
         likelihood = -(self.y - beta)*(self.y-beta).sum()*0.5
         prior = self.beta_obj.get_out()
         posterior = prior + likelihood

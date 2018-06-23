@@ -8,35 +8,37 @@ class horseshoe_1(base_prior_new):
     def __init__(self,obj,name,shape,global_scale=1,nu=1):
         self.global_scale = global_scale
         self.nu = nu
-        self.setup_parameter(obj,name,shape)
+        self.name = name
+        self.setup_parameter(obj,shape)
         super(horseshoe_1, self).__init__()
 
 
     def get_val(self):
 
-        lamb = torch.exp(self.log_lamb_obj)
-        tau = torch.exp(self.log_tau_obj)
+        lamb = torch.sqrt(torch.exp(self.log_lamb2_obj))
+        tau = torch.sqrt(torch.exp(self.log_tau2_obj))
         w_obj = self.z_obj * lamb * tau
 
         return(w_obj)
 
     def get_out(self):
         z_out = -(self.z_obj*self.z_obj).sum()*0.5
-        lamb = torch.exp(self.log_lamb_obj)
-        tau = torch.exp(self.log_tau_obj)
-        lamb_out = log_student_t_density(x=lamb,nu=1,mu=0,sigma=1) + self.log_lamb_obj.sum()
-        tau_out = log_student_t_density(x=tau,nu=self.nu,mu=0,sigma=self.global_scale) + self.log_tau_obj.sum()
+        lamb2 = torch.exp(self.log_lamb2_obj)
+        tau2 = torch.exp(self.log_tau2_obj)
+
+        lamb_out = log_student_t_density(x=lamb2,nu=1,mu=0,sigma=1) + self.log_lamb2_obj.sum()
+        tau_out = log_student_t_density(x=tau2,nu=self.nu,mu=0,sigma=self.global_scale) + self.log_tau2_obj.sum()
         out = z_out + lamb_out + tau_out
         return(out)
 
-    def setup_parameter(self,obj, shape):
+    def setup_parameter(self,obj,shape):
         self.z_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
-        self.log_lamb_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
-        self.log_tau_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
+        self.log_lamb2_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
+        self.log_tau2_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
 
         setattr(obj,"z_obj",self.z_obj)
-        setattr(obj,"lamb_obj",self.log_lamb_obj)
-        setattr(obj,"tau_obj",self.log_tau_obj)
+        setattr(obj,"lamb2_obj",self.log_lamb2_obj)
+        setattr(obj,"tau2_obj",self.log_tau2_obj)
         return()
 
 

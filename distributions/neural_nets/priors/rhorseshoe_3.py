@@ -14,7 +14,8 @@ class horseshoe_3(base_prior_new):
         self.nu = nu
         self.slab_df = slab_df
         self.slab_scale = slab_scale
-        self.setup_parameter(obj,name,shape)
+        self.name = name
+        self.setup_parameter(obj,shape)
         #super(horseshoe_3, self).__init__()
 
     def get_val(self):
@@ -27,7 +28,7 @@ class horseshoe_3(base_prior_new):
         c_r1 = torch.exp(self.log_c_r1_obj)
         c_r2 = torch.exp(self.log_c_r2_obj)
         c = c_r1 * torch.sqrt(c_r2)
-        lamb_tilde = c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb)
+        lamb_tilde = torch.sqrt(c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb))
         w_obj = self.z_obj * lamb_tilde * tau
         return(w_obj)
 
@@ -54,7 +55,7 @@ class horseshoe_3(base_prior_new):
         out = z_out + local_r2_out + global_r2_out + local_r1_out + global_r1_out + c_r1_out + c_r2_out
         return(out)
 
-    def setup_parameter(self,obj, name, shape):
+    def setup_parameter(self,obj, shape):
         self.z_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
         self.log_local_r1_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
         self.log_local_r2_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)
