@@ -16,11 +16,11 @@ class rhorseshoe_4(base_prior_new):
         self.nu = nu
         self.slab_df = slab_df
         self.slab_scale = slab_scale
-        self.setup_parameter(obj, name, shape)
+        self.name = name
+        self.setup_parameter(obj, shape)
         super(rhorseshoe_4, self).__init__()
 
     def get_val(self):
-
         return (self.w_obj)
 
     def get_out(self):
@@ -35,14 +35,10 @@ class rhorseshoe_4(base_prior_new):
         c_r2 = torch.exp(self.log_c_r2_obj)
         c = c_r1 * torch.sqrt(c_r2)
         lamb_tilde = c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb)
-
         local_r1_out = -(local_r1 * local_r1).sum() * 0.5 + self.log_local_r1_obj.sum()
         global_r1_out = -(global_r1 * global_r1).sum() * 0.5 + self.log_global_r1_obj.sum()
-
         local_r2_out = log_inv_gamma_density(x=local_r2, alpha=0.5, beta=0.5) + self.log_local_r2_obj.sum()
         global_r2_out = log_inv_gamma_density(x=global_r2, alpha=0.5*self.nu,beta=0.5*self.nu) + self.log_global_r2_obj.sum()
-
-
         w_out = -(self.w_obj * self.w_obj /(tau*tau*lamb_tilde*lamb_tilde)).sum() * 0.5
         c_r1_out = -(c_r1 * c_r1).sum() * 0.5 + self.log_c_r1_obj
         c_alpha = self.slab_df / 2
@@ -67,7 +63,7 @@ class rhorseshoe_4(base_prior_new):
         out = torch.sqrt((tau * tau * lamb_tilde * lamb_tilde).sum(dim=1))
         return(out)
 
-    def setup_parameter(self, obj, name, shape):
+    def setup_parameter(self, obj, shape):
         self.w_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
         self.log_local_r1_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
         self.log_local_r2_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)

@@ -1,6 +1,6 @@
 data {
   int N; //the number of observations
-  real y[N]; //the response
+  int<lower=0,upper=1> y[N]; //the response
   int K;
   matrix[N,K] X;
 }
@@ -25,5 +25,5 @@ model {
   global_r1 ~ normal(0,1);
   local_r2 ~ inv_gamma(0.5,0.5);
   global_r2 ~ inv_gamma(0.5,0.5);
-  y ~ bernoulli_logit(X*beta,1);
+  y ~ bernoulli_logit(X*beta);
 }

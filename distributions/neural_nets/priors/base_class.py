@@ -103,7 +103,7 @@ class base_prior_new(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def setup_parameter(self,obj,name,shape):
+    def setup_parameter(self,obj,shape):
         return()
 
     @abc.abstractmethod

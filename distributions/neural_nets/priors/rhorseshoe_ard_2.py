@@ -19,7 +19,8 @@ class rhorseshoe_ard_2(base_prior_new):
         self.nu = nu
         self.slab_df = slab_df
         self.slab_scale = slab_scale
-        self.setup_parameter(obj, name, shape)
+        self.name = name
+        self.setup_parameter(obj, shape)
         super(rhorseshoe_ard_2, self).__init__()
 
     def get_val(self):
@@ -108,7 +109,7 @@ class rhorseshoe_ard_2(base_prior_new):
 
         out  = torch.sqrt((tau * tau * lamb_tilde * lamb_tilde).sum(dim=1))
         return(out)
-    def setup_parameter(self, obj, name, shape):
+    def setup_parameter(self, obj, shape):
 
         self.num_units = shape[0]
         self.in_units = shape[1]
