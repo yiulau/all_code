@@ -26,6 +26,6 @@ model {
   global_r1 ~ normal(0,1);
   local_r2 ~ inv_gamma(0.5,0.5);
   global_r2 ~ inv_gamma(0.5,0.5);
-  y ~ normal(0,beta);
+  y ~ normal(beta,1);
 
 }

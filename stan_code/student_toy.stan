@@ -19,5 +19,5 @@ model {
   z ~ N(0,1)
   local_r1 ~ N(0,1)
   local_r2 ~ inv_gamma(0.5,0.5)
-  y ~ normal(0,beta)
+  y ~ normal(beta,1)
 }

@@ -22,8 +22,8 @@ transformed parameters{
   lamb = local_r1 .* sqrt(local_r2);
   tau = global_r1 * sqrt(global_r2);
   c = sqrt(caux) * 2;
-  lamb_tilde = sqrt( c^2 * square(lamb) ./ (c^2 + tau^2*square(lamb)));
-  beta = lamb_tilde * tau;
+  lamb_tilde = sqrt(c^2 * square(lamb) ./ (c^2 + tau^2*square(lamb)));
+  beta = z .* lamb_tilde * tau;
 
 }
 
@@ -35,5 +35,4 @@ model {
   global_r2 ~ inv_gamma(0.5,0.5);
   caux ~ inv_gamma(0.5*4,0.5*4);
   y ~ normal(X*beta,1);
-
 }

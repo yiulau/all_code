@@ -28,5 +28,5 @@ model {
   local_r2 ~ inv_gamma(0.5,0.5);
   global_r2 ~ inv_gamma(0.5,0.5);
   caux ~ inv_gamma(2,8);
-  y ~ normal(0,beta);
+  y ~ normal(beta,1);
 }

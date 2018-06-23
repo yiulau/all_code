@@ -10,8 +10,7 @@ parameters {
 }
 
 transformed parameters{
-  vector[K] beta;
-  beta = z *local_r2;
+  vector[K] beta = z *local_r2;
 }
 
 model {
