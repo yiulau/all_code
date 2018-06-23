@@ -189,3 +189,4 @@ def subset_dataset(dataset,size_per_class,seed=1):
 
     return(out)
 
+get_data_dict("subset_cifar10",standardize_predictor=False)
