@@ -304,13 +304,18 @@ class mcmc_sampler(object):
         output_dict = {"samples":output,"indices_dict":indices_dict}
         return (output_dict)
 
-    def get_diagnostics(self,permuted=True):
+    def get_diagnostics(self,include_warmup=False,permuted=True):
         # outputs dict
-        output = {"diganostics": None}
+
+        output = {"diganostics": None,"permuted":permuted}
+        if include_warmup:
+            warmup = self.warmup_per_chain
+        else:
+            warmup = 0
         if permuted:
             diag_list = []
             for chain in self.store_chains:
-                diag_list.append(chain["chain_obj"].get_diagnostics(warmup=self.warmup_per_chain))
+                diag_list.append(chain["chain_obj"].get_diagnostics(warmup=warmup))
             diag_output = diag_list[0]
             if len(diag_list) > 0:
                 for i in range(1, len(diag_list)):
@@ -320,10 +325,11 @@ class mcmc_sampler(object):
         else:
             diag_list = [None] * self.num_chains
             for i in range(self.num_chains):
-                diag_list[i] = self.store_chains[i]["chain_obj"].get_diagnostics(warmup=self.warmup_per_chain)
+                diag_list[i] = self.store_chains[i]["chain_obj"].get_diagnostics(warmup=warmup)
             output.update({"diagnostics": diag_list})
 
         return(output)
+
 
 
 

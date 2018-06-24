@@ -1,34 +1,55 @@
 import numpy
 from post_processing.ESS_nuts import diagnostics_stan
+import pandas as pd
 
-
-def get_diagnostics_from_sample(diagnostics_obj,permuted,name):
-    assert name in ("prop_H","accepted","accept_rate","divergent","num_transitions","explode_grad")
+def process_diagnostics(diagnostics_obj,name_list):
+    for name in name_list:
+        assert name in ("prop_H","accepted","accept_rate","divergent","num_transitions","explode_grad","hit_max_treedepth")
+    permuted = diagnostics_obj["permuted"]
     if permuted:
-        store = [None]*len(diagnostics_obj)
+        store = numpy.zeros((len(diagnostics_obj),len(name_list)))
         for i in range(len(diagnostics_obj)):
-            store[i] = diagnostics_obj[i][name]
-
+            for j in range(len(name_list)):
+                store[i,j] = diagnostics_obj[i][name_list[j]]
     else:
-        total_len = len(diagnostics_obj[0]) * len(diagnostics_obj)
-        # store is num_chains x num mcmc_samples per chain x 1
-        store = numpy.zeros((len(diagnostics_obj),len(diagnostics_obj[0]),1))
+        # store is num_chains x num mcmc_samples per chain x len(name_list)
+        store = numpy.zeros((len(diagnostics_obj),len(diagnostics_obj[0]),len(name_list)))
         for i in range(len(diagnostics_obj)):
             for j in range(len(diagnostics_obj[i])):
-                store[i,j,0] = diagnostics_obj[i][j][name]
+                for k in range(len(name_list)):
+                    store[i,j,k] = diagnostics_obj[i][j][name_list[k]]
     return(store)
 
+def energy_diagnostics(diagnostics_obj):
+    assert diagnostics_obj["permuted"] == False
+    # return bfmi-e for each chain
+    # return ess,rhat ,posterior mean and sd for energy
+    return()
 
-def percent_diagnostics(diagnostics,statistic_name):
-    # input should be output from get_samples_p_diag
-    sum = 0
-    total_terms = 0
-    for i in range(len(diagnostics)):
-        for j in range(len(diagnostics[i])):
-            sum += diagnostics[i][j][statistic_name]
+def average_diagnostics(diagnostics_obj,statistic_name):
+    # input should be output from mcmc_sampler.get_diagnostics
+    # when permuted = True returns statistic separately for each chain
+    # when permuted = False returns statistic for the combined chain
+
+    assert statistic_name in ("accepted","accept_rate","divergent","num_transitions","explode_grad","hit_max_treedepth")
+    diagnostics = diagnostics_obj["diagnostics"]
+    if diagnostics_obj["permuted"]==True:
+        sum = 0
+        total_terms = 0
+        for i in range(len(diagnostics)):
+            sum += diagnostics[i][statistic_name]
             total_terms += 1
 
-    out = sum/total_terms
+        out = sum/total_terms
+    else:
+        sum = 0
+        total_terms = 0
+        for i in range(len(diagnostics)):
+            for j in range(len(diagnostics[i])):
+                sum += diagnostics[i][j][statistic_name]
+                total_terms += 1
+
+        out = sum / total_terms
     return(out)
 
 # used in float vs double experiments
