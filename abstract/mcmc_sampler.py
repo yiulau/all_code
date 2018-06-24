@@ -582,20 +582,16 @@ class one_chain_obj(object):
         store_matrix = store_torch_matrix.numpy()
         return(store_matrix)
 
-    def get_samples_alt(self,name,include_warmup=False):
-
-        if include_warmup:
-            num_out = len(self.store_samples)
-            warmup = 0
-        else:
-            num_out = len(self.store_samples) - self.chain_setting["warmup"]
+    def get_converted_samples_alt(self,prior_obj_name,warmup=None):
+        if warmup is None:
             warmup = self.chain_setting["warmup"]
-
-        name_dim = self.get_name_dim(name)
-        store_torch_matrix = torch.zeros(num_out,name_dim)
+        num_out = len(self.store_samples) - warmup
+        assert num_out >=1
+        store_torch_matrix = torch.zeros(num_out,self.)
+        # load into tensor matrix
         for i in range(num_out):
-            flattened_tensor = self.store_samples[i+warmup]["q"].flattened_tensor
-            store_torch_matrix[i,:] = self.get_param(name=name,flattened_tensor=flattened_tensor)
+            store_torch_matrix[i,:].copy_(self.store_samples[i+warmup]["q"].flattened_tensor)
+
         return(store_torch_matrix)
 
 

@@ -16,17 +16,16 @@ class rhorseshoe_2(base_prior_new):
         self.slab_df = slab_df
         self.slab_scale = slab_scale
         self.name = name
-        self.param_tuple = ("w","tau","c","lamb","lamb_tilde")
-        self.weight_names = ["w"]
-        self.hyperparameter_names = ["tau","c","lamb","lamb_tilde"]
+        self.relevant_param_tuple = ("w","lamb","lamb_tilde","c","tau")
         self.setup_parameter(obj,shape)
         super(rhorseshoe_2, self).__init__()
 
     def get_val(self):
         return(self.w_obj)
 
-    def get_param(self,name):
-        assert name in self.param_tuple
+    def get_param(self,name_list):
+        for name in name_list:
+            assert name in self.relevant_param_tuple
         c_r1 = torch.exp(self.log_c_r1_obj)
         c_r2 = torch.exp(self.log_c_r2_obj)
         c = c_r1 * torch.sqrt(c_r2)
@@ -34,17 +33,24 @@ class rhorseshoe_2(base_prior_new):
         tau2 = torch.exp(self.log_tau2_obj)
         lamb_tilde2 = c * c * lamb2 / (c * c + tau2 * lamb2)
         lamb_tilde = torch.sqrt(lamb_tilde2)
-        if name == "w":
-            out = self.w_obj
-        elif name =="tau":
-            out = torch.sqrt(tau2)
-        elif name =="c":
-            out = c
-        elif name == "lamb_tilde":
-            out = lamb_tilde
-        elif name == "lamb":
-            out = torch.sqrt(lamb2)
-        return(out.data.clone())
+
+        out_list = [None]*len(name_list)
+        for i in range(len(name_list)):
+            if name == "w":
+                out = self.w_obj
+            elif name =="tau":
+                out = torch.sqrt(tau2)
+            elif name =="c":
+                out = c
+            elif name == "lamb_tilde":
+                out = lamb_tilde
+            elif name == "lamb":
+                out = torch.sqrt(lamb2)
+            else:
+                raise ValueError("unknown name")
+            out_list[i] = out.data.clone()
+        return(out_list)
+
 
 
 
