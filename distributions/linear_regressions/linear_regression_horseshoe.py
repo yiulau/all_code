@@ -20,13 +20,10 @@ class V_linear_regression_hs(bayes_model_class):
         self.need_higherorderderiv = False
         hs_prior_generator_fun = prior_generator("horseshoe_3")
         prior_obj = hs_prior_generator_fun(obj=self,name="beta",shape=[self.dim])
-        #self.beta_obj = prior_obj.generator(obj=self,name="beta",shape=[self.dim])
         self.beta_obj = prior_obj
         self.y = Variable(torch.from_numpy(self.input_data["target"]),requires_grad=False).type(self.precision_type)
         self.X = Variable(torch.from_numpy(self.input_data["input"]),requires_grad=False).type(self.precision_type)
-        # include
-        #self.sigma =1
-
+        self.dict_parameters = {"beta":self.beta_obj}
         return()
 
     def forward(self):
@@ -37,5 +34,7 @@ class V_linear_regression_hs(bayes_model_class):
         posterior = prior + likelihood
         out = -posterior
         return(out)
+
+
 
 

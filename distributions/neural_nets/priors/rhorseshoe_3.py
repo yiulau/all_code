@@ -6,7 +6,7 @@ from general_util.pytorch_random import log_student_t_density,log_inv_gamma_dens
 # ncp parametrization for local lamb and global tau
 # ncp parametrization for c^^2
 
-class horseshoe_3(base_prior_new):
+class rhorseshoe_3(base_prior_new):
     def __init__(self,obj,name,shape,global_scale=1,nu=1,slab_df=4,slab_scale=2):
         # assume prior c^2 ~ Inv-Gamma(alpha,beta) == Inv-Gamma(slab_df/2,slab_df * slab_scale*slab_scale/2)
         # slab_df =4 ,slab_scale =2 >>> alpha 2 , beta = 8
@@ -16,7 +16,7 @@ class horseshoe_3(base_prior_new):
         self.slab_scale = slab_scale
         self.name = name
         self.setup_parameter(obj,shape)
-        #super(horseshoe_3, self).__init__()
+        super(rhorseshoe_3, self).__init__()
 
     def get_val(self):
         local_r2 = torch.exp(self.log_local_r2_obj)
@@ -63,11 +63,12 @@ class horseshoe_3(base_prior_new):
         self.log_global_r2_obj = nn.Parameter(torch.zeros(1),requires_grad=True)
         self.log_c_r1_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
         self.log_c_r2_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
-        setattr(obj,"z_obj",self.z_obj)
-        setattr(obj,"log_local_r1_obj",self.log_local_r1_obj)
-        setattr(obj,"log_local_r2_obj",self.log_local_r2_obj)
-        setattr(obj,"log_global_r1_obj",self.log_global_r1_obj)
-        setattr(obj,"log_global_r2_obj",self.log_global_r2_obj)
-        setattr(obj, "c_log_r1_obj", self.log_c_r1_obj)
-        setattr(obj, "c_log_r2_obj", self.log_c_r2_obj)
+        setattr(obj,"z_obj_"+self.name,self.z_obj)
+        setattr(obj,"log_local_r1_obj_"+self.name,self.log_local_r1_obj)
+        setattr(obj,"log_local_r2_obj_"+self.name,self.log_local_r2_obj)
+        setattr(obj,"log_global_r1_obj_"+self.name,self.log_global_r1_obj)
+        setattr(obj,"log_global_r2_obj_"+self.name,self.log_global_r2_obj)
+        setattr(obj, "c_log_r1_obj_"+self.name, self.log_c_r1_obj)
+        setattr(obj, "c_log_r2_obj_"+self.name, self.log_c_r2_obj)
         return()
+

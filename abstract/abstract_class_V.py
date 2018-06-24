@@ -169,6 +169,12 @@ class V(nn.Module):
             prior_dict["create_hypar_fun"](self)
         return()
 
+    def get_name_dim(self,name):
+        # returns number of dimensions = num of weight parameters + num of hyperparameters
+        prior_obj = self.dict_parameters[name]
+
+        return()
+
 
 
 
