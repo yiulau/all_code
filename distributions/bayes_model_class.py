@@ -48,7 +48,7 @@ class bayes_model_class(V):
 
         return(out)
 
-    def get_indices(self,name):
+    def get_index_specific(self,name):
         assert name in self.relevant_param_tuple
         index = self.relevant_param_tuple.index(name)
         cur = 0
@@ -56,3 +56,12 @@ class bayes_model_class(V):
             cur += self.dim_list[i]
         indices = list(range(cur,cur+self.dim_list[index]))
         return(indices)
+
+    def get_indices(self):
+        cur = 0
+        out = {}
+        for i in range(len(self.relevant_param_tuple)):
+            cur += self.dim_list[i]
+            indices = list(range(cur, cur + self.dim_list[i]))
+            out.update({self.relevant_param_param_tuple[i]:indices})
+        return(out)

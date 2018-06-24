@@ -52,7 +52,6 @@ class mcmc_sampler(object):
         self.tune_dict = tune_dict
         self.tune_settings_dict = tune_settings_dict
         self.mcmc_settings_dict = mcmc_settings_dict
-        self.v_fun = self.tune_dict["v_fun"]
         self.num_chains = self.mcmc_settings_dict["num_chains"]
         self.same_init = self.mcmc_settings_dict["same_init"]
         self.store_chains = numpy.empty(self.num_chains, object)
@@ -283,26 +282,48 @@ class mcmc_sampler(object):
             output.update({"samples":samples_output,"diagnostics":diag_list})
             return (output)
 
-    def get_samples_alt(self,name,permuted=True):
-        output = {"samples":None}
+    def get_samples_alt(self, prior_obj_name, permuted=False):
+        v_obj = self.v_fun()
+        prior_obj = v_obj.dict_parameters[prior_obj_name]
+        indices_dict = prior_obj.get_indices()
         if permuted:
             temp_list = []
             for chain in self.store_chains:
-                temp_list.append(chain["chain_obj"].get_samples_alt(warmup=self.warmup_per_chain,name=name))
-            samples_output = temp_list[0]
+                temp_list.append(chain["chain_obj"].get_samples(warmup=self.warmup_per_chain,prior_obj_name=prior_obj_name))
+            output = temp_list[0]
             if len(temp_list) > 0:
                 for i in range(1, len(temp_list)):
-                    samples_output = numpy.concatenate([samples_output, temp_list[i]], axis=0)
-            output.update({"samples": samples_output})
+                    output = numpy.concatenate([output, temp_list[i]], axis=0)
+
         else:
-            chain_shape = self.store_chains[0]["chain_obj"].get_samples_alt(warmup=self.warmup_per_chain).shape
-            samples_output = numpy.zeros((self.num_chains, chain_shape[0], chain_shape[1]))
+            chain_shape = self.store_chains[0]["chain_obj"].get_samples(warmup=self.warmup_per_chain,prior_obj_name=prior_obj_name).shape
+            output = numpy.zeros((self.num_chains, chain_shape[0], chain_shape[1]))
             for i in range(self.num_chains):
-                samples_output[i, :, :] = self.store_chains[i]["chain_obj"].get_samples(warmup=self.warmup_per_chain)
-            output.update({"samples": samples_output})
+                output[i, :, :] = self.store_chains[i]["chain_obj"].get_samples(warmup=self.warmup_per_chain,prior_obj_name=prior_obj_name)
+
+        output_dict = {"samples":output,"indices_dict":indices_dict}
+        return (output_dict)
+
+    def get_diagnostics(self,permuted=True):
+        # outputs dict
+        output = {"diganostics": None}
+        if permuted:
+            diag_list = []
+            for chain in self.store_chains:
+                diag_list.append(chain["chain_obj"].get_diagnostics(warmup=self.warmup_per_chain))
+            diag_output = diag_list[0]
+            if len(diag_list) > 0:
+                for i in range(1, len(diag_list)):
+                    diag_output = diag_output + diag_list[i]
+            output.update({"diagnostics": diag_output})
+            return (output)
+        else:
+            diag_list = [None] * self.num_chains
+            for i in range(self.num_chains):
+                diag_list[i] = self.store_chains[i]["chain_obj"].get_diagnostics(warmup=self.warmup_per_chain)
+            output.update({"diagnostics": diag_list})
+
         return(output)
-
-
 
 
 
@@ -402,6 +423,7 @@ class one_chain_obj(object):
         self.chain_setting = chain_setting
         self.store_samples = []
         self.chain_ready = False
+        self.v_fun = tune_dict["v_fun"]
         self.tune_settings_dict = tune_settings_dict
         self.store_log_obj = []
         if self.chain_setting["allow_restart"]:
@@ -583,15 +605,20 @@ class one_chain_obj(object):
         return(store_matrix)
 
     def get_converted_samples_alt(self,prior_obj_name,warmup=None):
+        v_obj = self.v_fun()
+        assert prior_obj_name in v_obj.dict_parameters
+        prior_obj = v_obj.dict_parameters[prior_obj_name]
+        dim = len(prior_obj.get_all_param_flattened())
         if warmup is None:
             warmup = self.chain_setting["warmup"]
         num_out = len(self.store_samples) - warmup
         assert num_out >=1
-        store_torch_matrix = torch.zeros(num_out,self.)
+        store_torch_matrix = torch.zeros(num_out,dim)
         # load into tensor matrix
         for i in range(num_out):
-            store_torch_matrix[i,:].copy_(self.store_samples[i+warmup]["q"].flattened_tensor)
-
+            v_obj.flattened_tensor.copy_(self.store_samples[i+warmup]["q"].flattened_tensor)
+            v_obj.load_param_to_flatten()
+            store_torch_matrix[i,:] = prior_obj.get_all_param_flattened()
         return(store_torch_matrix)
 
 
