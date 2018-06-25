@@ -8,25 +8,24 @@ class gaussian_inv_gamma_1(base_prior_new):
     def __init__(self,obj,name,shape,global_scale=1,global_df=1):
         self.global_df = global_df
         self.global_scale = global_scale
+        self.name = name
         self.setup_parameter(obj,name,shape)
         #super(horseshoe_1, self).__init__()
 
 
     def get_val(self):
-
-
         return(self.w_obj)
 
     def get_out(self):
-        precision = torch.exp(self.log_precision_obj)
-        precision_out = log_inv_gamma_density(x=precision,alpha=1,beta=1) + self.log_precision_obj.sum()
-        w_out = -(self.w_obj*self.w_obj*precision).sum()*0.5
-        out = w_out + precision_out
+        sigma2 = torch.exp(self.log_sigma2_obj)
+        sigma2_out = log_inv_gamma_density(x=sigma2,alpha=0.5*self.global_df,beta=0.5*self.global_df) + self.log_sigma2_obj.sum()
+        w_out = -(self.w_obj*self.w_obj*sigma2).sum()*0.5
+        out = w_out + sigma2_out
         return(out)
 
-    def setup_parameter(self,obj, name, shape):
+    def setup_parameter(self,obj,name, shape):
         self.w_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
-        self.log_precision_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
-        setattr(obj,"w_obj",self.w_obj)
-        setattr(obj,"log_precision_obj",self.log_precision_obj)
+        self.log_sigma2_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
+        setattr(obj,name+"_w_obj",self.w_obj)
+        setattr(obj,name+"_log_sigma2_obj",self.log_sigma2_obj)
         return()

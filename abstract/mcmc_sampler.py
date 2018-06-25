@@ -50,6 +50,7 @@ class mcmc_sampler(object):
          #   setattr(self,name,val)
         self.chains_ready = False
         self.tune_dict = tune_dict
+        self.v_fun = self.tune_dict["v_fun"]
         self.tune_settings_dict = tune_settings_dict
         self.mcmc_settings_dict = mcmc_settings_dict
         self.num_chains = self.mcmc_settings_dict["num_chains"]
@@ -283,23 +284,23 @@ class mcmc_sampler(object):
             return (output)
 
     def get_samples_alt(self, prior_obj_name, permuted=False):
-        v_obj = self.v_fun()
+        v_obj = self.v_fun(precision_type=self.precision_type)
         prior_obj = v_obj.dict_parameters[prior_obj_name]
-        indices_dict = prior_obj.get_indices()
+        indices_dict = prior_obj.get_indices_dict()
         if permuted:
             temp_list = []
             for chain in self.store_chains:
-                temp_list.append(chain["chain_obj"].get_samples(warmup=self.warmup_per_chain,prior_obj_name=prior_obj_name))
+                temp_list.append(chain["chain_obj"].get_converted_samples_alt(warmup=self.warmup_per_chain,prior_obj_name=prior_obj_name))
             output = temp_list[0]
             if len(temp_list) > 0:
                 for i in range(1, len(temp_list)):
                     output = numpy.concatenate([output, temp_list[i]], axis=0)
 
         else:
-            chain_shape = self.store_chains[0]["chain_obj"].get_samples(warmup=self.warmup_per_chain,prior_obj_name=prior_obj_name).shape
+            chain_shape = self.store_chains[0]["chain_obj"].get_converted_samples_alt(warmup=self.warmup_per_chain,prior_obj_name=prior_obj_name).shape
             output = numpy.zeros((self.num_chains, chain_shape[0], chain_shape[1]))
             for i in range(self.num_chains):
-                output[i, :, :] = self.store_chains[i]["chain_obj"].get_samples(warmup=self.warmup_per_chain,prior_obj_name=prior_obj_name)
+                output[i, :, :] = self.store_chains[i]["chain_obj"].get_converted_samples_alt(warmup=self.warmup_per_chain,prior_obj_name=prior_obj_name)
 
         output_dict = {"samples":output,"indices_dict":indices_dict}
         return (output_dict)

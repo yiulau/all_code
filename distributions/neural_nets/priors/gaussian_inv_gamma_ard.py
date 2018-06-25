@@ -20,7 +20,7 @@ class gaussian_inv_gamma_ard(base_prior_new):
         w_row_list = [None]*self.num_units
         for i in range(self.num_units):
             param_dict = self.param_list_by_units[i]
-            sigma2 = torch.exp(param_dict["log_local_r2_obj"])
+            sigma2 = torch.exp(param_dict["log_sigma2_obj"])
             w_row = param_dict["z_obj"] * torch.sqrt(sigma2)
             w_row_list[i] = w_row
         w_obj = torch.cat(w_row_list,0)
@@ -50,16 +50,9 @@ class gaussian_inv_gamma_ard(base_prior_new):
 
 
     def get_unit_scales(self):
-        # return sum tau lamb for weights entering each unit
-        local_r1 = torch.exp(self.agg_log_local_r1_obj)
-        local_r2 = torch.exp(self.agg_log_local_r2_obj)
-        global_r1 = torch.exp(self.log_global_r1_obj)
-        global_r2 = torch.exp(self.log_global_r2_obj)
-
-        tau = global_r1 * torch.sqrt(global_r2) * self.global_scale
-        lamb = local_r1 * torch.sqrt(local_r2)
-
-        out = torch.sqrt(tau * tau * lamb * lamb * self.in_units)
+        # return sum for weights entering each unit
+        agg_sigma2 = torch.exp(self.agg_log_sigma2_obj)
+        out = torch.sqrt(agg_sigma2* self.in_units)
         return(out)
 
     def setup_parameter(self, obj, name, shape):
@@ -76,6 +69,6 @@ class gaussian_inv_gamma_ard(base_prior_new):
             param_dict = {"z_obj":z_obj,"log_sigma2_obj":log_sigma_obj}
             self.param_list_by_units.append(param_dict)
 
-        setattr(obj, "agg_z_obj", self.agg_z_obj)
-        setattr(obj, "log_sigma_obj", self.agg_log_sigma2_obj)
+        setattr(obj, name+"_agg_z_obj", self.agg_z_obj)
+        setattr(obj, name+"_log_sigma_obj", self.agg_log_sigma2_obj)
         return ()

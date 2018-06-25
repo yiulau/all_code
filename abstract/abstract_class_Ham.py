@@ -49,6 +49,8 @@ class Hamiltonian(object):
         #print(self.T.flattened_tensor)
         V = self.V.evaluate_scalar()
         T = self.T.evaluate_scalar()
+        #print(V)
+        #print(T)
         assert T>0
         assert V>0
         if V+T<0:

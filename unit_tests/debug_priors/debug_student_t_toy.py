@@ -1,4 +1,4 @@
-from distributions.test_hierarchical_priors.horseshoe_toy_dist import V_hs_toy
+from distributions.test_hierarchical_priors.student_t_toy import V_student_toy
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch,pickle
@@ -23,7 +23,7 @@ y = true_p + numpy.random.randn(num_p)
 input_data = {"target":y}
 
 
-v_generator =wrap_V_class_with_input_data(class_constructor=V_hs_toy,input_data=input_data)
+v_generator =wrap_V_class_with_input_data(class_constructor=V_student_toy,input_data=input_data)
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
@@ -52,6 +52,4 @@ out = sampler1.start_sampling()
 
 
 mcmc_samples = sampler1.get_samples(permuted=False)
-
-
 

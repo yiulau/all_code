@@ -1,4 +1,4 @@
-from distributions.test_hierarchical_priors.horseshoe_toy_dist import V_hs_toy
+from distributions.test_hierarchical_priors.rhorseshoe_toy import V_rhs_toy
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch,pickle
@@ -12,7 +12,7 @@ from post_processing.ESS_nuts import ess_stan
 num_p = 100
 non_zero_p = 20
 
-seedid = 33034
+seedid = 333
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
 true_p = numpy.zeros(num_p)
@@ -23,7 +23,7 @@ y = true_p + numpy.random.randn(num_p)
 input_data = {"target":y}
 
 
-v_generator =wrap_V_class_with_input_data(class_constructor=V_hs_toy,input_data=input_data)
+v_generator =wrap_V_class_with_input_data(class_constructor=V_rhs_toy,input_data=input_data)
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
@@ -31,7 +31,7 @@ mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chai
 # input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],
 #                "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
 
-input_dict = {"v_fun":[v_generator],"epsilon":["dual"],"second_order":[False],"cov":["adapt"],"max_tree_depth":[8],
+input_dict = {"v_fun":[v_generator],"epsilon":["dual"],"second_order":[False],"cov":["adapt"],"max_tree_depth":[5],
                "metric_name":["diag_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"]}
 # input_dict = {"v_fun":[v_generator],"epsilon":[0.1],"second_order":[False],"evolve_L":[10],
 #               "metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
@@ -52,6 +52,3 @@ out = sampler1.start_sampling()
 
 
 mcmc_samples = sampler1.get_samples(permuted=False)
-
-
-

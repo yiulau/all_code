@@ -34,7 +34,7 @@ class rhorseshoe_3(base_prior_new):
 
     def get_out(self):
         local_r1 = torch.exp(self.log_local_r1_obj)
-        global_r1 = torch.exp(self.log_global_r2_obj)
+        global_r1 = torch.exp(self.log_global_r1_obj)
         local_r2 = torch.exp(self.log_local_r2_obj)
         global_r2 = torch.exp(self.log_global_r2_obj)
         c_r1 = torch.exp(self.log_c_r1_obj)

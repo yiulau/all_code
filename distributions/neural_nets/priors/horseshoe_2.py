@@ -26,12 +26,12 @@ class horseshoe_2(base_prior_new):
         out = w_out + lamb2_out + tau2_out
         return(out)
 
-    def setup_parameter(self,obj, shape):
+    def setup_parameter(self,obj,name, shape):
         self.w_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
         self.log_lamb2_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
         self.log_tau2_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
 
-        setattr(obj,"w_obj",self.w_obj)
-        setattr(obj,"lamb2_obj",self.log_lamb2_obj)
-        setattr(obj,"tau2_obj",self.log_tau2_obj)
+        setattr(obj,name+"_w_obj",self.w_obj)
+        setattr(obj,name+"_lamb2_obj",self.log_lamb2_obj)
+        setattr(obj,name+"_tau2_obj",self.log_tau2_obj)
         return()
