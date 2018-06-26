@@ -1,6 +1,7 @@
 import numpy
 from post_processing.ESS_nuts import diagnostics_stan
 import pandas as pd
+from post_processing.diagnostics import bfmi_e
 
 def process_diagnostics(diagnostics_obj,name_list):
     for name in name_list:
@@ -25,7 +26,18 @@ def energy_diagnostics(diagnostics_obj):
     assert diagnostics_obj["permuted"] == False
     # return bfmi-e for each chain
     # return ess,rhat ,posterior mean and sd for energy
-    return()
+    diagnostics = diagnostics_obj["diagnostics"]
+    store = numpy.zeros((len(diagnostics), len(diagnostics[0]), 1))
+    bfmi_list = [None]*len(diagnostics)
+    for i in range(len(diagnostics)):
+        for j in range(len(diagnostics[i])):
+            store[i, j, 0] = diagnostics[i][j]["prop_H"]
+
+        bfmi_list[i] = bfmi_e(store[i,:,0])
+
+    out = diagnostics_stan(store)
+    out_dict = {"ess":out["ess"],"rhat":out["rhat"],"bfmi_list":bfmi_list}
+    return(out_dict)
 
 def average_diagnostics(diagnostics_obj,statistic_name):
     # input should be output from mcmc_sampler.get_diagnostics

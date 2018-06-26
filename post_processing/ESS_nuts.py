@@ -164,6 +164,7 @@ def diagnostics_stan(mcmc_samples_tensor):
         sum_lags[i] = temp
 
     M = mcmc_samples_tensor.shape[0]
+
     num_samples = mcmc_samples_tensor.shape[1]
     ess_vec = M*num_samples/(1+2*sum_lags)
     sd = numpy.sqrt(var.squeeze())

@@ -26,7 +26,7 @@ out = sampler1.get_diagnostics(permuted=False)
 
 processed_diag = process_diagnostics(out,name_list=["accepted"])
 print(processed_diag.shape)
-exit()
-processed_energy = process_diagnostics(out,name_list=["prop_H"])
 
-energy_diagnostics(diagnostics=processed_energy)
+#processed_energy = process_diagnostics(out,name_list=["prop_H"])
+
+print(energy_diagnostics(diagnostics_obj=out))

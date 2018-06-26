@@ -10,7 +10,7 @@ class horseshoe_3(base_prior_new):
         self.nu = nu
         self.name = name
         self.relevant_param_tuple = ("w", "lamb", "tau")
-        self.setup_parameter(obj,shape)
+        self.setup_parameter(obj,name,shape)
         #super(horseshoe_3, self).__init__()
 
     def get_val(self):
@@ -64,6 +64,7 @@ class horseshoe_3(base_prior_new):
 
         out_list = [None]*len(name_list)
         for i in range(len(name_list)):
+            name = name_list[i]
             if name == "w":
                 out = w_obj
             elif name =="tau":

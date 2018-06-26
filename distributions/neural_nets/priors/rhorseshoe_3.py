@@ -55,7 +55,7 @@ class rhorseshoe_3(base_prior_new):
         out = z_out + local_r2_out + global_r2_out + local_r1_out + global_r1_out + c_r1_out + c_r2_out
         return(out)
 
-    def setup_parameter(self,obj, shape):
+    def setup_parameter(self,obj,name, shape):
         self.z_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
         self.log_local_r1_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
         self.log_local_r2_obj = nn.Parameter(torch.zeros(shape),requires_grad=True)

@@ -115,7 +115,7 @@ class base_prior_new(object):
         return()
 
     @abc.abstractclassmethod
-    def get_param(name_list):
+    def get_param(self,name_list):
         return()
 
     def init_dim(self):

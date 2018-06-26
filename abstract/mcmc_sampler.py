@@ -641,7 +641,7 @@ class one_chain_obj(object):
         assert num_out >=1
         out = [None]*num_out
         for j in range(num_out):
-            print(j+warmup)
+            #print(j+warmup)
             out[j] = self.store_samples[j+warmup]["log"]
         return(out)
 
