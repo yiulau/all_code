@@ -1,7 +1,8 @@
 from distributions.test_hierarchical_priors.student_t_toy import V_student_toy
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
-import os, numpy,torch,pickle
+import os, numpy,torch
+import dill as pickle
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
@@ -22,10 +23,11 @@ y = true_p + numpy.random.randn(num_p)
 
 input_data = {"target":y}
 
-
+print(true_p[:non_zero_p])
+exit()
 v_generator =wrap_V_class_with_input_data(class_constructor=V_student_toy,input_data=input_data)
 
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=1000,
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=2,num_cpu=1,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
 
 # input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],
@@ -47,13 +49,13 @@ tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
 
-out = sampler1.start_sampling()
+sampler1.start_sampling()
 
+with open('temp_save_sampler1.pkl', 'wb') as f:
+    pickle.dump(sampler1, f)
+#mcmc_samples_beta = sampler1.get_samples_alt(prior_obj_name="beta",permuted=False)
 
-
-mcmc_samples_beta = sampler1.get_samples_alt(prior_obj_name="beta",permuted=False)
-
-print(mcmc_samples_beta.shape)
+#print(mcmc_samples_beta.shape)
 #mcmc_samples_beta_w = mcmc_samples_beta["w"]
 
 #mcmc_samples_beta_sigma2 = mcmc_samples_beta["sigma2"]

@@ -258,7 +258,7 @@ class mcmc_sampler(object):
 
     def get_samples_p_diag(self, permuted=True):
         # outputs dict
-        output = {"samples":None,"diganostics":None}
+        output = {"samples":None,"diagnostics":None}
         if permuted:
             temp_list = []
             diag_list = []
@@ -308,11 +308,11 @@ class mcmc_sampler(object):
     def get_diagnostics(self,include_warmup=False,permuted=True):
         # outputs dict
 
-        output = {"diganostics": None,"permuted":permuted}
+        output = {"diagnostics": None,"permuted":permuted}
         if include_warmup:
-            warmup = self.warmup_per_chain
-        else:
             warmup = 0
+        else:
+            warmup = self.warmup_per_chain
         if permuted:
             diag_list = []
             for chain in self.store_chains:
@@ -428,6 +428,10 @@ class one_chain_obj(object):
     def __init__(self,init_point,tune_dict,chain_setting,
                  tune_settings_dict,adapter_setting=None,sample_meta=None):
         self.chain_setting = chain_setting
+        if self.chain_setting["is_float"]:
+            self.precision_type = "torch.FloatTensor"
+        else:
+            self.precision_type = "torch.DoubleTensor"
         self.store_samples = []
         self.chain_ready = False
         self.v_fun = tune_dict["v_fun"]
@@ -612,7 +616,7 @@ class one_chain_obj(object):
         return(store_matrix)
 
     def get_converted_samples_alt(self,prior_obj_name,warmup=None):
-        v_obj = self.v_fun()
+        v_obj = self.v_fun(precision_type=self.precision_type)
         assert prior_obj_name in v_obj.dict_parameters
         prior_obj = v_obj.dict_parameters[prior_obj_name]
         dim = len(prior_obj.get_all_param_flattened())
@@ -624,7 +628,7 @@ class one_chain_obj(object):
         # load into tensor matrix
         for i in range(num_out):
             v_obj.flattened_tensor.copy_(self.store_samples[i+warmup]["q"].flattened_tensor)
-            v_obj.load_param_to_flatten()
+            v_obj.load_flattened_tensor_to_param()
             store_torch_matrix[i,:] = prior_obj.get_all_param_flattened()
         return(store_torch_matrix)
 

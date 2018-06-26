@@ -40,6 +40,7 @@ class gaussian_inv_gamma_2(base_prior_new):
         w_obj = self.z_obj * torch.sqrt(sigma2)
         out_list = [None]*len(name_list)
         for i in range(len(name_list)):
+            name = name_list[i]
             if name == "w":
                 out = w_obj
             elif name =="sigma2":
@@ -47,4 +48,6 @@ class gaussian_inv_gamma_2(base_prior_new):
             else:
                 raise ValueError("unknown name")
             out_list[i] = out.data.clone()
+
+
         return(out_list)

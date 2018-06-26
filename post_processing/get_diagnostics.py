@@ -6,18 +6,19 @@ def process_diagnostics(diagnostics_obj,name_list):
     for name in name_list:
         assert name in ("prop_H","accepted","accept_rate","divergent","num_transitions","explode_grad","hit_max_treedepth")
     permuted = diagnostics_obj["permuted"]
+    diagnostics = diagnostics_obj["diagnostics"]
     if permuted:
-        store = numpy.zeros((len(diagnostics_obj),len(name_list)))
-        for i in range(len(diagnostics_obj)):
+        store = numpy.zeros((len(diagnostics),len(name_list)))
+        for i in range(len(diagnostics)):
             for j in range(len(name_list)):
-                store[i,j] = diagnostics_obj[i][name_list[j]]
+                store[i,j] = diagnostics[i][name_list[j]]
     else:
         # store is num_chains x num mcmc_samples per chain x len(name_list)
-        store = numpy.zeros((len(diagnostics_obj),len(diagnostics_obj[0]),len(name_list)))
-        for i in range(len(diagnostics_obj)):
-            for j in range(len(diagnostics_obj[i])):
+        store = numpy.zeros((len(diagnostics),len(diagnostics[0]),len(name_list)))
+        for i in range(len(diagnostics)):
+            for j in range(len(diagnostics[i])):
                 for k in range(len(name_list)):
-                    store[i,j,k] = diagnostics_obj[i][j][name_list[k]]
+                    store[i,j,k] = diagnostics[i][j][name_list[k]]
     return(store)
 
 def energy_diagnostics(diagnostics_obj):
