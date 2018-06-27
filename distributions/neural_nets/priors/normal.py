@@ -8,6 +8,8 @@ class normal(base_prior_new):
     def __init__(self,obj,name,shape,var):
         self.var = var
         self.sd = math.sqrt(self.var)
+        self.name = name
+        self.relevant_param_tuple = ("w")
         self.setup_parameter(obj,name,shape)
         #super(horseshoe_1, self).__init__()
 
@@ -22,6 +24,21 @@ class normal(base_prior_new):
 
     def setup_parameter(self,obj, name, shape):
         self.z_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
-        setattr(obj,"z_obj_"+name,self.z_obj)
+        setattr(obj,name+"_z_obj",self.z_obj)
         return()
+
+    def get_param(self,name_list):
+        for name in name_list:
+            assert name in self.relevant_param_tuple
+
+        w_obj = self.z_obj * self.sd
+        out_list = [None]*len(name_list)
+        for i in range(len(name_list)):
+            name = name_list[i]
+            if name == "w":
+                out = w_obj
+            else:
+                raise ValueError("unknown name")
+            out_list[i] = out.data.clone()
+        return(out_list)
 

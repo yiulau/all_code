@@ -14,12 +14,12 @@ class rhorseshoe_1(base_prior_new):
         self.slab_df = slab_df
         self.slab_scale = slab_scale
         self.name = name
+        self.relevant_param_tuple = ("w", "lamb", "lamb_tilde","tau","c")
         self.setup_parameter(obj,shape)
         super(rhorseshoe_1, self).__init__()
 
 
     def get_val(self):
-
 
         lamb2 = torch.exp(self.log_lamb2_obj)
         tau2 = torch.exp(self.log_tau2_obj)
@@ -50,17 +50,50 @@ class rhorseshoe_1(base_prior_new):
         out = z_out + lamb2_out + tau2_out + c_r1_out + c_r2_out
         return(out)
 
-    def setup_parameter(self,obj, shape):
+    def setup_parameter(self,obj, name,shape):
         self.z_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
         self.log_lamb2_obj = nn.Parameter(torch.zeros(shape), requires_grad=True)
         self.log_tau2_obj = nn.Parameter(torch.zeros(1), requires_grad=True)
         self.log_c_r1_obj = nn.Parameter(torch.zeros(1),requires_grad=True)
         self.log_c_r2_obj = nn.Parameter(torch.zeros(1),requires_grad=True)
 
-        setattr(obj,"z_obj",self.z_obj)
-        setattr(obj,"log_lamb2_obj",self.log_lamb2_obj)
-        setattr(obj,"log_tau2_obj",self.log_tau2_obj)
-        setattr(obj,"c_log_r1_obj",self.log_c_r1_obj)
-        setattr(obj,"c_log_r2_obj",self.log_c_r2_obj)
+        setattr(obj,name+"_z_obj",self.z_obj)
+        setattr(obj,name+"_log_lamb2_obj",self.log_lamb2_obj)
+        setattr(obj,name+"_log_tau2_obj",self.log_tau2_obj)
+        setattr(obj,name+"_c_log_r1_obj",self.log_c_r1_obj)
+        setattr(obj,name+"_c_log_r2_obj",self.log_c_r2_obj)
         return()
+
+    def get_param(self,name_list):
+        for name in name_list:
+            assert name in self.relevant_param_tuple
+
+        lamb2 = torch.exp(self.log_lamb2_obj)
+        tau2 = torch.exp(self.log_tau2_obj)
+
+        c_r1 = torch.exp(self.log_c_r1_obj)
+        c_r2 = torch.exp(self.log_c_r2_obj)
+        c = c_r1 * torch.sqrt(c_r2)
+        lamb_tilde2 = c * c * lamb2 / (c * c + tau2 * lamb2)
+        tau = torch.sqrt(tau2)
+        lamb_tilde = torch.sqrt(lamb_tilde2)
+        w_obj = self.z_obj * lamb_tilde * tau
+
+        out_list = [None]*len(name_list)
+        for i in range(len(name_list)):
+            name = name_list[i]
+            if name == "w":
+                out = w_obj
+            elif name =="tau":
+                out = tau
+            elif name == "lamb":
+                out = torch.sqrt(lamb2)
+            elif name=="lamb_tilde":
+                out = lamb_tilde
+            elif name=="c":
+                out = c
+            else:
+                raise ValueError("unknown name")
+            out_list[i] = out.data.clone()
+        return(out_list)
 

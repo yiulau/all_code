@@ -89,3 +89,4 @@ class rhorseshoe_2(base_prior_new):
         setattr(obj,name+ "_c_log_r1_obj_"+self.name, self.log_c_r1_obj)
         setattr(obj,name+ "_c_log_r2_obj_"+self.name, self.log_c_r2_obj)
         return()
+

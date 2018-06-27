@@ -20,6 +20,7 @@ class rhorseshoe_ard_2(base_prior_new):
         self.slab_df = slab_df
         self.slab_scale = slab_scale
         self.name = name
+        self.relevant_param_tuple = ("w","lamb","lamb_tilde","c","tau")
         self.setup_parameter(obj, shape)
         super(rhorseshoe_ard_2, self).__init__()
 
@@ -34,7 +35,7 @@ class rhorseshoe_ard_2(base_prior_new):
             global_r2 = torch.exp(param_dict["log_global_r2_obj"])
             tau = param_dict["global_r1_obj"] * torch.sqrt(global_r2) * self.global_scale
             lamb = param_dict["local_r1_obj"] * torch.sqrt(local_r2)
-            lamb_tilde = c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb)
+            lamb_tilde = torch.sqrt(c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb))
             w_row = param_dict["z_obj"] * lamb_tilde * tau
             w_row_list[i] = w_row
         w_obj = torch.cat(w_row_list,0)
@@ -50,7 +51,7 @@ class rhorseshoe_ard_2(base_prior_new):
         c_r1 = torch.exp(self.log_c_r1_obj)
         c_r2 = torch.exp(self.log_c_r2_obj)
         c = c_r1 * torch.sqrt(c_r2)
-        lamb_tilde = c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb)
+        lamb_tilde = torch.sqrt(c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb))
         w_obj = self.agg_z_obj * lamb_tilde * tau
         return(w_obj)
 
@@ -105,11 +106,11 @@ class rhorseshoe_ard_2(base_prior_new):
         c_r1 = torch.exp(self.log_c_r1_obj)
         c_r2 = torch.exp(self.log_c_r2_obj)
         c = c_r1 * torch.sqrt(c_r2)
-        lamb_tilde = c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb)
+        lamb_tilde = torch.sqrt(c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb))
 
         out  = torch.sqrt((tau * tau * lamb_tilde * lamb_tilde).sum(dim=1))
         return(out)
-    def setup_parameter(self, obj, shape):
+    def setup_parameter(self, obj,name, shape):
 
         self.num_units = shape[0]
         self.in_units = shape[1]
@@ -133,11 +134,46 @@ class rhorseshoe_ard_2(base_prior_new):
                           "global_r1_obj":log_global_r1_obj,"log_global_r2_obj":log_global_r2_obj}
             self.param_list_by_units.append(param_dict)
 
-        setattr(obj, "agg_z_obj", self.agg_z_obj)
-        setattr(obj, "agg_log_local_r1_obj", self.agg_log_local_r1_obj)
-        setattr(obj, "agg_log_local_r2_obj", self.agg_log_local_r2_obj)
-        setattr(obj, "agg_log_global_r1_obj", self.agg_log_global_r1_obj)
-        setattr(obj, "agg_log_global_r2_obj", self.agg_log_global_r2_obj)
-        setattr(obj, "c_log_r1_obj", self.log_c_r1_obj)
-        setattr(obj, "c_log_r2_obj", self.log_c_r2_obj)
+        setattr(obj, name+"_agg_z_obj", self.agg_z_obj)
+        setattr(obj, name+"_agg_log_local_r1_obj", self.agg_log_local_r1_obj)
+        setattr(obj, name+"_agg_log_local_r2_obj", self.agg_log_local_r2_obj)
+        setattr(obj, name+"_agg_log_global_r1_obj", self.agg_log_global_r1_obj)
+        setattr(obj, name+"_agg_log_global_r2_obj", self.agg_log_global_r2_obj)
+        setattr(obj, name+"_c_log_r1_obj", self.log_c_r1_obj)
+        setattr(obj, name+"_c_log_r2_obj", self.log_c_r2_obj)
         return ()
+
+
+    def get_param(self,name_list):
+        for name in name_list:
+            assert name in self.relevant_param_tuple
+
+        local_r1 = torch.exp(self.agg_log_local_r1_obj)
+        local_r2 = torch.exp(self.agg_log_local_r2_obj)
+        global_r1 = torch.exp(self.agg_log_global_r1_obj)
+        global_r2 = torch.exp(self.agg_log_global_r2_obj)
+        tau = global_r1 * torch.sqrt(global_r2) * self.global_scale
+        lamb = local_r1 * torch.sqrt(local_r1)
+        c_r1 = torch.exp(self.log_c_r1_obj)
+        c_r2 = torch.exp(self.log_c_r2_obj)
+        c = c_r1 * torch.sqrt(c_r2)
+        lamb_tilde = torch.sqrt(c * c * lamb * lamb / (c * c + tau * tau * lamb * lamb))
+        w_obj = self.agg_z_obj * lamb_tilde * tau
+
+        out_list = [None]*len(name_list)
+        for i in range(len(name_list)):
+            name = name_list[i]
+            if name == "w":
+                out = w_obj
+            elif name =="tau":
+                out = tau
+            elif name == "lamb":
+                out = lamb
+            elif name=="lamb_tilde":
+                out = lamb_tilde
+            elif name=="c":
+                out = c
+            else:
+                raise ValueError("unknown name")
+            out_list[i] = out.data.clone()
+        return(out_list)

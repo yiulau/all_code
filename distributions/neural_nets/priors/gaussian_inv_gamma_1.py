@@ -9,6 +9,7 @@ class gaussian_inv_gamma_1(base_prior_new):
         self.global_df = global_df
         self.global_scale = global_scale
         self.name = name
+        self.relevant_param_tuple = ("w", "sigma2")
         self.setup_parameter(obj,name,shape)
         #super(horseshoe_1, self).__init__()
 
@@ -29,3 +30,20 @@ class gaussian_inv_gamma_1(base_prior_new):
         setattr(obj,name+"_w_obj",self.w_obj)
         setattr(obj,name+"_log_sigma2_obj",self.log_sigma2_obj)
         return()
+
+    def get_param(self,name_list):
+        for name in name_list:
+            assert name in self.relevant_param_tuple
+        sigma2 = torch.exp(self.log_sigma2_obj)
+
+        out_list = [None]*len(name_list)
+        for i in range(len(name_list)):
+            name = name_list[i]
+            if name == "w":
+                out = self.w_obj
+            elif name =="sigma2":
+                out = sigma2
+            else:
+                raise ValueError("unknown name")
+            out_list[i] = out.data.clone()
+        return(out_list)

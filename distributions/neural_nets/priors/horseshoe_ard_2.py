@@ -14,6 +14,9 @@ class horseshoe_ard(base_prior_new):
     def __init__(self,obj,name,shape,global_scale=1,nu=1):
         self.global_scale = global_scale
         self.nu = nu
+        self.name = name
+        self.relevant_param_tuple = ("w", "lamb", "tau")
+
         self.setup_parameter(obj, name, shape)
         super(horseshoe_ard, self).__init__()
 
@@ -102,9 +105,34 @@ class horseshoe_ard(base_prior_new):
                           "global_r1_obj":log_global_r1_obj,"log_global_r2_obj":log_global_r2_obj}
             self.param_list_by_units.append(param_dict)
 
-        setattr(obj, "agg_z_obj", self.agg_z_obj)
-        setattr(obj, "agg_log_local_r1_obj", self.agg_log_local_r1_obj)
-        setattr(obj, "agg_log_local_r2_obj", self.agg_log_local_r2_obj)
-        setattr(obj, "agg_log_global_r1_obj", self.agg_log_global_r1_obj)
-        setattr(obj, "agg_log_global_r2_obj", self.agg_log_global_r2_obj)
+        setattr(obj, name+"_agg_z_obj", self.agg_z_obj)
+        setattr(obj, name+"_agg_log_local_r1_obj", self.agg_log_local_r1_obj)
+        setattr(obj, name+"_agg_log_local_r2_obj", self.agg_log_local_r2_obj)
+        setattr(obj, name+"_agg_log_global_r1_obj", self.agg_log_global_r1_obj)
+        setattr(obj, name+"_agg_log_global_r2_obj", self.agg_log_global_r2_obj)
         return ()
+
+    def get_param(self, name_list):
+        for name in name_list:
+            assert name in self.relevant_param_tuple
+        local_r1 = torch.exp(self.agg_log_local_r1_obj)
+        local_r2 = torch.exp(self.agg_log_local_r2_obj)
+        global_r1 = torch.exp(self.agg_log_global_r1_obj)
+        global_r2 = torch.exp(self.agg_log_global_r2_obj)
+        tau = global_r1 * torch.sqrt(global_r2) * self.global_scale
+        lamb = local_r1 * torch.sqrt(local_r1)
+        w_obj = self.agg_z_obj * lamb * tau
+
+        out_list = [None] * len(name_list)
+        for i in range(len(name_list)):
+            name = name_list[i]
+            if name == "w":
+                out = w_obj
+            elif name == "tau":
+                out = tau
+            elif name == "lamb":
+                out = lamb
+            else:
+                raise ValueError("unknown name")
+            out_list[i] = out.data.clone()
+        return (out_list)

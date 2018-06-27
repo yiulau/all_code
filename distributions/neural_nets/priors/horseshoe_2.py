@@ -9,6 +9,7 @@ class horseshoe_2(base_prior_new):
         self.global_scale = global_scale
         self.nu = nu
         self.name = name
+        self.relevant_param_tuple = ("w", "lamb", "tau")
         self.setup_parameter(obj,shape)
         #super(horseshoe_2, self).__init__()
 
@@ -35,3 +36,24 @@ class horseshoe_2(base_prior_new):
         setattr(obj,name+"_lamb2_obj",self.log_lamb2_obj)
         setattr(obj,name+"_tau2_obj",self.log_tau2_obj)
         return()
+
+    def get_param(self,name_list):
+        for name in name_list:
+            assert name in self.relevant_param_tuple
+
+        lamb = torch.sqrt(torch.exp(self.log_lamb2_obj))
+        tau = torch.sqrt(torch.exp(self.log_tau2_obj))
+
+        out_list = [None]*len(name_list)
+        for i in range(len(name_list)):
+            name = name_list[i]
+            if name == "w":
+                out = self.w_obj
+            elif name =="tau":
+                out = tau
+            elif name == "lamb":
+                out = lamb
+            else:
+                raise ValueError("unknown name")
+            out_list[i] = out.data.clone()
+        return(out_list)
