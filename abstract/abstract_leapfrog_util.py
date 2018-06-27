@@ -1,6 +1,5 @@
 import math
 import numpy
-
 from general_util.time_diagnostics import time_diagnositcs
 
 
@@ -27,12 +26,15 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
     #with open('debugqp.pkl', 'wb') as f:
     #    pickle.dump(out, f)
     #exit()
+
+
     gleapfrog_stat_dict = {"explode_grad":False}
-    V_dq,explode_grad = Ham.V.dq(q.flattened_tensor)
-    if explode_grad:
-        gleapfrog_stat_dict["explode_grad"] = True
-        return(None,None,gleapfrog_stat_dict)
+
     try:
+        V_dq, explode_grad = Ham.V.dq(q.flattened_tensor)
+        if explode_grad:
+            gleapfrog_stat_dict["explode_grad"] = True
+            return (None, None, gleapfrog_stat_dict)
         p.flattened_tensor -= V_dq * 0.5 * epsilon
         #print("first p abstract{}".format(p.flattened_tensor))
         #print("first H abstract {}".format(Ham.evaluate(q,p)))
@@ -49,13 +51,15 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
         p.load_flatten()
         q.load_flatten()
     except:
+
         q=None
         p=None
         gleapfrog_stat_dict["explode_grad"] = True
         #print(Ham.evaluate(q,p))
 
-
     #exit()
+    #print(hex(id(gleapfrog_stat)))
+
     return(q,p,gleapfrog_stat_dict)
 
 

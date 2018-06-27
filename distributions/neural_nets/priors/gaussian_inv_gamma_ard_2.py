@@ -2,14 +2,12 @@ from distributions.neural_nets.priors.base_class import base_prior_new
 import torch.nn as nn
 import torch
 from general_util.pytorch_random import log_student_t_density, log_inv_gamma_density
-
-
-# horseshoe prior ard for entire layer
-# one global scale parameter for the entire layer
-# local scale shared for each unit
+#one horseshoe prior ard for each hidden unit (weights entering the unit )in the layer
+# one sigma2 parameter for each unit - num_units in total
+# local scale for weights entering the unit
 # ncp parametrization for the model weight
 # ncp parametrization for local lamb and global tau
-class gaussian_inv_gamma_ard(base_prior_new):
+class gaussian_inv_gamma_ard_2(base_prior_new):
     def __init__(self,obj,name,shape,global_scale=1,global_df=1):
         self.global_df = global_df
         self.global_scale = global_scale
@@ -17,7 +15,7 @@ class gaussian_inv_gamma_ard(base_prior_new):
         self.relevant_param_tuple = ("w", "sigma2")
 
         self.setup_parameter(obj, name, shape)
-        super(gaussian_inv_gamma_ard, self).__init__()
+        super(gaussian_inv_gamma_ard_2, self).__init__()
 
     def get_val(self):
         w_row_list = [None]*self.num_units
@@ -65,15 +63,15 @@ class gaussian_inv_gamma_ard(base_prior_new):
         self.param_list_by_units = []
 
         self.agg_z_obj = nn.Parameter(torch.zeros(self.num_units,self.in_units),requires_grad=True)
-        self.agg_log_sigma2_obj = nn.Parameter(torch.zeros(self.num_units,1),requires_grad=True)
+        self.agg_log_sigma2_obj = nn.Parameter(torch.zeros(self.num_units,self.in_units),requires_grad=True)
         for i in range(self.num_units):
             z_obj = self.agg_z_obj[i,:]
-            log_sigma2_obj = self.agg_log_sigma2_obj[i,0]
+            log_sigma2_obj = self.agg_log_sigma2_obj[i,:]
             param_dict = {"z_obj":z_obj,"log_sigma2_obj":log_sigma2_obj}
             self.param_list_by_units.append(param_dict)
 
         setattr(obj, name+"_agg_z_obj", self.agg_z_obj)
-        setattr(obj, name+"_log_sigma2_obj", self.agg_log_sigma2_obj)
+        setattr(obj, name+"_log_sigma_obj", self.agg_log_sigma2_obj)
         return ()
 
     def get_param(self,name_list):

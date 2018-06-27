@@ -15,9 +15,7 @@ class V_rhs_toy(bayes_model_class):
         prior_obj = hs_prior_generator_fun(obj=self,name="beta",shape=[self.dim])
         self.beta_obj = prior_obj
         self.y = Variable(torch.from_numpy(self.input_data["target"]),requires_grad=False).type(self.precision_type)
-        # include
-        #self.sigma =1
-
+        self.dict_parameters = {"beta":self.beta_obj}
         return()
 
     def forward(self):

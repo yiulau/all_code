@@ -89,6 +89,7 @@ class sampler_one_step(object):
         return(self.ave_second_per_leapfrog)
 
     def run(self):
+
         if hasattr(self,"log_obj"):
             #print("yes")
             out = self.one_step_function(input_point_obj=point(V=self.Ham.V),Ham_obj = self.Ham,

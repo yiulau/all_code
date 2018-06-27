@@ -10,15 +10,14 @@ from general_util.pytorch_random import log_student_t_density, log_inv_gamma_den
 # ncp parametrization for the model weight
 # ncp parametrization for local lamb and global tau
 # tau = N(0,global_scale^2)
-class horseshoe_ard(base_prior_new):
+class horseshoe_ard_2(base_prior_new):
     def __init__(self,obj,name,shape,global_scale=1,nu=1):
         self.global_scale = global_scale
         self.nu = nu
         self.name = name
         self.relevant_param_tuple = ("w", "lamb", "tau")
-
         self.setup_parameter(obj, name, shape)
-        super(horseshoe_ard, self).__init__()
+        super(horseshoe_ard_2, self).__init__()
 
     def get_val(self):
         w_row_list = [None]*self.num_units

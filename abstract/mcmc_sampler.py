@@ -1,6 +1,7 @@
 import time
 #from multiprocessing import Pool
-import pathos.multiprocessing as multiprocessing
+#import pathos.multiprocessing as multiprocessing
+from pathos.multiprocessing import ProcessPool
 #import multiprocessing
 import pickle,copy
 from abstract.deprecated_code.abstract_genleapfrog_ult_util import *
@@ -83,10 +84,6 @@ class mcmc_sampler(object):
             self.sampler_id = 0
 
         self.metadata = sampler_metadata(mcmc_sampler_obj=self)
-
-    def prepare_chains(self):
-        # same init = True means the chains will have the same initq, does not affect tuning parameters
-        #initialization_obj = initialization(same_init)
         self.num_samples_per_chain = self.mcmc_settings_dict["num_samples_per_chain"]
         self.isstore_to_disk = self.mcmc_settings_dict["isstore_to_disk"]
         self.warmup_per_chain = self.mcmc_settings_dict["warmup_per_chain"]
@@ -98,6 +95,10 @@ class mcmc_sampler(object):
         else:
             self.max_num_restarts = 0
         self.is_float = self.mcmc_settings_dict["is_float"]
+    def prepare_chains(self):
+        # same init = True means the chains will have the same initq, does not affect tuning parameters
+        #initialization_obj = initialization(same_init)
+
         for i in range(self.num_chains):
             #if same_init:
              #   initialization_obj = initialization()
@@ -111,11 +112,11 @@ class mcmc_sampler(object):
                                                          warm_up=self.warmup_per_chain,tune_l=self.tune_l_per_chain,
                                                          allow_restart=self.allow_restart,
                                                          max_num_restarts=self.max_num_restarts,is_float=self.is_float)
-            this_tune_dict = self.tune_dict.copy()
+            #this_tune_dict = self.tune_dict
             this_chain_obj = one_chain_obj(init_point=self.init_q_point_list[i],
-                                           tune_dict=self.tune_dict,chain_setting=this_chain_setting,
+                                           tune_dict=copy.deepcopy(self.tune_dict),chain_setting=copy.deepcopy(this_chain_setting),
                                            tune_settings_dict=copy.deepcopy(self.tune_settings_dict),
-                                           adapter_setting=self.adapter_setting)
+                                           adapter_setting=copy.deepcopy(self.adapter_setting))
             this_chain_obj.prepare_this_chain()
             this_chain_obj.isstore_to_disk = self.isstore_to_disk
             this_chain_obj.warmup_per_chain = self.warmup_per_chain
@@ -126,26 +127,41 @@ class mcmc_sampler(object):
         #print(self.store_chains)
 
     def run_chain(self,chain_id):
-        if not self.chains_ready:
-            self.prepare_chains()
+        #if not self.chains_ready:
+        #self.prepare_chains()
             #raise ValueError("run self.prepare_chains() firstf")
         #print("yes")
         #exit()
         (self.store_chains[chain_id]["chain_obj"]).run()
-        output = self.store_chains[chain_id]["chain_obj"].store_samples
+        #output = self.store_chains[chain_id]["chain_obj"].store_samples
+        return()
+
+    def parallel_sampling(self):
+        self.num_cpu = self.mcmc_settings_dict["num_cpu"]
+        new_mcmc_settings_dict = copy.deepcopy(self.mcmc_settings_dict)
+        new_mcmc_settings_dict.update({"num_chains": 1, "num_cpu": 1})
+        def run_parallel_chain(chain_id):
+            temp_mcmc_sampler = mcmc_sampler(tune_dict=self.tune_dict, mcmc_settings_dict=new_mcmc_settings_dict,
+                                             tune_settings_dict=self.tune_settings_dict,
+                                             adapter_setting=self.adapter_setting)
+            temp_mcmc_sampler.start_sampling()
+            return(temp_mcmc_sampler)
+        with ProcessPool(nodes=self.num_cpu) as pool:
+            result_parallel = pool.map(run_parallel_chain,list(range(self.num_chains)))
+
+        for i in range(self.num_chains):
+            self.store_chains[i] = result_parallel[i].store_chains[0]
+
         return()
     def start_sampling(self):
         self.num_cpu = self.mcmc_settings_dict["num_cpu"]
-        if not self.chains_ready:
-            self.prepare_chains()
+
         if self.num_cpu>1:
-            # do something parallel
-            #with pathos.pools.ParallelPool(nodes=self.num_cpu) as pool:
-            #with multiprocessing.ProcessingPool(nodes=self.num_cpu) as pool:
-            with multiprocessing.Pool(processes=self.num_cpu) as pool:
-                result_parallel = pool.map(self.run_chain, range(self.num_chains))
+            self.parallel_sampling()
             #out = result_parallel
         else:
+            if not self.chains_ready:
+                self.prepare_chains()
             result_sequential = []
             #print("yes")
             #print(self.num_chains)
@@ -502,6 +518,7 @@ class one_chain_obj(object):
             self.sample_meta = one_chain_sample_meta(self)
         else:
             self.sample_meta = sample_meta
+
     def adapt(self,sample_obj):
         # if self.adapter is none, do nothing
         self.adapter.update(sample_obj)
@@ -530,6 +547,7 @@ class one_chain_obj(object):
         #self.initialization_obj.initialize()
         #print(self.warmup_per_chain)
 
+
         if not self.chain_ready:
             raise ValueError("need to run prepare this chain")
         cur = self.chain_setting["thin"]
@@ -543,8 +561,8 @@ class one_chain_obj(object):
                 keep = False
 
             #print(self.tune_param_objs_dict["epsilon"].get_val())
-
             out = self.sampler_one_step.run()
+
             #print(out.flattened_tensor)
             #exit()
             #self.adapter.log_obj = self.log_obj

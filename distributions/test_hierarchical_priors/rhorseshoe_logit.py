@@ -5,9 +5,9 @@ from distributions.neural_nets.priors.prior_util import prior_generator
 from explicit.general_util import logsumexp_torch
 
 
-class V_logistic_regression_hs(bayes_model_class):
+class V_logistic_regression_rhs(bayes_model_class):
     def __init__(self, input_data, precision_type):
-        super(V_logistic_regression_hs, self).__init__(input_data=input_data, precision_type=precision_type)
+        super(V_logistic_regression_rhs, self).__init__(input_data=input_data, precision_type=precision_type)
 
     def V_setup(self):
         self.dim = self.X_np.shape[1]
@@ -20,7 +20,7 @@ class V_logistic_regression_hs(bayes_model_class):
         self.beta_obj = prior_obj
         self.y = Variable(torch.from_numpy(self.input_data["target"]), requires_grad=False).type(self.precision_type)
         self.X = Variable(torch.from_numpy(self.input_data["input"]), requires_grad=False).type(self.precision_type)
-
+        self.dict_parameters = {"beta":self.beta_obj}
         return ()
 
     def forward(self):

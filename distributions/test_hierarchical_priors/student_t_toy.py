@@ -16,8 +16,6 @@ class V_student_toy(bayes_model_class):
         self.beta_obj = prior_obj
         self.y = Variable(torch.from_numpy(self.input_data["target"]),requires_grad=False).type(self.precision_type)
         self.dict_parameters = {"beta":self.beta_obj}
-        # include
-        #self.sigma =1
 
         return()
 
