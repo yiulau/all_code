@@ -1,13 +1,15 @@
 from distributions.test_hierarchical_priors.horseshoe_toy_dist import V_hs_toy
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
-import os, numpy,torch,pickle
+import os, numpy,torch
+import dill as pickle
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from experiments.experiment_obj import tuneinput_class
 from distributions.two_d_normal import V_2dnormal
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
+from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics
 from post_processing.ESS_nuts import ess_stan
 num_p = 100
 non_zero_p = 20
@@ -48,8 +50,8 @@ tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
 
 import cProfile
-cProfile.run("sampler1.start_sampling")
+cProfile.run("sampler1.start_sampling()")
+with open('debug_time_sampler1.pkl', 'wb') as f:
+    pickle.dump(sampler1, f)
 
-
-
-mcmc_samples = sampler1.get_samples(permuted=False)
+#mcmc_samples = sampler1.get_samples(permuted=False)

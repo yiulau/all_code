@@ -21,10 +21,12 @@ print(true_p[:non_zero_p])
 
 print(mcmc_samples_beta["indices_dict"])
 
-out = sampler1.get_diagnostics(permuted=False)
+out = sampler1.get_diagnostics(permuted=False,include_warmup=True)
 
 
-processed_diag = process_diagnostics(out,name_list=["accepted"])
+processed_diag = process_diagnostics(out,name_list=["num_transitions"])
+print(processed_diag[1,0:1000,0])
+exit()
 print(processed_diag.shape)
 
 #processed_energy = process_diagnostics(out,name_list=["prop_H"])

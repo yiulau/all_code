@@ -24,10 +24,10 @@ y = true_p + numpy.random.randn(num_p)
 input_data = {"target":y}
 
 print(true_p[:non_zero_p])
-exit()
+
 v_generator =wrap_V_class_with_input_data(class_constructor=V_student_toy,input_data=input_data)
 
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=2,num_cpu=1,thin=1,tune_l_per_chain=1000,
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
 
 # input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],
@@ -48,8 +48,9 @@ tune_settings_dict = tuning_settings(dual_args_list,[],adapt_cov_arguments,other
 tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
-
-sampler1.start_sampling()
+import cProfile
+cProfile.run("sampler1.start_sampling()")
+#sampler1.start_sampling()
 
 with open('temp_save_sampler1.pkl', 'wb') as f:
     pickle.dump(sampler1, f)
