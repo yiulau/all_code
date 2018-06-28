@@ -64,7 +64,7 @@ def prior_generator(name,**kwargs):
         out = standard_normal
 
     elif name=="normal":
-        out = normal(var=kwargs["var"])
+        out = normal
     return(out)
 
 

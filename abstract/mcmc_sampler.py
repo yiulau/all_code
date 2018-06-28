@@ -92,8 +92,10 @@ class mcmc_sampler(object):
         if self.allow_restart:
             self.max_num_restarts = self.mcmc_settings_dict["max_num_restarts"]
             assert self.mcmc_settings_dict["restart_end_buffer"] < self.warmup_per_chain
+            self.restart_end_buffer = self.mcmc_settings_dict["restart_end_buffer"]
         else:
             self.max_num_restarts = 0
+            self.restart_end_buffer = 0
         self.is_float = self.mcmc_settings_dict["is_float"]
     def prepare_chains(self):
         # same init = True means the chains will have the same initq, does not affect tuning parameters
@@ -111,7 +113,8 @@ class mcmc_sampler(object):
                                                          num_samples=self.num_samples_per_chain,
                                                          warm_up=self.warmup_per_chain,tune_l=self.tune_l_per_chain,
                                                          allow_restart=self.allow_restart,
-                                                         max_num_restarts=self.max_num_restarts,is_float=self.is_float)
+                                                         max_num_restarts=self.max_num_restarts,is_float=self.is_float,
+                                                         restart_end_buff=self.restart_end_buffer)
             #this_tune_dict = self.tune_dict
             this_chain_obj = one_chain_obj(init_point=self.init_q_point_list[i],
                                            tune_dict=copy.deepcopy(self.tune_dict),chain_setting=copy.deepcopy(this_chain_setting),
@@ -141,6 +144,9 @@ class mcmc_sampler(object):
         new_mcmc_settings_dict = copy.deepcopy(self.mcmc_settings_dict)
         new_mcmc_settings_dict.update({"num_chains": 1, "num_cpu": 1})
         def run_parallel_chain(chain_id):
+            numpy.random.seed(chain_id)
+            seed = numpy.random.uniform(-1e6, 1e6)
+            torch.manual_seed(round(seed))
             temp_mcmc_sampler = mcmc_sampler(tune_dict=self.tune_dict, mcmc_settings_dict=new_mcmc_settings_dict,
                                              tune_settings_dict=self.tune_settings_dict,
                                              adapter_setting=self.adapter_setting)
@@ -546,12 +552,14 @@ class one_chain_obj(object):
     def run(self):
         #self.initialization_obj.initialize()
         #print(self.warmup_per_chain)
-
+        keep_going = True
 
         if not self.chain_ready:
             raise ValueError("need to run prepare this chain")
         cur = self.chain_setting["thin"]
         for counter in range(self.chain_setting["num_samples"]):
+            if not keep_going:
+                break
         #for counter in range(5):
             cur -= 1
             if not cur>0.1:
@@ -586,14 +594,19 @@ class one_chain_obj(object):
                     for i in range(counter-self.chain_setting["restart_end_buff"],counter):
                         accumulate_accept_rate += self.store_log_obj[i]["accept_rate"]
                     accumulate_accept_rate = accumulate_accept_rate/100
+
                     if accumulate_accept_rate < 0.1:
                         # if self.num_restarts >5:
                         #     print(accumulate_accept_rate)
                         #     exit()
                         #exit()
-                        self.restart()
                         if self.enough_restarts:
                             break
+                        self.restart()
+                        keep_going = False
+
+
+
 
             #print("tune_l is {}".format(self.chain_setting["tune_l"]))
             #print(out)
@@ -713,7 +726,7 @@ class initialization(object):
         return()
 
 
-def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment_id=None,tune_l=5,warm_up=5,allow_restart=True,max_num_restarts=3,is_float=False):
+def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment_id=None,tune_l=5,warm_up=5,allow_restart=True,max_num_restarts=3,is_float=False,restart_end_buff=1):
 
         # one for every chain. in everything sampling object, in every experiment
         # parallel chains sampling from the same distribution shares sampling_obj
@@ -724,7 +737,7 @@ def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment
         # period for saving samples
         out = {"experiment_id":experiment_id,"sampler_id":sampler_id,"chain_id":chain_id}
         out.update({"num_samples":num_samples,"thin":thin,"tune_l":tune_l,"warm_up":warm_up})
-        out.update({"allow_restart":allow_restart,"max_num_restarts":max_num_restarts,"is_float":is_float})
+        out.update({"allow_restart":allow_restart,"max_num_restarts":max_num_restarts,"is_float":is_float,"restart_end_buff":restart_end_buff})
         return(out)
 
 

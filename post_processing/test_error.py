@@ -116,6 +116,8 @@ def map_prediction(target_dataset,v_nn_obj,mcmc_samples,type,memory_efficient=Fa
     return(store_prediction,store_prediction_uncertainty)
 
 def test_error(target_dataset,v_obj,mcmc_samples,type,memory_efficient=False):
+    # when regression returns mse on target_dataset
+    # when classifciation returns error rate on target_dataset
     assert type in ("regression","classification")
     predicted,uncertainty = map_prediction(target_dataset=target_dataset,v_nn_obj=v_obj,mcmc_samples=mcmc_samples,
                                type=type,memory_efficient=memory_efficient)

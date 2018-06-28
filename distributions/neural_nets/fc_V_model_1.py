@@ -17,16 +17,16 @@ class V_fc_model_1(bayes_model_class):
         self.need_higherorderderiv = True
         self.num_units = self.model_dict["num_units"]
         prior_hidden_fn = prior_generator(self.prior_dict["name"])
-        prior_out_fn = prior_generator("normal",var=1/self.num_units)
-        self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=math.sqrt(1/self.num_units))
-        self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(2,self.num_units))
+        prior_out_fn = prior_generator("normal")
+        self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=math.sqrt(1/self.dim))
+        self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(2,self.num_units),var=1/self.num_units)
 
         #self.hidden_in_z = nn.Parameter(torch.zeros(self.num_units, self.dim), requires_grad=True)
         #self.hidden_out_z = nn.Parameter(torch.zeros(2,self.num_units),requires_grad=True)
 
 
-        self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type("torch.LongTensor")
-        self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(self.precision_type)
+        self.y = Variable(torch.from_numpy(self.input_data["target"]),requires_grad=False).type("torch.LongTensor")
+        self.X = Variable(torch.from_numpy(self.input_data["input"]),requires_grad=False).type(self.precision_type)
         self.dict_parameters = {"hidden_in": self.hidden_in,"hidden_out":self.hidden_out}
         # include
 
@@ -36,10 +36,15 @@ class V_fc_model_1(bayes_model_class):
 
         hidden_units = torch.tanh((self.hidden_in.get_val().mm(self.X.t())))
         out_units = self.hidden_out.get_val().mm(hidden_units).t()
-
+        #print(out_units.shape)
+        #print(out_units)
+        #exit()
         #criterion = nn.NLLLoss()
         criterion = nn.CrossEntropyLoss()
+        #print(self.y)
+        #exit()
         neg_log_likelihood = criterion(out_units,self.y)
+
         hidden_in_out = self.hidden_in.get_out()
         hidden_out_out = self.hidden_out.get_out()
       #  in_sigma_out = gamma_density(in_sigma,1,1)
@@ -54,10 +59,10 @@ class V_fc_model_1(bayes_model_class):
         #print("neg_loglikelihood {}".format(neg_log_likelihood))
         neg_logposterior = -prior  + neg_log_likelihood
         out = neg_logposterior
-        print("hidden in {} ".format(self.hidden_in))
-        print("hidden_out {}".format(self.hidden_out))
-        print("sigma out {}".format(self.hidden_out.get_val()))
-        print("sigma in {}".format(self.hidden_out.get_val()))
+        # print("hidden in {} ".format(self.hidden_in))
+        # print("hidden_out {}".format(self.hidden_out))
+        # print("sigma out {}".format(self.hidden_out.get_val()))
+        # print("sigma in {}".format(self.hidden_out.get_val()))
         return(out)
 
     def predict(self,inputX):
@@ -66,7 +71,7 @@ class V_fc_model_1(bayes_model_class):
         out_units = self.hidden_out.get_val().mm(hidden_units).t()
         softmax = nn.Softmax()
         prob = softmax(out_units)
-        return(prob[:,1].data)
+        return(prob.data)
 
     def log_p_y_given_theta(self, observed_point, posterior_point):
         self.load_point(posterior_point)
