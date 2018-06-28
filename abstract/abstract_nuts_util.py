@@ -80,8 +80,10 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
     num_div = 0
     q_prop = init_q.point_clone()
     p_prop = None
-    log_w = -Ham.evaluate(init_q,p_init)
+    Ham_out = Ham.evaluate(init_q,p_init)
+    log_w = -Ham_out["H"]
     H_0 = -log_w
+    lp_0 = -Ham_out["V"]
     accepted = False
     accept_rate = 0
     divergent = False
@@ -122,9 +124,13 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
     if num_div > 0 :
         divergent = True
         p_prop = None
+        return_lp = lp_0
+    else:
+        return_lp = -Ham.evaluate(q_prop,p_prop)["V"]
 
     if not log_obj is None:
         log_obj.store.update({"prop_H":-log_w})
+        log_obj.store.update({"log_post":return_lp})
         log_obj.store.update({"accepted":accepted})
         log_obj.store.update({"accept_rate":accept_rate})
         log_obj.store.update({"divergent":divergent})

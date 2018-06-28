@@ -27,15 +27,16 @@ def energy_diagnostics(diagnostics_obj):
     # return bfmi-e for each chain
     # return ess,rhat ,posterior mean and sd for energy
     diagnostics = diagnostics_obj["diagnostics"]
-    store = numpy.zeros((len(diagnostics), len(diagnostics[0]), 1))
+    store_lp = numpy.zeros((len(diagnostics), len(diagnostics[0]), 1))
+    store_H = numpy.zeros((len(diagnostics), len(diagnostics[0]), 1))
     bfmi_list = [None]*len(diagnostics)
     for i in range(len(diagnostics)):
         for j in range(len(diagnostics[i])):
-            store[i, j, 0] = diagnostics[i][j]["prop_H"]
+            store_lp[i, j, 0] = diagnostics[i][j]["log_post"]
+            store_H[i,j,0] = diagnostics[i][j]["prop_H"]
+        bfmi_list[i] = bfmi_e(store_H[i,:,0])
 
-        bfmi_list[i] = bfmi_e(store[i,:,0])
-
-    out = diagnostics_stan(store)
+    out = diagnostics_stan(store_lp)
     out_dict = {"ess":out["ess"],"rhat":out["rhat"],"bfmi_list":bfmi_list}
     return(out_dict)
 
@@ -77,3 +78,14 @@ def get_short_diagnostics(mcmc_samples_tensor):
     out = {"min_ess":min_ess,"percent_rhat":percent_rhat}
     return(out)
 
+def get_params_mcmc_tensor(sampler):
+    v_fun = sampler.v_fun
+    v_obj = v_fun(precision_type="torch.DoubleTensor")
+    list_params = list(v_obj.dict_parameters.keys())
+    list_samples = []
+    concat_axis = len(sampler.get_samples_alt(prior_obj_name=list_params[0], permuted=False)["samples"].shape)
+    for i in range(len(list_params)):
+        list_samples.append(sampler.get_samples_alt(prior_obj_name=list_params[i], permuted=False)["samples"])
+
+    out = numpy.concatenate(list_samples,axis=concat_axis)
+    return()

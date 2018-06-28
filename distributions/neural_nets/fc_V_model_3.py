@@ -4,23 +4,23 @@ from distributions.bayes_model_class import bayes_model_class
 from torch.autograd import Variable
 from distributions.neural_nets.priors.prior_util import prior_generator
 
-# hierarchical prior for input to hidden units, scale = sqrt(1/input_dim)
-#  normal prior for hidden to output units with variance 1/num_hidden_units
-class V_fc_model_1(bayes_model_class):
+# hierarchical prior for hidden to output units, scale = sqrt(1/num_hidden_units)
+# hierarchical prior for input to hidden units with scale = sqrt(1/input_dim)
+class V_fc_model_2(bayes_model_class):
     def __init__(self,input_data,precision_type,prior_dict,model_dict):
         self.prior_dict = prior_dict
         self.model_dict = model_dict
-        super(V_fc_model_1, self).__init__(input_data=input_data,precision_type=precision_type)
+        super(V_fc_model_2, self).__init__(input_data=input_data,precision_type=precision_type)
     def V_setup(self):
         self.dim = self.input_data["input"].shape[1]
         self.num_ob = self.input_data["target"].shape[0]
         self.explicit_gradient = True
         self.need_higherorderderiv = True
         self.num_units = self.model_dict["num_units"]
-        prior_hidden_fn = prior_generator(self.prior_dict["name"])
-        prior_out_fn = prior_generator("normal")
+        prior_hidden_fn = prior_generator(self.prior_dict["in_hidden"])
+        prior_out_fn = prior_generator(self.prior_dict["hidden_out"])
         self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=math.sqrt(1/self.dim))
-        self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(2,self.num_units),var=1/self.num_units)
+        self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(2,self.num_units),global_scale=math.sqrt(1/self.num_units))
 
         #self.hidden_in_z = nn.Parameter(torch.zeros(self.num_units, self.dim), requires_grad=True)
         #self.hidden_out_z = nn.Parameter(torch.zeros(2,self.num_units),requires_grad=True)

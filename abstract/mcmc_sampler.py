@@ -624,6 +624,7 @@ class one_chain_obj(object):
             print("accept_rate {}".format(self.log_obj.store["accept_rate"]))
             print("divergent is {}".format(self.log_obj.store["divergent"]))
             print("H is {}".format(self.log_obj.store["prop_H"]))
+            print("log_post is {}".format(self.log_obj.store["log_post"]))
 
         return()
     def add_sample(self,sample_dict):

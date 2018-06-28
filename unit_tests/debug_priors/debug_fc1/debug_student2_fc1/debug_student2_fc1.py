@@ -10,7 +10,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from post_processing.ESS_nuts import ess_stan,diagnostics_stan
-from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics
+from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics,get_params_mcmc_tensor,get_short_diagnostics
 from input_data.convert_data_to_dict import get_data_dict
 from post_processing.test_error import test_error
 seed = 1
@@ -82,6 +82,11 @@ print(diagnostics_stan(samples[:,:,hidden_in_sigma2_indices]))
 print("hidden in sigma2 {}".format(posterior_mean_hidden_in_sigma2))
 
 #print(mcmc_samples_beta["indices_dict"])
+
+full_mcmc_tensor = get_params_mcmc_tensor(sampler=sampler1)
+
+print(get_short_diagnostics(full_mcmc_tensor))
+
 
 out = sampler1.get_diagnostics(permuted=False)
 

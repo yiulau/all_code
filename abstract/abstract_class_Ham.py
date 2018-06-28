@@ -57,7 +57,8 @@ class Hamiltonian(object):
             raise ValueError("very wrong negative H")
         #print("V {}".format(V))
         #print("T {}".format(T))
-        out = V + T
+        H = V + T
+        out = {"H":H,"V":V,"T":T}
         #self.diagnostics.add_num_H_eval(1)
         return(out)
 

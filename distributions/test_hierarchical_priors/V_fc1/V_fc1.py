@@ -3,14 +3,14 @@ import torch.nn as nn
 from distributions.bayes_model_class import bayes_model_class
 from torch.autograd import Variable
 from distributions.neural_nets.priors.prior_util import prior_generator
-
-# hierarchical prior for input to hidden units, scale = sqrt(1/input_dim)
-#  normal prior for hidden to output units with variance 1/num_hidden_units
-class V_fc_model_1(bayes_model_class):
+#
+# hierarchical prior for input to hidden units, scale = 1/input_dimension
+# standard normal prior for hidden to out units with variance 1/num_hidden_units
+class V_fc1(bayes_model_class):
     def __init__(self,input_data,precision_type,prior_dict,model_dict):
         self.prior_dict = prior_dict
         self.model_dict = model_dict
-        super(V_fc_model_1, self).__init__(input_data=input_data,precision_type=precision_type)
+        super(V_fc1, self).__init__(input_data=input_data,precision_type=precision_type)
     def V_setup(self):
         self.dim = self.input_data["input"].shape[1]
         self.num_ob = self.input_data["target"].shape[0]
