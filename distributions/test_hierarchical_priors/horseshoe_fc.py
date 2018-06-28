@@ -2,10 +2,7 @@ import torch,numpy,os
 import torch.nn as nn
 from distributions.bayes_model_class import bayes_model_class
 from torch.autograd import Variable
-import pandas as pd
-from torch.autograd import Variable, Function
-from explicit.general_util import logsumexp_torch
-from distributions.neural_nets.util import gamma_density
+
 
 # precision_type = 'torch.DoubleTensor'
 # #precision_type = 'torch.FloatTensor'
@@ -13,10 +10,9 @@ from distributions.neural_nets.util import gamma_density
 from distributions.neural_nets.priors.prior_util import prior_generator
 # horseshoe prior for hidden to out units, scale = 1/num_hidden_units
 # standard normal prior for input to hidden units with variance 1/N_input
-class V_fc_test_hyper(bayes_model_class):
+class V_fc_horseshoe(bayes_model_class):
     def __init__(self,input_data,precision_type):
-
-        super(V_fc_test_hyper, self).__init__(input_data=input_data,precision_type=precision_type)
+        super(V_fc_horseshoe, self).__init__(input_data=input_data,precision_type=precision_type)
     def V_setup(self):
         self.dim = self.input_data["input"].shape[1]
         self.num_ob = self.input_data["target"].shape[0]
@@ -34,6 +30,8 @@ class V_fc_test_hyper(bayes_model_class):
         self.y = Variable(torch.from_numpy(self.y_np),requires_grad=False).type("torch.LongTensor")
         self.X = Variable(torch.from_numpy(self.X_np),requires_grad=False).type(self.precision_type)
         # include
+        self.dict_parameters = {"hidden_in":self.hidden_in,"hidden_out":self.hidden_out}
+
 
         return()
 
@@ -59,10 +57,10 @@ class V_fc_test_hyper(bayes_model_class):
         #print("neg_loglikelihood {}".format(neg_log_likelihood))
         neg_logposterior = -prior  + neg_log_likelihood
         out = neg_logposterior
-        print("hidden in {} ".format(self.hidden_in))
-        print("hidden_out {}".format(self.hidden_out))
-        print("sigma out {}".format(self.hidden_out.get_val()))
-        print("sigma in {}".format(self.hidden_out.get_val()))
+        #print("hidden in {} ".format(self.hidden_in))
+        #print("hidden_out {}".format(self.hidden_out))
+        #print("sigma out {}".format(self.hidden_out.get_val()))
+        #print("sigma in {}".format(self.hidden_out.get_val()))
         return(out)
 
     def predict(self,inputX):
@@ -74,6 +72,8 @@ class V_fc_test_hyper(bayes_model_class):
         return(prob[:,1].data)
 
     def log_p_y_given_theta(self, observed_point, posterior_point):
+        # should check that when exponentiated maps to (0,1) i.e.
+        # output is negative
         self.load_point(posterior_point)
         X = observed_point["input"]
         y = observed_point["target"]
