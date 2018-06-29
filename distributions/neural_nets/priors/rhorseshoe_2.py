@@ -17,7 +17,7 @@ class rhorseshoe_2(base_prior_new):
         self.slab_scale = slab_scale
         self.name = name
         self.relevant_param_tuple = ("w","lamb","lamb_tilde","c","tau")
-        self.setup_parameter(obj,shape)
+        self.setup_parameter(obj,name,shape)
         super(rhorseshoe_2, self).__init__()
 
     def get_val(self):
@@ -36,6 +36,7 @@ class rhorseshoe_2(base_prior_new):
 
         out_list = [None]*len(name_list)
         for i in range(len(name_list)):
+            name = name_list[i]
             if name == "w":
                 out = self.w_obj
             elif name =="tau":
@@ -71,7 +72,7 @@ class rhorseshoe_2(base_prior_new):
         c_beta = self.slab_df * self.slab_scale * self.slab_scale / 2
         c_r2_out = log_inv_gamma_density(x=c_r2, alpha=c_alpha, beta=c_beta) + self.log_c_r2_obj.sum()
 
-        w_out = -(self.w_obj*self.w_obj/(lamb_tilde*lamb_tilde*tau*tau)).sum()*0.5
+        w_out = -(self.w_obj*self.w_obj/(lamb_tilde*lamb_tilde*tau*tau)).sum()*0.5 - (torch.log(lamb_tilde*lamb_tilde*tau*tau)).sum()*0.5
 
         out = w_out + lamb2_out + tau2_out + c_r1_out + c_r2_out
         return(out)

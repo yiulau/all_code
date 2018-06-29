@@ -5,7 +5,7 @@ from post_processing.diagnostics import bfmi_e
 
 def process_diagnostics(diagnostics_obj,name_list):
     for name in name_list:
-        assert name in ("prop_H","accepted","accept_rate","divergent","num_transitions","explode_grad","hit_max_treedepth")
+        assert name in ("prop_H","accepted","accept_rate","divergent","num_transitions","explode_grad","hit_max_tree_depth")
     permuted = diagnostics_obj["permuted"]
     diagnostics = diagnostics_obj["diagnostics"]
     if permuted:
@@ -45,7 +45,7 @@ def average_diagnostics(diagnostics_obj,statistic_name):
     # when permuted = True returns statistic separately for each chain
     # when permuted = False returns statistic for the combined chain
 
-    assert statistic_name in ("accepted","accept_rate","divergent","num_transitions","explode_grad","hit_max_treedepth")
+    assert statistic_name in ("accepted","accept_rate","divergent","num_transitions","explode_grad","hit_max_tree_depth")
     diagnostics = diagnostics_obj["diagnostics"]
     if diagnostics_obj["permuted"]==True:
         sum = 0
@@ -87,5 +87,5 @@ def get_params_mcmc_tensor(sampler):
     for i in range(len(list_params)):
         list_samples.append(sampler.get_samples_alt(prior_obj_name=list_params[i], permuted=False)["samples"])
 
-    out = numpy.concatenate(list_samples,axis=concat_axis)
-    return()
+    out = numpy.concatenate(list_samples,axis=concat_axis-1)
+    return(out)

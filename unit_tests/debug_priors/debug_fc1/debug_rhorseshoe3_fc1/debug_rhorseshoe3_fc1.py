@@ -9,14 +9,15 @@ from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
-from post_processing.ESS_nuts import ess_stan
-from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics
+from post_processing.ESS_nuts import ess_stan,diagnostics_stan
+from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics,get_params_mcmc_tensor,get_short_diagnostics
 from input_data.convert_data_to_dict import get_data_dict
+from post_processing.test_error import test_error
 seed = 1
 numpy.random.seed(seed)
 torch.manual_seed(seed)
 
-input_data = get_data_dict("boston",standardize_predictor=True)
+input_data = get_data_dict("pima_indian",standardize_predictor=True)
 
 
 prior_dict = {"name":"rhorseshoe_3"}
@@ -24,7 +25,7 @@ model_dict = {"num_units":10}
 
 v_generator =wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=input_data,prior_dict=prior_dict,model_dict=model_dict)
 
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=2,num_cpu=1,thin=1,tune_l_per_chain=1000,
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
 
 # input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],
@@ -73,18 +74,48 @@ hidden_out_w_indices = mcmc_samples_hidden_out["indices_dict"]["w"]
 posterior_mean_hidden_in_tau = numpy.mean(samples[:,:,hidden_in_tau_indices].reshape(-1,len(hidden_in_tau_indices)),axis=0)
 posterior_mean_hidden_in_c = numpy.mean(samples[:,:,hidden_in_c_indices].reshape(-1,len(hidden_in_c_indices)),axis=0)
 
-
+print("diagnostics for tau")
+print(diagnostics_stan(samples[:,:,hidden_in_tau_indices]))
 print("hidden in tau {}".format(posterior_mean_hidden_in_tau))
+print("diagnostics for c ")
+print(diagnostics_stan(samples[:,:,hidden_in_c_indices]))
 print("hidden in c {}".format(posterior_mean_hidden_in_c))
 
 #print(mcmc_samples_beta["indices_dict"])
 
+print("overall diagnostics")
+full_mcmc_tensor = get_params_mcmc_tensor(sampler=sampler1)
+
+print(get_short_diagnostics(full_mcmc_tensor))
+
 out = sampler1.get_diagnostics(permuted=False)
 
+print("num divergences after warmup")
+processed_diag = process_diagnostics(out,name_list=["divergent"])
 
-#processed_diag = process_diagnostics(out,name_list=["accepted"])
-#print(processed_diag.shape)
+print(processed_diag.sum(axis=1))
+
+print("num hit max tree depth after warmup")
+processed_diag = process_diagnostics(out,name_list=["hit_max_tree_depth"])
+
+print(processed_diag.sum(axis=1))
+
+print("average number of leapfrog steps after warmup")
+processed_diag = process_diagnostics(out,name_list=["num_transitions"])
+print(processed_diag.mean(axis=1))
 
 #processed_energy = process_diagnostics(out,name_list=["prop_H"])
 
+print("energy diagnostics")
 print(energy_diagnostics(diagnostics_obj=out))
+
+mcmc_samples_mixed = sampler1.get_samples(permuted=True)
+target_dataset = get_data_dict("pima_indian")
+
+v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=input_data,prior_dict=prior_dict,model_dict=model_dict)
+precision_type = "torch.DoubleTensor"
+
+te1,predicted1 = test_error(target_dataset,v_obj=v_generator(precision_type=precision_type),mcmc_samples=mcmc_samples_mixed,type="classification",memory_efficient=False)
+
+print(te1)
+

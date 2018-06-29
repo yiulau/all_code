@@ -1,4 +1,4 @@
-from distributions.test_hierarchical_priors.horseshoe_toy_dist import V_hs_toy
+from distributions.test_hierarchical_priors.V_toy.V_toy import V_toy
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch
@@ -24,7 +24,7 @@ input_data = {"target":y}
 
 prior_dict = {"name":"horseshoe_3"}
 
-v_generator =wrap_V_class_with_input_data(class_constructor=V_hs_toy,input_data=input_data,prior_dict=prior_dict)
+v_generator =wrap_V_class_with_input_data(class_constructor=V_toy,input_data=input_data,prior_dict=prior_dict)
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
@@ -50,7 +50,7 @@ sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_se
 
 
 store_name = 'hs_toy_sampler.pkl'
-sampled = False
+sampled = True
 if sampled:
     sampler1 = pickle.load(open(store_name, 'rb'))
 else:
@@ -77,10 +77,10 @@ posterior_mean_tau = numpy.mean(samples[:,:,tau_indices].reshape(-1,len(tau_indi
 
 print(diagnostics_stan(samples[:,:,tau_indices]))
 
+print("posterior mean tau {}".format(posterior_mean_tau))
 
-print("hidden in tau {}".format(posterior_mean_tau))
 
-
+print("overall diagnostics")
 full_mcmc_tensor = get_params_mcmc_tensor(sampler=sampler1)
 
 print(get_short_diagnostics(full_mcmc_tensor))
@@ -89,12 +89,23 @@ print(get_short_diagnostics(full_mcmc_tensor))
 
 out = sampler1.get_diagnostics(permuted=False)
 
+print("num divergences after warmup")
+processed_diag = process_diagnostics(out,name_list=["divergent"])
 
-#processed_diag = process_diagnostics(out,name_list=["accepted"])
-#print(processed_diag.shape)
+print(processed_diag.sum(axis=1))
+
+print("num hit max tree depth after warmup")
+processed_diag = process_diagnostics(out,name_list=["hit_max_tree_depth"])
+
+print(processed_diag.sum(axis=1))
+
+print("average number of leapfrog steps after warmup")
+processed_diag = process_diagnostics(out,name_list=["num_transitions"])
+print(processed_diag.mean(axis=1))
 
 #processed_energy = process_diagnostics(out,name_list=["prop_H"])
 
+print("energy diagnostics")
 print(energy_diagnostics(diagnostics_obj=out))
 
 

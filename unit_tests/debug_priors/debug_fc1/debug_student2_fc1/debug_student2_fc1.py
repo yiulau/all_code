@@ -77,9 +77,11 @@ hidden_out_w_indices = mcmc_samples_hidden_out["indices_dict"]["w"]
 #print(samples.shape)
 posterior_mean_hidden_in_sigma2 = numpy.mean(samples[:,:,hidden_in_sigma2_indices].reshape(-1,len(hidden_in_sigma2_indices)),axis=0)
 
+print("diagnostics sigma2")
+
 print(diagnostics_stan(samples[:,:,hidden_in_sigma2_indices]))
 
-print("hidden in sigma2 {}".format(posterior_mean_hidden_in_sigma2))
+print("posterior mean sigma2 {}".format(posterior_mean_hidden_in_sigma2))
 
 #print(mcmc_samples_beta["indices_dict"])
 
@@ -94,7 +96,7 @@ out = sampler1.get_diagnostics(permuted=False)
 processed_diag = process_diagnostics(out,name_list=["divergent"])
 
 print(processed_diag.sum(axis=1))
-exit()
+
 #print(processed_diag.shape)
 
 #processed_energy = process_diagnostics(out,name_list=["prop_H"])
@@ -102,6 +104,9 @@ exit()
 print(energy_diagnostics(diagnostics_obj=out))
 
 mcmc_samples_mixed = sampler1.get_samples(permuted=True)
+target_dataset = get_data_dict("pima_indian")
+
+v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=input_data,prior_dict=prior_dict,model_dict=model_dict)
 precision_type = "torch.DoubleTensor"
 te2,predicted2 = test_error(input_data,v_obj=v_generator(precision_type=precision_type),mcmc_samples=mcmc_samples_mixed,type="classification",memory_efficient=False)
 

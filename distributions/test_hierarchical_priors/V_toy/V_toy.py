@@ -3,10 +3,10 @@ from distributions.neural_nets.priors.prior_util import prior_generator
 from torch.autograd import Variable
 import torch
 
-class V_hs_toy(bayes_model_class):
+class V_toy(bayes_model_class):
     def __init__(self,input_data,precision_type,prior_dict):
         self.prior_dict = prior_dict
-        super(V_hs_toy, self).__init__(input_data=input_data,precision_type=precision_type)
+        super(V_toy, self).__init__(input_data=input_data,precision_type=precision_type)
     def V_setup(self):
         self.dim = len(self.input_data["target"])
         self.explicit_gradient = False

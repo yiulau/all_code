@@ -10,7 +10,7 @@ class horseshoe_1(base_prior_new):
         self.nu = nu
         self.name = name
         self.relevant_param_tuple = ("w", "lamb", "tau")
-        self.setup_parameter(obj,shape)
+        self.setup_parameter(obj,name,shape)
         super(horseshoe_1, self).__init__()
 
 

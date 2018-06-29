@@ -35,7 +35,7 @@ class horseshoe_4(base_prior_new):
         tau = global_r1 * torch.sqrt(global_r2)*self.global_scale
         lamb = local_r1 * torch.sqrt(local_r2)
 
-        w_out = -(self.w_obj * self.w_obj /(tau*tau*lamb*lamb)).sum() * 0.5
+        w_out = -(self.w_obj * self.w_obj /(tau*tau*lamb*lamb)).sum() * 0.5 -(torch.log(tau*tau*lamb*lamb)).sum()*0.5
         out = w_out + local_r2_out + global_r2_out + local_r1_out + global_r1_out
         return (out)
 

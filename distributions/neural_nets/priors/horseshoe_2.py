@@ -10,7 +10,7 @@ class horseshoe_2(base_prior_new):
         self.nu = nu
         self.name = name
         self.relevant_param_tuple = ("w", "lamb", "tau")
-        self.setup_parameter(obj,shape)
+        self.setup_parameter(obj,name,shape)
         #super(horseshoe_2, self).__init__()
 
     def get_val(self):
@@ -22,7 +22,7 @@ class horseshoe_2(base_prior_new):
         tau2 = torch.exp(self.log_tau2_obj)
         lamb2_out = log_student_t_density(x=lamb2,nu=1,mu=0,sigma=1) + self.log_lamb2_obj.sum()
         tau2_out = log_student_t_density(x=tau2,nu=self.nu,mu=0,sigma=self.global_scale) + self.log_tau2_obj.sum()
-        w_out = -(self.w_obj*self.w_obj/(lamb2*tau2)).sum()*0.5
+        w_out = -(self.w_obj*self.w_obj/(lamb2*tau2)).sum()*0.5 -(torch.log(lamb2*tau2)).sum()*0.5
 
         out = w_out + lamb2_out + tau2_out
         return(out)

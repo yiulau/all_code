@@ -1,4 +1,6 @@
-from distributions.test_hierarchical_priors.V_toy.V_toy import V_toy
+# perfect separation logit data
+
+from distributions.neural_nets.fc_V_model_1 import V_fc_model_1
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch
@@ -9,22 +11,19 @@ from experiments.experiment_obj import tuneinput_class
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from post_processing.ESS_nuts import ess_stan,diagnostics_stan
 from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics,get_params_mcmc_tensor,get_short_diagnostics
-num_p = 100
-non_zero_p = 20
+from input_data.convert_data_to_dict import get_data_dict
+from post_processing.test_error import test_error
+seed = 1
+numpy.random.seed(seed)
+torch.manual_seed(seed)
 
-seedid = 33
-numpy.random.seed(seedid)
-torch.manual_seed(seedid)
-true_p = numpy.zeros(num_p)
-true_p[:non_zero_p] = numpy.random.randn(non_zero_p)*5
+input_data = get_data_dict("pima_indian",standardize_predictor=True)
 
-y = true_p + numpy.random.randn(num_p)
 
-input_data = {"target":y}
+prior_dict = {"name":"rhorseshoe_ard"}
+model_dict = {"num_units":10}
 
-prior_dict = {"name":"horseshoe_4"}
-
-v_generator =wrap_V_class_with_input_data(class_constructor=V_toy,input_data=input_data,prior_dict=prior_dict)
+v_generator =wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=input_data,prior_dict=prior_dict,model_dict=model_dict)
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
@@ -49,8 +48,8 @@ tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
 
 
-store_name = 'hs_toy_sampler.pkl'
-sampled = True
+store_name = 'hs_ard_fc1_sampler.pkl'
+sampled = False
 if sampled:
     sampler1 = pickle.load(open(store_name, 'rb'))
 else:
@@ -60,24 +59,29 @@ else:
 #out = sampler1.start_sampling()
 
 
-mcmc_samples_beta = sampler1.get_samples_alt(prior_obj_name="beta",permuted=False)
+mcmc_samples_hidden_in = sampler1.get_samples_alt(prior_obj_name="hidden_in",permuted=False)
+mcmc_samples_hidden_out = sampler1.get_samples_alt(prior_obj_name="hidden_out",permuted=False)
+
 #print(mcmc_samples_beta["indices_dict"])
 #exit()
 
-samples = mcmc_samples_beta["samples"]
-w_indices = mcmc_samples_beta["indices_dict"]["w"]
-tau_indices = mcmc_samples_beta["indices_dict"]["tau"]
+samples = mcmc_samples_hidden_in["samples"]
+hidden_in_tau_indices = mcmc_samples_hidden_in["indices_dict"]["tau"]
+hidden_in_w_indices = mcmc_samples_hidden_in["indices_dict"]["w"]
+hidden_out_w_indices = mcmc_samples_hidden_out["indices_dict"]["w"]
 
-print(samples.shape)
-posterior_mean = numpy.mean(samples[:,:,w_indices].reshape(-1,len(w_indices)),axis=0)
-print(posterior_mean[:non_zero_p])
-print(true_p[:non_zero_p])
+print(samples[:,:,hidden_in_tau_indices].shape)
+#print(numpy.mean(samples[3,400:500,hidden_in_tau_indices]))
 
-posterior_mean_tau = numpy.mean(samples[:,:,tau_indices].reshape(-1,len(tau_indices)),axis=0)
+#print(samples.shape)
+posterior_mean_hidden_in_tau = numpy.mean(samples[:,:,hidden_in_tau_indices].reshape(-1,len(hidden_in_tau_indices)),axis=0)
 
-print(diagnostics_stan(samples[:,:,tau_indices]))
 
-print("posterior mean tau {}".format(posterior_mean_tau))
+print("diagnostics for tau")
+
+print(diagnostics_stan(samples[:,:,hidden_in_tau_indices]))
+
+print("posterior mean tau {}".format(posterior_mean_hidden_in_tau))
 
 
 print("overall diagnostics")
@@ -107,3 +111,14 @@ print(processed_diag.mean(axis=1))
 
 print("energy diagnostics")
 print(energy_diagnostics(diagnostics_obj=out))
+
+mcmc_samples_mixed = sampler1.get_samples(permuted=True)
+target_dataset = get_data_dict("pima_indian")
+
+v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=input_data,prior_dict=prior_dict,model_dict=model_dict)
+precision_type = "torch.DoubleTensor"
+
+te1,predicted1 = test_error(target_dataset,v_obj=v_generator(precision_type=precision_type),mcmc_samples=mcmc_samples_mixed,type="classification",memory_efficient=False)
+
+print(te1)
+

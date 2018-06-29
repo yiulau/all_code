@@ -15,7 +15,7 @@ class rhorseshoe_1(base_prior_new):
         self.slab_scale = slab_scale
         self.name = name
         self.relevant_param_tuple = ("w", "lamb", "lamb_tilde","tau","c")
-        self.setup_parameter(obj,shape)
+        self.setup_parameter(obj,name,shape)
         super(rhorseshoe_1, self).__init__()
 
 

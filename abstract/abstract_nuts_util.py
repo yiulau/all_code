@@ -79,7 +79,7 @@ def abstract_GNUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
     j = 0
     num_div = 0
     q_prop = init_q.point_clone()
-    p_prop = None
+    p_prop = p_init.point_clone()
     Ham_out = Ham.evaluate(init_q,p_init)
     log_w = -Ham_out["H"]
     H_0 = -log_w
@@ -271,7 +271,7 @@ def abstract_BuildTree_gnuts(q,p,v,j,epsilon,Ham,H_0,diagn_dict):
         diagn_dict.update({"explode_grad":divergent})
         diagn_dict.update({"divergent":divergent})
         if not divergent:
-            log_w_prime = -Ham.evaluate(q_prime, p_prime)
+            log_w_prime = -Ham.evaluate(q_prime, p_prime)["H"]
             H_cur = -log_w_prime
             if (abs(H_cur - H_0) < 1000):
                 continue_divergence = True

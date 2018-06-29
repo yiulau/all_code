@@ -65,8 +65,8 @@ class gaussian_inv_gamma_ard_2(base_prior_new):
         self.agg_z_obj = nn.Parameter(torch.zeros(self.num_units,self.in_units),requires_grad=True)
         self.agg_log_sigma2_obj = nn.Parameter(torch.zeros(self.num_units,self.in_units),requires_grad=True)
         for i in range(self.num_units):
-            z_obj = self.agg_z_obj[i,:]
-            log_sigma2_obj = self.agg_log_sigma2_obj[i,:]
+            z_obj = self.agg_z_obj[i:i+1,:]
+            log_sigma2_obj = self.agg_log_sigma2_obj[i:i+1,:]
             param_dict = {"z_obj":z_obj,"log_sigma2_obj":log_sigma2_obj}
             self.param_list_by_units.append(param_dict)
 

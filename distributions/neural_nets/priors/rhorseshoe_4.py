@@ -41,7 +41,7 @@ class rhorseshoe_4(base_prior_new):
         global_r1_out = -(global_r1 * global_r1).sum() * 0.5 + self.log_global_r1_obj.sum()
         local_r2_out = log_inv_gamma_density(x=local_r2, alpha=0.5, beta=0.5) + self.log_local_r2_obj.sum()
         global_r2_out = log_inv_gamma_density(x=global_r2, alpha=0.5*self.nu,beta=0.5*self.nu) + self.log_global_r2_obj.sum()
-        w_out = -(self.w_obj * self.w_obj /(tau*tau*lamb_tilde*lamb_tilde)).sum() * 0.5
+        w_out = -(self.w_obj * self.w_obj /(tau*tau*lamb_tilde*lamb_tilde)).sum() * 0.5 -(torch.log(tau*tau*lamb_tilde*lamb_tilde)).sum()*0.5
         c_r1_out = -(c_r1 * c_r1).sum() * 0.5 + self.log_c_r1_obj
         c_alpha = self.slab_df / 2
         c_beta = self.slab_df * self.slab_scale * self.slab_scale / 2
