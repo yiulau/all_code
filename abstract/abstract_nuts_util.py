@@ -19,9 +19,12 @@ def abstract_NUTS(init_q,epsilon,Ham,max_tree_depth=5,log_obj=None):
     num_div = 0
     q_prop = init_q.point_clone()
     p_prop = None
-    log_w = -Ham.evaluate(init_q,p_init)
+    Ham_out = Ham.evaluate(init_q, p_init)
+    log_w = -Ham_out["H"]
     H_0 = -log_w
+    lp_0 = -Ham_out["V"]
     accepted = False
+    accept_rate = 0
     divergent = False
     s = True
     diagn_dict = {"divergent":None,"explode_grad":None}
@@ -153,9 +156,12 @@ def abstract_NUTS_xhmc(init_q,epsilon,Ham,xhmc_delta,max_tree_depth=5,log_obj=No
     num_div = 0
     q_prop = init_q.point_clone()
     p_prop = None
-    log_w = -Ham.evaluate(init_q,p_init)
+    Ham_out = Ham.evaluate(init_q, p_init)
+    log_w = -Ham_out["H"]
     H_0 = -log_w
+    lp_0 = -Ham_out["V"]
     accepted = False
+    accept_rate = 0
     divergent = False
     ave = Ham.dG_dt(init_q, p_init)
     diagn_dict = {"divergent":None,"explode_grad":None}
@@ -226,7 +232,7 @@ def abstract_BuildTree_nuts(q,p,v,j,epsilon,Ham,H_0,diagn_dict):
         if not divergent :
             # continue_divergence
             # boolean True if there's no divergence.
-            log_w_prime = -Ham.evaluate(q_prime, p_prime)
+            log_w_prime = -Ham.evaluate(q_prime, p_prime)["H"]
             H_cur = -log_w_prime
             if abs(H_cur-H_0)<1000:
                 continue_divergence = True
@@ -329,7 +335,7 @@ def abstract_BuildTree_nuts_xhmc(q,p,v,j,epsilon,Ham,xhmc_delta,H_0,diagn_dict):
         diagn_dict.update({"explode_grad": divergent})
         diagn_dict.update({"divergent": divergent})
         if not divergent:
-            log_w_prime = -Ham.evaluate(q_prime, p_prime)
+            log_w_prime = -Ham.evaluate(q_prime, p_prime)["H"]
             H_cur = -log_w_prime
             if(abs(H_cur-H_0)<1000):
                 continue_divergence = True

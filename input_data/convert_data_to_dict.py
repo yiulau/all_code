@@ -4,13 +4,14 @@ import torchvision.transforms as transforms
 from sklearn import preprocessing
 def get_data_dict(dataset_name,standardize_predictor=True):
     permissible_vals = ["pima_indian","boston","subset_mnist","subset_cifar10","logistic_mnist","logistic_cifar10","logistic_8x8mnist"]
-    permissible_vals += ["australian","german","heart","diabetes","breast","8x8mnist"]
+    permissible_vals += ["australian","german","heart","diabetes","breast","8x8mnist","sp500"]
 
     assert dataset_name in permissible_vals
 
     out_datadict = {"input":None,"target":None}
 
     if dataset_name=="pima_indian":
+        # classification
         address = os.environ["PYTHONPATH"] + "/input_data/pima_india.csv"
         df = pd.read_csv(address, header=0, sep=" ")
         dfm = df.values
@@ -19,24 +20,28 @@ def get_data_dict(dataset_name,standardize_predictor=True):
 
 
     elif dataset_name=="boston":
+        # regression
         from sklearn.datasets import load_boston
         boston = load_boston()
         X = boston["data"]
         y = boston["target"]
 
     elif dataset_name=="diabetes":
+        # regression
         from sklearn.datasets import load_diabetes
         diabetes = load_diabetes()
         X = diabetes["data"]
         y = diabetes["target"]
 
     elif dataset_name=="breast":
+        # classifcation
         from sklearn.datasets import load_breast_cancer
         breast = load_breast_cancer()
         X = breast["data"]
         y = breast["target"]
 
     elif dataset_name=="heart":
+        # classification
         address = os.environ["PYTHONPATH"] + "/input_data/heart.csv"
         df = pd.read_csv(address, header=None, sep=" ")
         y = df[13]
@@ -47,6 +52,7 @@ def get_data_dict(dataset_name,standardize_predictor=True):
         X = df2.values
 
     elif dataset_name=="german":
+        # classification
         address = os.environ["PYTHONPATH"] + "/input_data/german.csv"
         df = pd.read_csv(address, header=None, sep=" ")
         y = df[20]
@@ -57,6 +63,7 @@ def get_data_dict(dataset_name,standardize_predictor=True):
         X = df2.values
 
     elif dataset_name=="australian":
+        # classification
         address = os.environ["PYTHONPATH"] + "/input_data/australian.dat"
         df = pd.read_csv(address, header=None, sep=" ")
         y = df[14]
@@ -158,6 +165,13 @@ def get_data_dict(dataset_name,standardize_predictor=True):
         X = subset_mnist_dict["input"][index_to_choose_from,:]
         y = y[index_to_choose_from]
 
+    elif dataset_name =="sp500":
+        address = os.environ["PYTHONPATH"] + "/input_data/sp500.csv"
+        df = pd.read_csv(address, header=None, sep=" ")
+        X = None
+        y = df[0].values
+        standardize_predictor = False
+
     if standardize_predictor:
         X = preprocessing.scale(X)
     out_datadict.update({"input": X, "target": y})
@@ -186,7 +200,11 @@ def subset_dataset(dataset,size_per_class,seed=1):
 
     out = {"input":outX.numpy(),"target":outy.numpy()}
 
-
     return(out)
 
-get_data_dict("subset_cifar10",standardize_predictor=False)
+
+
+#out = get_data_dict("sp500",standardize_predictor=False)
+
+
+#print(out["target"])

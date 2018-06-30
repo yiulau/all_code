@@ -153,6 +153,7 @@ def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_
         evolve_L = round(evolve_t/epsilon)
     Ham.diagnostics = time_diagnositcs()
     divergent = False
+    explode_grad = False
     num_transitions = evolve_L
     accepted = False
     accept_rate = 0
@@ -174,13 +175,13 @@ def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_
         q_prop, p_prop = o[4], o[5]
         logw_prop = o[6]
         divergent = o[7]
-        accepted = o[8] or accepted
-        accept_rate = o[9]
-        if careful:
-            if divergent:
-                num_transitions = i
-                break
-        if not divergent:
+        explode_grad = o[8]
+        accepted = o[9] or accepted
+        accept_rate = o[10]
+        if divergent:
+            num_transitions = i
+            break
+        else:
             num_transitions = evolve_L
         #print(o[7])
 
@@ -194,5 +195,5 @@ def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_
         log_obj.store.update({"accept_rate":accept_rate})
         log_obj.store.update({"divergent":divergent})
         log_obj.store.update({"num_transitons":num_transitions})
-
+        log_obj.store.update({"explode_grad": explode_grad})
     return(q_prop,p_prop,p_init,-logw_prop,accepted,accept_rate,divergent,num_transitions)

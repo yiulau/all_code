@@ -75,29 +75,36 @@ def windowerize(integrator):
         # logw_old = -H(qprop_old,pprop_old,return_float=True)
         # evaluate gradient 2 times
         # evaluate H 1 time
-
+        divergent = False
         v = numpy.random.choice([-1, 1])
 
         if v < 0:
             q_left, p_left,stat = integrator(q_left, p_left, v * epsilon, Ham)
-            divergent = stat.divergent
-            logw_prop = -Ham.evaluate(q_left, p_left)
+            explode_grad = stat["explode_grad"]
+            if not explode_grad:
+                logw_prop = -Ham.evaluate(q_left, p_left)["H"]
+            else:
+                logw_prop = None
+                divergent = True
 
         else:
             q_right, p_right,stat = integrator(q_right, p_right, v * epsilon, Ham)
-            divergent = stat.divergent
-            logw_prop = -Ham.evaluate(q_right, p_right)
+            explode_grad = stat["explode_grad"]
+            if not explode_grad:
+                logw_prop = -Ham.evaluate(q_left, p_left)["H"]
+            else:
+                logw_prop = None
+                divergent = True
 
-        if (abs(logw_prop - logw_old) > 1000 or divergent):
-            accept_rate = 0
-            divergent = True
-
-        else:
+        if not logw_prop is None:
+            if (abs(logw_prop - logw_old) > 1000 or divergent):
+                accept_rate = 0
+                divergent = True
+            else:
             # uniform progressive sampling
             # accept_rate = math.exp(min(0, (logw_prop - logsumexp(logw_prop, logw_old))))
             # baised progressive sampling
-            accept_rate = math.exp(min(0, logw_prop - logw_old))
-            divergent = False
+                accept_rate = math.exp(min(0, logw_prop - logw_old))
         u = numpy.random.rand(1)[0]
         if u < accept_rate:
             qprop = q_right
@@ -109,5 +116,5 @@ def windowerize(integrator):
             logw_prop = logw_old
             accepted = False
 
-        return (q_left, p_left, q_right, p_right, qprop, pprop, logw_prop, divergent, accepted, accept_rate)
+        return (q_left, p_left, q_right, p_right, qprop, pprop, logw_prop, divergent,explode_grad, accepted, accept_rate)
     return(windowed_integrator)

@@ -8,11 +8,11 @@ from torch.autograd import Variable
 # can't do rmhmc
 
 class V_stochastic_volatility(V):
-    def __init__(self):
-        super(V_stochastic_volatility, self).__init__()
+    def __init__(self,input_data,precision_type):
+        super(V_stochastic_volatility, self).__init__(precision_type=precision_type)
 
     def V_setup(self):
-        y = self.input
+        y = self.input_data["input"]
         self.explicit_gradient = False
         self.need_higherorderderiv = True
 
@@ -24,8 +24,8 @@ class V_stochastic_volatility(V):
         # phi = sigmoid(self.theta[self.n+1])
         # inverse_logit(p) = torch.log(p/(1-p))# need stable implementation
         # sigma = exp(self.theta[self.n+2])
-        self.y = Variable(torch.from_numpy(y),requires_grad=False)
-        self.nu = nn.Parameter(torch.zeros())
+        self.y = Variable(torch.from_numpy(y),requires_grad=False).type(self.precision_type)
+        self.nu = nn.Parameter(torch.zeros(1))
 
         return()
 
