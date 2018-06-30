@@ -2,10 +2,9 @@ import pickle,os
 
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *
-#from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from experiments.experiment_obj import tuneinput_class
-from abstract.util import wrap_V_class_with_input_data
 from distributions.logistic_regressions.logistic_regression import V_logistic_regression
+from abstract.util import wrap_V_class_with_input_data
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from input_data.convert_data_to_dict import get_data_dict
 

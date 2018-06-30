@@ -29,21 +29,21 @@ class V_logistic_regression(bayes_model_class):
 
         return()
 
-    def forward(self):
-        # if input is None:
-        #     X = self.X
-        #     y = self.y
-        #
-        # else:
-        #     X = Variable(input["input"],requires_grad=False).type(self.precision_type)
-        #     y = Variable(input["target"],requires_grad=False).type(self.precision_type)
-        # num_ob = X.shape[0]
-        # print(self.precision_type)
+    def forward(self,input=None):
+        if input is None:
+            X = self.X
+            y = self.y
+
+        else:
+            X = Variable(input["input"],requires_grad=False).type(self.precision_type)
+            y = Variable(input["target"],requires_grad=False).type(self.precision_type)
+        num_ob = X.shape[0]
+        #print(self.precision_type)
         # print(self.beta)
         # #print(X.data)
         # exit()
-        likelihood = torch.dot(self.beta, torch.mv(torch.t(self.X), self.y)) - \
-                     torch.sum(logsumexp_torch(Variable(torch.zeros(self.num_ob)), torch.mv(self.X, self.beta)))
+        likelihood = torch.dot(self.beta, torch.mv(torch.t(X), y)) - \
+                     torch.sum(logsumexp_torch(Variable(torch.zeros(num_ob)), torch.mv(X, self.beta)))
         prior = -torch.dot(self.beta, self.beta)/(self.sigma*self.sigma) * 0.5
         posterior = prior + likelihood
         out = -posterior

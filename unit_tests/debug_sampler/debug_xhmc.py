@@ -2,11 +2,14 @@ from abstract.abstract_nuts_util import abstract_NUTS_xhmc
 from abstract.abstract_class_Ham import Hamiltonian
 from abstract.metric import metric
 from abstract.abstract_class_point import point
-from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
+from distributions.logistic_regressions.logistic_regression import V_logistic_regression
 import torch,numpy,os,pickle
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
-
-v_obj = V_pima_inidan_logit()
+from abstract.util import wrap_V_class_with_input_data
+from input_data.convert_data_to_dict import get_data_dict
+input_data = get_data_dict("pima_indian")
+V_pima_indian_logit = wrap_V_class_with_input_data(class_constructor=V_logistic_regression,input_data=input_data)
+v_obj = V_pima_indian_logit(precision_type="torch.DoubleTensor")
 metric_obj = metric("unit_e",v_obj)
 Ham = Hamiltonian(v_obj,metric_obj)
 
@@ -18,7 +21,7 @@ q_point.load_flatten()
 chain_l=200
 store_samples = torch.zeros(1,chain_l,len(inputq))
 for i in range(chain_l):
-    out = abstract_NUTS_xhmc(init_q=q_point,epsilon=0.1,Ham=Ham,xhmc_delta=0.1,max_tdepth=10)
+    out = abstract_NUTS_xhmc(init_q=q_point,epsilon=0.1,Ham=Ham,xhmc_delta=0.1,max_tree_depth=10)
     store_samples[0,i,:] = out[0].flattened_tensor.clone()
     q_point = out[0]
 

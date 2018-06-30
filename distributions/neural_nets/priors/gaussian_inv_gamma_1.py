@@ -20,7 +20,7 @@ class gaussian_inv_gamma_1(base_prior_new):
     def get_out(self):
         sigma2 = torch.exp(self.log_sigma2_obj)
         sigma2_out = log_inv_gamma_density(x=sigma2,alpha=0.5*self.global_df,beta=0.5*self.global_df) + self.log_sigma2_obj.sum()
-        w_out = -(self.w_obj*self.w_obj*sigma2).sum()*0.5
+        w_out = (-self.w_obj*self.w_obj/sigma2 - self.log_sigma2_obj).sum()*0.5
         out = w_out + sigma2_out
         return(out)
 

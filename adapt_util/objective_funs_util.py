@@ -44,7 +44,7 @@ def ESJD_g_normalized(store_samples):
         diff_square_list[i] = diff_squared
 
 
-        num_grad = store_samples[i]["log"].store["num_transitions"]
+        num_grad = store_samples[i]["log"]["num_transitions"]
         num_grad_list[i] = num_grad
     ESJD = numpy.mean(diff_square_list)
     #print(num_grad_list)

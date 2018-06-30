@@ -29,7 +29,7 @@ class V_pima_inidan_logit(V_logistic_regression):
         y_np = dfm[:, 8]
         y_np = y_np.astype(numpy.int64)
         X_np = dfm[:, 1:8]
-        input_data = {"X_np":X_np,"y_np":y_np}
-        super(V_pima_inidan_logit, self).__init__(input_data,precision_type)
+        input_data = {"input":X_np,"target":y_np}
+        super(V_pima_inidan_logit, self).__init__(input_data=input_data,precision_type=precision_type)
 
 #vobj = V_pima_inidan_logit()
