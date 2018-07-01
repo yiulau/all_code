@@ -7,7 +7,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from experiments.experiment_obj import tuneinput_class
 
-from experiments.correctdist_experiments.prototype import check_mean_var
+from experiments.correctdist_experiments.prototype import check_mean_var_stan
 
 seedid = 2
 numpy.random.seed(seedid)
@@ -38,7 +38,7 @@ correct_mean = correct["correct_mean"]
 correct_cov = correct["correct_cov"]
 correct_diag_cov = correct_cov.diagonal()
 
-output = check_mean_var(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
+output = check_mean_var_stan(mcmc_samples=mcmc_samples,correct_mean=correct_mean,correct_cov=correct_cov,diag_only=False)
 mean_check,cov_check = output["mcmc_mean"],output["mcmc_Cov"]
 pc_mean,pc_cov = output["pc_of_mean"],output["pc_of_cov"]
 print(mean_check)

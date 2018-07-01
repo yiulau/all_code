@@ -1,3 +1,5 @@
+# compare (ep,L) vs (ep,t)
+
 from experiments.experiment_obj import experiment_setting_dict,experiment
 from experiments.experiment_obj import tuneinput_class
 import numpy

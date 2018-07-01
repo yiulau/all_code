@@ -1,5 +1,5 @@
 
-# epsilon
+# tune epsilon gpyopt vs dual averaging
 
 # fixed t at different values (can refer to grid vs gpyopt experiment for guidance)
 # integrators:

@@ -126,11 +126,10 @@ for i in range(num_repeats):
     result = {"min_ess":opt_experiment_result_min_ess,"esjd":opt_experiment_result_esjd,
               "esjd_normalized":opt_experiment_result_esjd_normalized}
 
-
     result_opt_list[i] = result
 
 
-out = {"grid_results":result_list,"opt_results":result_opt_list}
+out = {"grid_results":result_grid,"opt_results":result_opt_list}
 
 converted_to_np_results = convert_to_numpy_results(out)
 
