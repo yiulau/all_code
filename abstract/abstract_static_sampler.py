@@ -187,13 +187,17 @@ def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_
 
         #accep_rate_sum += o[5]
 
-
+    if not divergent:
+        return_lp = -Ham.evaluate(q_prop,p_prop)["V"]
+    else:
+        return_lp = current_lp
     #return(q_prop,accep_rate_sum/L)
     if not log_obj is None:
         log_obj.store.update({"prop_H":-logw_prop})
+        log_obj.store.update({"log_post":return_lp})
         log_obj.store.update({"accepted":accepted})
         log_obj.store.update({"accept_rate":accept_rate})
         log_obj.store.update({"divergent":divergent})
-        log_obj.store.update({"num_transitons":num_transitions})
+        log_obj.store.update({"num_transitions":num_transitions})
         log_obj.store.update({"explode_grad": explode_grad})
     return(q_prop,p_prop,p_init,-logw_prop,accepted,accept_rate,divergent,num_transitions)
