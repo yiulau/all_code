@@ -9,7 +9,7 @@ from torch.autograd import Variable
 
 class V_2dnormal(V):
     def __init__(self,precision_type="torch.DoubleTensor"):
-        super(V, self).__init__(precision_type=precision_type)
+        super(V_2dnormal, self).__init__(precision_type=precision_type)
     def V_setup(self):
         self.n = 2
         self.explicit_gradient = False

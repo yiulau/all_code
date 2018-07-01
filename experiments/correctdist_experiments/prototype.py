@@ -151,8 +151,8 @@ def check_mean_var_stan(mcmc_samples, correct_mean, correct_cov, diag_only=False
                     temp_vec_j = mcmc_samples[:,:, j:j+1]
                     # covar_temp_vec = (temp_vec_i - correct_mean[i])*(temp_vec_j-correct_mean[j])/\
                     #                (numpy.sqrt(correct_cov[i,i]*correct_cov[j,j]))
-                    print(temp_vec_i.shape)
-                    print(temp_vec_j.shape)
+                    #print(temp_vec_i.shape)
+                    #print(temp_vec_j.shape)
                     covar_temp_vec = (temp_vec_i - correct_mean[i]) * (temp_vec_j - correct_mean[j])
                     cov_ij_diagnostics = diagnostics_stan(covar_temp_vec)
                     mu = numpy.mean(covar_temp_vec.flatten())
