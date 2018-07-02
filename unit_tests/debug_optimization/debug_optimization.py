@@ -1,7 +1,9 @@
 from abstract.abstract_class_point import point
-from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
+from input_data.convert_data_to_dict import get_data_dict
+from abstract.util import wrap_V_class_with_input_data
+from distributions.logistic_regressions.logistic_regression import V_logistic_regression
 def gradient_descent(number_of_iter,lr,v_obj):
-    dim = v_obj.dim
+    #dim = v_obj.dim
     # random initialization
     #v_obj.flattened_tensor.normal_()
     #v_obj.load_flattened_to_param()
@@ -15,7 +17,7 @@ def gradient_descent(number_of_iter,lr,v_obj):
         print(cur)
         cur_v = v_obj.evaluate_scalar(theta)
         print(cur_v)
-        print(theta.flattened_tensor)
+        #print(theta.flattened_tensor)
         grad,explode_grad = v_obj.dq(theta.flattened_tensor)
         if not explode_grad:
             theta.flattened_tensor -= lr * grad
@@ -28,13 +30,4 @@ def gradient_descent(number_of_iter,lr,v_obj):
         else:
             break
     return(theta,explode_grad)
-
-v_obj = V_pima_inidan_logit()
-
-out,explode_grad = gradient_descent(number_of_iter=100,lr=0.01,v_obj=v_obj)
-
-
-
-
-
 

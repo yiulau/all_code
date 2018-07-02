@@ -221,6 +221,11 @@ def subset_dataset(dataset,size_per_class,seed=1):
 
 
 
+def subset_data_dict(dataset_dict,subset_size):
+    original_size = dataset_dict["input"].shape[0]
+    subset_indices= numpy.random.choice(list(range(original_size)), size=subset_size, replace=False)
+    out = {"input":dataset_dict["input"][subset_indices,:],"target":dataset_dict["target"][subset_indices]}
+    return(out)
 #out = get_data_dict("1-PL",standardize_predictor=False)
 
 

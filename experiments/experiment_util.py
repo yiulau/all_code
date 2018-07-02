@@ -28,7 +28,7 @@ def get_min_ess_and_esjds(ran_sampler):
 
 
 
-def wishart_for_cov(dim,degree_freedom):
+def wishart_for_cov(dim):
     # returns positive definite matrix for dimension dim generated from the wishart distribution with designated
     #  degreee of freedom and identity scale matrix. recommend degree of freedom = dimension of matrix
     #
@@ -79,9 +79,9 @@ def convert_results_to_numpy_tensor():
 #new_array = numpy.load(file="test_array.npy")
 #print(new_array[0,0,0,0])
 
-dict_of_arrays = numpy.load(file="test_array.npz")
-
-print(dict_of_arrays.keys())
-print(dict_of_arrays["names"])
-
-print(dict_of_arrays["numerical_array"])
+# dict_of_arrays = numpy.load(file="test_array.npz")
+#
+# print(dict_of_arrays.keys())
+# print(dict_of_arrays["names"])
+#
+# print(dict_of_arrays["numerical_array"])

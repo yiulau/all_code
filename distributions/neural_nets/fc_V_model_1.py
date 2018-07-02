@@ -71,7 +71,7 @@ class V_fc_model_1(bayes_model_class):
         X = Variable(torch.from_numpy(inputX),requires_grad=False).type(self.precision_type)
         hidden_units = torch.tanh((self.hidden_in.get_val().mm(X.t())))
         out_units = self.hidden_out.get_val().mm(hidden_units).t()
-        softmax = nn.Softmax()
+        softmax = nn.Softmax(dim=-1)
         prob = softmax(out_units)
         return(prob.data)
 

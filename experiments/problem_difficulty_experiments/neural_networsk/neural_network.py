@@ -10,20 +10,20 @@ from experiments.experiment_obj import tuneinput_class
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from post_processing.ESS_nuts import ess_stan,diagnostics_stan
 from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics,get_params_mcmc_tensor,get_short_diagnostics
-from input_data.convert_data_to_dict import get_data_dict,subset_dataset
+from input_data.convert_data_to_dict import get_data_dict,subset_data_dict
 from post_processing.test_error import test_error
-seed = 1
+seed = 0
 numpy.random.seed(seed)
 torch.manual_seed(seed)
 
 #input_data = get_data_dict("pima_indian",standardize_predictor=True) #val = 1.2
 #input_data = get_data_dict("german",standardize_predictor=True) # val = 1.3
-#input_data = get_data_dict("8x8mnist",standardize_predictor=True) # val = 1.2
-#input_data = subset_dataset(dataset=input_data,size_per_class=20,seed=1)
+input_data = get_data_dict("8x8mnist",standardize_predictor=True) # val = 1.2
+input_data = subset_data_dict(dataset_dict=input_data,subset_size=500)
 
 
 prior_dict = {"name":"normal"}
-model_dict = {"num_units":30}
+model_dict = {"num_units":15}
 
 v_generator =wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=input_data,prior_dict=prior_dict,model_dict=model_dict)
 
