@@ -14,11 +14,11 @@ class V_mvn(V):
     def V_setup(self):
         self.explicit_gradient = False
         self.need_higherorderderiv = False
-        self.Sigma = torch.from_numpy(self.input_data["input"]).type(self.precision_type)
-        self.n = self.Sigma.shape[0]
+        self.Sigma_inv = torch.from_numpy(self.input_data["input"]).type(self.precision_type)
+        self.n = self.Sigma_inv.shape[0]
         self.beta = nn.Parameter(torch.zeros(self.n),requires_grad=True)
 
-        self.Sigma_inv = Variable(torch.inverse(self.Sigma),requires_grad=False)
+        self.Sigma_inv = Variable(self.Sigma_inv,requires_grad=False)
         return()
     def forward(self):
         # returns -log posterior

@@ -122,3 +122,12 @@ te1,predicted1 = test_error(target_dataset,v_obj=v_generator(precision_type=prec
 
 print(te1)
 
+mixed_mcmc_tensor = sampler1.get_samples(permuted=True)
+print(mixed_mcmc_tensor)
+
+mcmc_cov = numpy.cov(mixed_mcmc_tensor,rowvar=False)
+mcmc_sd_vec = numpy.sqrt(numpy.diagonal(mcmc_cov))
+
+print("mcmc problem difficulty")
+
+print(max(mcmc_sd_vec)/min(mcmc_sd_vec))

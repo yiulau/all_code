@@ -115,3 +115,13 @@ print(processed_diag.mean(axis=1))
 
 print("energy diagnostics")
 print(energy_diagnostics(diagnostics_obj=out))
+
+mixed_mcmc_tensor = sampler1.get_samples(permuted=True)
+print(mixed_mcmc_tensor)
+
+mcmc_cov = numpy.cov(mixed_mcmc_tensor,rowvar=False)
+mcmc_sd_vec = numpy.sqrt(numpy.diagonal(mcmc_cov))
+
+print("mcmc problem difficulty")
+
+print(max(mcmc_sd_vec)/min(mcmc_sd_vec))

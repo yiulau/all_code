@@ -9,18 +9,20 @@ from experiments.experiment_obj import tuneinput_class
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from post_processing.ESS_nuts import ess_stan,diagnostics_stan
 from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics,get_params_mcmc_tensor,get_short_diagnostics
-num_p = 100
-non_zero_p = 20
+seed = 1
+numpy.random.seed(seed)
+n =30
+dim= 100
+X = numpy.random.randn(n,dim)
+y = [None]*n
+for i in range(n):
+    y[i] = numpy.asscalar(numpy.random.choice(2,1))
+    if y[i] > 0:
+        X[i,0:2] = numpy.random.randn(2)*0.5 + 1
+    else:
+        X[i,0:2] = numpy.random.randn(2)*0.5 -1
 
-seedid = 3303
-numpy.random.seed(seedid)
-torch.manual_seed(seedid)
-true_p = numpy.zeros(num_p)
-true_p[:non_zero_p] = numpy.random.randn(non_zero_p)*5
-
-y = true_p + numpy.random.randn(num_p)
-
-input_data = {"target":y}
+input_data = {"target":y,"input":X}
 
 prior_dict = {"name":"gaussian_inv_gamma_1"}
 
@@ -69,8 +71,7 @@ w_indices = mcmc_samples_beta["indices_dict"]["w"]
 sigma2_indices = mcmc_samples_beta["indices_dict"]["sigma2"]
 print(samples.shape)
 posterior_mean = numpy.mean(samples[:,:,w_indices].reshape(-1,len(w_indices)),axis=0)
-print(posterior_mean[:non_zero_p])
-print(true_p[:non_zero_p])
+print(posterior_mean[:2])
 
 posterior_mean_sigma2 = numpy.mean(samples[:,:,sigma2_indices].reshape(-1,len(sigma2_indices)),axis=0)
 
@@ -108,3 +109,13 @@ print(processed_diag.mean(axis=1))
 
 print("energy diagnostics")
 print(energy_diagnostics(diagnostics_obj=out))
+
+mixed_mcmc_tensor = sampler1.get_samples(permuted=True)
+print(mixed_mcmc_tensor)
+
+mcmc_cov = numpy.cov(mixed_mcmc_tensor,rowvar=False)
+mcmc_sd_vec = numpy.sqrt(numpy.diagonal(mcmc_cov))
+
+print("mcmc problem difficulty")
+
+print(max(mcmc_sd_vec)/min(mcmc_sd_vec))

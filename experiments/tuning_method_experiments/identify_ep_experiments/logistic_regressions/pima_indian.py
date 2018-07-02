@@ -1,4 +1,4 @@
-import numpy
+import numpy,pickle
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
@@ -21,7 +21,14 @@ other_arguments = other_default_arguments()
 tune_settings_dict = tuning_settings([],[],[],other_arguments)
 tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
-sampler1.start_sampling()
+store_name = 'pima_indian_logit_sampler.pkl'
+sampled = False
+if sampled:
+    sampler1 = pickle.load(open(store_name, 'rb'))
+else:
+    sampler1.start_sampling()
+    with open(store_name, 'wb') as f:
+        pickle.dump(sampler1, f)
 
 print("overall diagnostics")
 full_mcmc_tensor = sampler1.get_samples(permuted=False)

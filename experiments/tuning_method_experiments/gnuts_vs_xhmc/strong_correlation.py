@@ -12,7 +12,7 @@ from distributions.mvn import V_mvn
 # horseshoe toy problem
 
 # horseshoe logit problem
-
+# epsilon = 0.1 * smallest sd
 
 wishart_for_cov(dim=50)
 

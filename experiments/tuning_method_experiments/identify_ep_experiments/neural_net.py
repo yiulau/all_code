@@ -89,6 +89,11 @@ print("num divergent")
 processed_diag = process_diagnostics(out,name_list=["divergent"])
 
 print(processed_diag.sum(axis=1))
+print("num hit max tree depth")
+processed_diag = process_diagnostics(out,name_list=["hit_max_tree_depth"])
+
+print(processed_diag.sum(axis=1))
+
 print("average acceptance rate after warmup")
 processed_diag = process_diagnostics(out,name_list=["accept_rate"])
 
