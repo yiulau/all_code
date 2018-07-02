@@ -1,18 +1,17 @@
 import torch
 import torch.nn as nn
-from abstract.abstract_class_V import V
 from torch.autograd import Variable
-
+from distributions.bayes_model_class import bayes_model_class
 
 # can implement but only do gradients
 # can't do rmhmc
 
-class V_stochastic_volatility(V):
+class V_stochastic_volatility(bayes_model_class):
     def __init__(self,input_data,precision_type):
-        super(V_stochastic_volatility, self).__init__(precision_type=precision_type)
+        super(V_stochastic_volatility, self).__init__(precision_type=precision_type,input_data=input_data)
 
     def V_setup(self):
-        y = self.input_data["input"]
+        y = self.input_data["target"]
         self.explicit_gradient = False
         self.need_higherorderderiv = True
 

@@ -123,6 +123,10 @@ def test_error(target_dataset,v_obj,mcmc_samples,type,memory_efficient=False):
                                type=type,memory_efficient=memory_efficient)
     predicted = predicted.numpy()
     correct_target = target_dataset["target"]
+    # print(predicted[20:40])
+    # print(correct_target[20:40])
+    # exit()
+
     if type=="classification":
         error = sum(predicted!=correct_target)/len(predicted)
     else:

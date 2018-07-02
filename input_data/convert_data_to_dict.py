@@ -4,7 +4,7 @@ import torchvision.transforms as transforms
 from sklearn import preprocessing
 def get_data_dict(dataset_name,standardize_predictor=True):
     permissible_vals = ["pima_indian","boston","subset_mnist","subset_cifar10","logistic_mnist","logistic_cifar10","logistic_8x8mnist"]
-    permissible_vals += ["australian","german","heart","diabetes","breast","8x8mnist","sp500"]
+    permissible_vals += ["australian","german","heart","diabetes","breast","8x8mnist","sp500","1-PL"]
 
     assert dataset_name in permissible_vals
 
@@ -142,6 +142,8 @@ def get_data_dict(dataset_name,standardize_predictor=True):
             y = subset_data["target"]
 
 
+
+
     elif dataset_name == "logistic_cifar10":
         subset_dict = get_data_dict("subset_cifar10")
         y = subset_dict["target"]
@@ -157,6 +159,7 @@ def get_data_dict(dataset_name,standardize_predictor=True):
         X = digits["data"]
         y = digits["target"]
 
+
     elif dataset_name =="logistic_8x8mnist":
         subset_mnist_dict = get_data_dict("8x8mnist")
         y = subset_mnist_dict["target"]
@@ -171,6 +174,20 @@ def get_data_dict(dataset_name,standardize_predictor=True):
         X = None
         y = df[0].values
         standardize_predictor = False
+
+    elif dataset_name=="1-PL":
+        numpy.random.seed(10)
+        num_students = 50
+        true_theta  = numpy.random.randn(1)*numpy.sqrt(10)
+        true_b = numpy.random.randn(num_students)*numpy.sqrt(10)
+        prob = 1/(1+numpy.exp(-(true_b-true_theta)))
+        print(prob)
+        y = numpy.zeros(num_students)
+        for i in range(num_students):
+            y[i] = numpy.random.binomial(1,prob[i],1)
+
+        X = None
+
 
     if standardize_predictor:
         X = preprocessing.scale(X)
@@ -204,7 +221,7 @@ def subset_dataset(dataset,size_per_class,seed=1):
 
 
 
-#out = get_data_dict("sp500",standardize_predictor=False)
+#out = get_data_dict("1-PL",standardize_predictor=False)
 
 
 #print(out["target"])

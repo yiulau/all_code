@@ -8,3 +8,9 @@ from experiments.experiment_util import wishart_for_cov
 
 # neural network model
 
+# horseshoe toy problem
+
+# horseshoe logit problem
+
+
+

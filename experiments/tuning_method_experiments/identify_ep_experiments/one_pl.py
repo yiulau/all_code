@@ -2,7 +2,7 @@ import numpy
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
-from distributions.logistic_regressions.logistic_regression import V_logistic_regression
+from distributions.response_model import V_response_model
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from abstract.util import wrap_V_class_with_input_data
 from input_data.convert_data_to_dict import get_data_dict
@@ -11,10 +11,10 @@ from post_processing.get_diagnostics import energy_diagnostics,process_diagnosti
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=1000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=0,
                                    warmup_per_chain=100,is_float=False,isstore_to_disk=False,allow_restart=False)
 
-pima_indian_data = get_data_dict("pima_indian")
-V_generator = wrap_V_class_with_input_data(class_constructor=V_logistic_regression,input_data=pima_indian_data)
+input_data = get_data_dict("1-PL",standardize_predictor=False)
+V_generator = wrap_V_class_with_input_data(class_constructor=V_response_model,input_data=input_data)
 
-input_dict = {"v_fun":[V_generator],"epsilon":[0.01],"second_order":[False],
+input_dict = {"v_fun":[V_generator],"epsilon":[0.1],"second_order":[False],
               "metric_name":["unit_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"]}
 
 other_arguments = other_default_arguments()
@@ -39,5 +39,3 @@ print(average_accept_rate)
 
 print("energy diagnostics")
 print(energy_diagnostics(diagnostics_obj=out))
-
-

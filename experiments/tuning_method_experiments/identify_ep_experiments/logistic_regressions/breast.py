@@ -11,7 +11,7 @@ from post_processing.get_diagnostics import energy_diagnostics,process_diagnosti
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=1000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=0,
                                    warmup_per_chain=100,is_float=False,isstore_to_disk=False,allow_restart=False)
 
-pima_indian_data = get_data_dict("pima_indian")
+pima_indian_data = get_data_dict("breast")
 V_generator = wrap_V_class_with_input_data(class_constructor=V_logistic_regression,input_data=pima_indian_data)
 
 input_dict = {"v_fun":[V_generator],"epsilon":[0.01],"second_order":[False],
@@ -39,5 +39,3 @@ print(average_accept_rate)
 
 print("energy diagnostics")
 print(energy_diagnostics(diagnostics_obj=out))
-
-

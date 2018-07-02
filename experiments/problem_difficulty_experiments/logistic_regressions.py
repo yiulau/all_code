@@ -12,7 +12,14 @@ if stan_sampling:
         mod = pickle.load(open('model.pkl', 'rb'))
 
 
-full_data = get_data_dict("pima_indian")
+#full_data = get_data_dict("pima_indian") # val = 1.3
+#full_data = get_data_dict("breast") # val = 2.106
+#full_data = get_data_dict("heart") # val = 3.26
+#full_data = get_data_dict("german") # val = 8.6
+
+#full_data = get_data_dict("australian") # val = 4.8
+#full_data = get_data_dict("logistic_8x8mnist") #val = 2.4
+full_data = get_data_dict("logistic_mnist") # val = 1.12
 y = full_data["target"].astype(numpy.int64)
 X = full_data["input"]
 N = X.shape[0]

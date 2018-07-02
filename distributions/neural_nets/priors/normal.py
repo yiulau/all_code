@@ -5,8 +5,8 @@ from general_util.pytorch_random import log_student_t_density
 
 class normal(base_prior_new):
     # fixed non-unity variance
-    def __init__(self,obj,name,shape,var):
-        self.var = var
+    def __init__(self,obj,name,shape,global_scale):
+        self.var = global_scale*global_scale
         self.sd = math.sqrt(self.var)
         self.name = name
         self.relevant_param_tuple = ("w")

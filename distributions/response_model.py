@@ -1,26 +1,25 @@
 import numpy
 import torch
 import torch.nn as nn
-from abstract.abstract_class_V import V
+from distributions.bayes_model_class import bayes_model_class
 from torch.autograd import Variable
 
-precision_type = 'torch.DoubleTensor'
-#precision_type = 'torch.FloatTensor'
-torch.set_default_tensor_type(precision_type)
+# precision_type = 'torch.DoubleTensor'
+# #precision_type = 'torch.FloatTensor'
+# torch.set_default_tensor_type(precision_type)
 
-class V_response_model(V):
-    #def __init__(self):
-    #    super(V_test_abstract, self).__init__()
+class V_response_model(bayes_model_class):
+    def __init__(self,input_data,precision_type):
+        super(V_response_model, self).__init__(input_data,precision_type)
 
     def V_setup(self):
-        dim = 10
-        y_np = numpy.random.binomial(n=1, p=0.5, size=dim)
+        y_np = self.input_data["target"]
 
-        self.dim = dim+1
+        self.dim = len(y_np)+1
         self.explicit_gradient = False
         self.need_higherorderderiv = True
         self.beta = nn.Parameter(torch.zeros(self.dim),requires_grad=True)
-        self.y = Variable(torch.from_numpy(y_np),requires_grad=False).type(precision_type)
+        self.y = Variable(torch.from_numpy(y_np),requires_grad=False).type(self.precision_type)
         # include
 
         return()
