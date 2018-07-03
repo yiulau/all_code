@@ -1,4 +1,4 @@
-from distributions.linear_regressions.linear_regression import V_linear_regression
+from distributions.test_hierarchical_priors.V_lr import V_lr
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch
@@ -24,7 +24,7 @@ input_data = {"input":X_np,"target":y_np}
 
 prior_dict = {"name":"rhorseshoe_1"}
 
-v_generator =wrap_V_class_with_input_data(class_constructor=V_linear_regression,input_data=input_data,prior_dict=prior_dict)
+v_generator =wrap_V_class_with_input_data(class_constructor=V_lr,input_data=input_data,prior_dict=prior_dict)
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
