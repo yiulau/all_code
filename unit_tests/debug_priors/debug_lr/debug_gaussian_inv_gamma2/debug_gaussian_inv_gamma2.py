@@ -49,7 +49,7 @@ sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_se
 
 
 store_name = 'gaussian_inv_gamma2_lr_sampler.pkl'
-sampled = False
+sampled = True
 if sampled:
     sampler1 = pickle.load(open(store_name, 'rb'))
 else:

@@ -50,7 +50,7 @@ sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_se
 
 
 store_name = 'rhs1_lr_sampler.pkl'
-sampled = False
+sampled = True
 if sampled:
     sampler1 = pickle.load(open(store_name, 'rb'))
 else:
@@ -92,9 +92,6 @@ print(diagnostics_stan(samples[:,:,tau_indices]))
 print("posterior mean tau {}".format(posterior_mean_tau))
 print("posterior mean c {}".format(posterior_mean_c))
 
-full_mcmc_tensor = get_params_mcmc_tensor(sampler=sampler1)
-
-print(get_short_diagnostics(full_mcmc_tensor))
 
 #print(mcmc_samples_beta["indices_dict"])
 print("overall diagnostics")
