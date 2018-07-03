@@ -1,4 +1,4 @@
-from distributions.test_hierarchical_priors.V_logit import V_logit
+from distributions.test_hierarchical_priors.V_logit.V_logit import V_logit
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch
@@ -31,7 +31,8 @@ prior_dict = {"name":"horseshoe_1"}
 v_generator =wrap_V_class_with_input_data(class_constructor=V_logit,input_data=input_data,prior_dict=prior_dict)
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=1000,
-                                   warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
+                                   warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False,seed=1)
+
 
 # input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],
 #                "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
@@ -54,7 +55,7 @@ sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_se
 
 
 store_name = 'hs1_logit_sampler.pkl'
-sampled = False
+sampled = True
 if sampled:
     sampler1 = pickle.load(open(store_name, 'rb'))
 else:
@@ -117,4 +118,4 @@ mcmc_sd_vec = numpy.sqrt(numpy.diagonal(mcmc_cov))
 
 print("mcmc problem difficulty")
 
-print(max(mcmc_sd_vec)/min(mcmc_sd_vec))
+print(max(mcmc_sd_vec)/min(mcmc_sd_vec)) # val = 37.

@@ -14,7 +14,7 @@ from general_util.memory_util import to_pickle_memory
 from abstract.abstract_class_point import point
 from adapt_util.tune_param_classes.tune_param_class import tune_param_objs_creator
 from general_util.pytorch_util import convert_q_point_list
-
+import numpy,torch
 # number of samples
 # thinning
 # warm up
@@ -29,8 +29,12 @@ from general_util.pytorch_util import convert_q_point_list
 # integration time t is also a slow parameter, because diagnostics (ESS) for its performance can only be calculated by looking
 # at a number of samples
 
-def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=None,warmup_per_chain=None,is_float=False,isstore_to_disk=False,same_init=False,allow_restart=True,max_num_restarts=10,restart_end_buffer=100):
-
+def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=None,warmup_per_chain=None,is_float=False,isstore_to_disk=False,same_init=False,allow_restart=True,max_num_restarts=10,restart_end_buffer=100,seed=None):
+        if seed is None:
+            seed = round(numpy.random.uniform(1,1e6))
+        else:
+            numpy.random.seed(seed)
+            torch.manual_seed(seed)
         # mcmc_id should be a dictionary
         out = {}
         if warmup_per_chain is None:
@@ -135,6 +139,9 @@ class mcmc_sampler(object):
             #raise ValueError("run self.prepare_chains() firstf")
         #print("yes")
         #exit()
+        seed = numpy.random.uniform(1, 1e6)
+        torch.manual_seed(round(seed) * (chain_id + 1))
+        numpy.random.seed(round(seed) * (chain_id + 1))
         (self.store_chains[chain_id]["chain_obj"]).run()
         #output = self.store_chains[chain_id]["chain_obj"].store_samples
         return()
@@ -144,9 +151,9 @@ class mcmc_sampler(object):
         new_mcmc_settings_dict = copy.deepcopy(self.mcmc_settings_dict)
         new_mcmc_settings_dict.update({"num_chains": 1, "num_cpu": 1})
         def run_parallel_chain(chain_id):
-            numpy.random.seed(chain_id)
-            seed = numpy.random.uniform(-1e6, 1e6)
-            torch.manual_seed(round(seed))
+            seed = numpy.random.uniform(1, 1e6)
+            torch.manual_seed(round(seed)*(chain_id+1))
+            numpy.random.seed(round(seed)*(chain_id+1))
             temp_mcmc_sampler = mcmc_sampler(tune_dict=self.tune_dict, mcmc_settings_dict=new_mcmc_settings_dict,
                                              tune_settings_dict=self.tune_settings_dict,
                                              adapter_setting=self.adapter_setting)

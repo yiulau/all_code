@@ -11,8 +11,8 @@ class V_logit(bayes_model_class):
         super(V_logit, self).__init__(input_data=input_data, precision_type=precision_type)
 
     def V_setup(self):
-        self.dim = self.X_np.shape[1]
-        self.num_ob = self.X_np.shape[0]
+        self.dim = self.input_data["input"].shape[1]
+        self.num_ob = self.input_data["input"].shape[0]
         self.explicit_gradient = False
         self.need_higherorderderiv = True
         prior_generator_fn = prior_generator(self.prior_dict["name"])

@@ -14,6 +14,7 @@ from input_data.convert_data_to_dict import get_data_dict
 from post_processing.test_error import map_prediction,test_error
 from abstract.abstract_nuts_util import abstract_GNUTS
 from general_util.pytorch_random import log_inv_gamma_density
+from post_processing.ESS_nuts import diagnostics_stan
 precision_type = 'torch.DoubleTensor'
 #precision_type = 'torch.FloatTensor'
 torch.set_default_tensor_type(precision_type)
@@ -68,7 +69,7 @@ class V_hierarchical_logistic_gibbs(V):
                      torch.sum(logsumexp_torch(Variable(torch.zeros(self.num_ob)), torch.mv(self.X, beta)))
         prior = (-(beta*beta)/(sigma2)-torch.log(sigma2)).sum() * 0.5
         if not self.gibbs:
-            prior += log_inv_gamma_density(x=sigma2, alpha=1.5, beta=1.5)
+            prior += log_inv_gamma_density(x=sigma2, alpha=0.5, beta=0.5)
             prior += self.log_sigma2
 
         #hessian_term = -self.beta[self.dim-1]
@@ -99,8 +100,8 @@ class V_hierarchical_logistic_gibbs(V):
         for i in range(len(self.list_hyperparam)):
             n = len(self.list_param[i].data.view(-1))
             norm = ((self.list_param[i].data)*(self.list_param[i].data)).sum()
-            alpha_tensor[i] = n*0.5 + 1.5
-            beta_tensor[i] = norm *0.5 + 1.5
+            alpha_tensor[i] = n*0.5 + 0.5
+            beta_tensor[i] = norm *0.5 + 0.5
         new_hyperparam_val = 1/generate_gamma(alpha=alpha_tensor,beta=beta_tensor)
         for i in range(len(self.list_hyperparam)):
             self.list_hyperparam[i].data[0] = new_hyperparam_val[i]
@@ -151,6 +152,7 @@ print(mcmc_samples_weight.shape)
 print("sigma diagnostics gibbs")
 print(numpy.mean(mcmc_samples_hyper))
 print(numpy.var(mcmc_samples_hyper))
+
 print("weight diagnostics gibbs")
 print(numpy.mean(mcmc_samples_weight,axis=0))
 
@@ -187,12 +189,24 @@ print("diagnostics full hmc sigma2 ")
 print(numpy.mean(numpy.exp(store_samples[:,7])))
 print(numpy.var(numpy.exp(store_samples[:,7])))
 #print(store_samples)
+sigma2_tensor = numpy.zeros((1,store_samples.shape[0],store_samples.shape[1]))
+sigma2_tensor[0,:,:] = numpy.exp(store_samples)
+
+print(diagnostics_stan(mcmc_samples_tensor=sigma2_tensor))
 
 print("sigma diagnostics gibbs")
 print(numpy.mean(mcmc_samples_hyper))
 print(numpy.var(mcmc_samples_hyper))
+sigma2_tensor = numpy.zeros((1,len(mcmc_samples_hyper),1))
+sigma2_tensor[0,:,0] = mcmc_samples_hyper
+print(diagnostics_stan(mcmc_samples_tensor=sigma2_tensor))
 print("weight diagnostics gibbs")
+
 print(numpy.mean(mcmc_samples_weight,axis=0))
+weight_tensor = numpy.zeros((1,mcmc_samples_weight.shape[0],mcmc_samples_weight.shape[1]))
+weight_tensor[0,:,:] = mcmc_samples_weight
+print(diagnostics_stan(mcmc_samples_tensor=weight_tensor))
+
 
 
 exit()

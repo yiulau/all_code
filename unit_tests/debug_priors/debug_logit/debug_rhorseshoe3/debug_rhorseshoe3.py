@@ -1,4 +1,4 @@
-from distributions.test_hierarchical_priors.V_logit import V_logit
+from distributions.test_hierarchical_priors.V_logit.V_logit import V_logit
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch
@@ -26,7 +26,7 @@ for i in range(n):
 input_data = {"target":y,"input":X}
 
 
-prior_dict = {"name":"rhorseshoe_1"}
+prior_dict = {"name":"rhorseshoe_3"}
 
 v_generator =wrap_V_class_with_input_data(class_constructor=V_logit,input_data=input_data,prior_dict=prior_dict)
 
@@ -40,7 +40,7 @@ input_dict = {"v_fun":[v_generator],"epsilon":["dual"],"second_order":[False],"c
                "metric_name":["diag_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"]}
 # input_dict = {"v_fun":[v_generator],"epsilon":[0.1],"second_order":[False],"evolve_L":[10],
 #               "metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
-ep_dual_metadata_argument = {"name":"epsilon","target":0.9,"gamma":0.05,"t_0":10,
+ep_dual_metadata_argument = {"name":"epsilon","target":0.8,"gamma":0.05,"t_0":10,
                          "kappa":0.75,"obj_fun":"accept_rate","par_type":"fast"}
 #
 adapt_cov_arguments = [adapt_cov_default_arguments(par_type="slow",dim=v_generator(precision_type="torch.DoubleTensor").get_model_dim())]
@@ -76,7 +76,7 @@ c_indices = mcmc_samples_beta["indices_dict"]["c"]
 print(w_indices)
 print(tau_indices)
 print(c_indices)
-exit()
+
 
 print(samples.shape)
 posterior_mean = numpy.mean(samples[:,:,w_indices].reshape(-1,len(w_indices)),axis=0)

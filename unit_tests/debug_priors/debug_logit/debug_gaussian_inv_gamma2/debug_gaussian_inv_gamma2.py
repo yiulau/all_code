@@ -1,4 +1,4 @@
-from distributions.test_hierarchical_priors.V_logit import V_logit
+from distributions.test_hierarchical_priors.V_logit.V_logit import V_logit
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch
@@ -53,7 +53,7 @@ sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_se
 
 
 store_name = 'gaussian_inv_gamma2_sampler.pkl'
-sampled = False
+sampled = True
 if sampled:
     sampler1 = pickle.load(open(store_name, 'rb'))
 else:

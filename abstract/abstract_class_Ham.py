@@ -51,10 +51,10 @@ class Hamiltonian(object):
         T = self.T.evaluate_scalar()
         #print(V)
         #print(T)
-        assert T>0
-        assert V>0
-        if V+T<0:
-            raise ValueError("very wrong negative H")
+        # assert T>0
+        # assert V>0
+        # if V+T<0:
+        #     raise ValueError("very wrong negative H")
         #print("V {}".format(V))
         #print("T {}".format(T))
         H = V + T
