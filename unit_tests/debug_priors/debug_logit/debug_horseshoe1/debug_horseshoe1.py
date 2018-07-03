@@ -14,7 +14,8 @@ numpy.random.seed(seed)
 n =30
 dim= 100
 X = numpy.random.randn(n,dim)
-y = [None]*n
+y = numpy.zeros(n)
+
 for i in range(n):
     y[i] = numpy.asscalar(numpy.random.choice(2,1))
     if y[i] > 0:
@@ -53,7 +54,7 @@ sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_se
 
 
 store_name = 'hs1_logit_sampler.pkl'
-sampled = True
+sampled = False
 if sampled:
     sampler1 = pickle.load(open(store_name, 'rb'))
 else:

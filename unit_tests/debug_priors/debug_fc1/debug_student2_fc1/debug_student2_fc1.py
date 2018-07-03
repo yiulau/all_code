@@ -119,4 +119,4 @@ mcmc_sd_vec = numpy.sqrt(numpy.diagonal(mcmc_cov))
 
 print("mcmc problem difficulty")
 
-print(max(mcmc_sd_vec)/min(mcmc_sd_vec))
+print(max(mcmc_sd_vec)/min(mcmc_sd_vec)) # val = 2.25

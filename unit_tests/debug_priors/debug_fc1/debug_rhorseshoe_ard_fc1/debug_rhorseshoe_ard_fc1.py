@@ -49,7 +49,7 @@ sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_se
 
 
 store_name = 'hs_ard_fc1_sampler.pkl'
-sampled = False
+sampled = True
 if sampled:
     sampler1 = pickle.load(open(store_name, 'rb'))
 else:
@@ -129,4 +129,4 @@ mcmc_sd_vec = numpy.sqrt(numpy.diagonal(mcmc_cov))
 
 print("mcmc problem difficulty")
 
-print(max(mcmc_sd_vec)/min(mcmc_sd_vec))
+print(max(mcmc_sd_vec)/min(mcmc_sd_vec)) # 3.9

@@ -1,4 +1,4 @@
-from distributions.test_hierarchical_priors.V_toy.V_toy import V_toy
+from distributions.logistic_regressions.logistic_regression import V_logistic_regression
 from abstract.util import wrap_V_class_with_input_data
 from distributions.neural_nets.priors.prior_util import prior_generator
 import os, numpy,torch
@@ -14,7 +14,7 @@ numpy.random.seed(seed)
 n =30
 dim= 100
 X = numpy.random.randn(n,dim)
-y = [None]*n
+y = numpy.zeros(n)
 for i in range(n):
     y[i] = numpy.asscalar(numpy.random.choice(2,1))
     if y[i] > 0:
@@ -24,9 +24,9 @@ for i in range(n):
 
 input_data = {"target":y,"input":X}
 
-prior_dict = {"name":"gaussian_inv_gamma_2"}
+prior_dict = {"name":"gaussian_inv_gamma_1"}
 
-v_generator =wrap_V_class_with_input_data(class_constructor=V_toy,input_data=input_data,prior_dict=prior_dict)
+v_generator =wrap_V_class_with_input_data(class_constructor=V_logistic_regression,input_data=input_data,prior_dict=prior_dict)
 
 mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=1000,
                                    warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False)
@@ -51,8 +51,8 @@ tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
 
 
-store_name = 'gaussian_inv_gamma1__sampler.pkl'
-sampled = True
+store_name = 'gaussian_inv_gamma1_sampler.pkl'
+sampled = False
 if sampled:
     sampler1 = pickle.load(open(store_name, 'rb'))
 else:
@@ -118,4 +118,4 @@ mcmc_sd_vec = numpy.sqrt(numpy.diagonal(mcmc_cov))
 
 print("mcmc problem difficulty")
 
-print(max(mcmc_sd_vec)/min(mcmc_sd_vec))
+print(max(mcmc_sd_vec)/min(mcmc_sd_vec)) # val = 1.82
