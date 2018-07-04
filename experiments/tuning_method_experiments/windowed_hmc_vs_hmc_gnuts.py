@@ -4,6 +4,7 @@ import numpy, os
 v_fun_list = []
 # ep_list list of conservatively chosen epsilon for each model
 # compare models : logit,mvn,nn
+# compare ess performance of hmc and windowed hmc with optimally chosen L to gnuts
 ep_list = []
 #num_repeats = 50
 num_of_L = 20

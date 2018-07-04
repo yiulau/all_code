@@ -1,4 +1,3 @@
-
 # tune epsilon gpyopt (esjd/num_L) vs dual averaging
 
 # fixed t at different values (can refer to grid vs gpyopt experiment for guidance) t = 1,5,10,

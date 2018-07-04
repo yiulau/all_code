@@ -3,9 +3,14 @@ from experiments.tuning_method_experiments.opt_find_init_ep_L import opt_state
 from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
 from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
-from experiments.experiment_util import get_min_ess_and_esjds
+from experiments.experiment_util import get_ess_and_esjds
+
+# used in opt_find_init_ep_L
 def opt_experiment_ep_t(v_fun_list,ep_list,evolve_t_list,num_of_opt_steps,objective,input_dict):
-    assert objective in ("min_ess","esjd","esjd_normalized")
+    # given list of v_fun, epsilon, evolve_t's, number of bayesian optimization steps, an objective function
+    # and an input dict , find optimal (ep,t) by repeatedly trying different combinations , sample long chain and
+    # compare performance using different objective functions
+    assert objective in ("min_ess","esjd_normalized")
 
     num_grid_divides = len(ep_list)
 
@@ -26,7 +31,7 @@ def opt_experiment_ep_t(v_fun_list,ep_list,evolve_t_list,num_of_opt_steps,object
         tune_dict = tuneinput_class(input_dict).singleton_tune_dict()
         sampler = mcmc_sampler(tune_dict=tune_dict, mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
         sampler.start_sampling()
-        out = get_min_ess_and_esjds(ran_sampler=sampler)
+        out = get_ess_and_esjds(ran_sampler=sampler)
         this_opt_state.update(new_y=-out[objective])
         cur_ep = this_opt_state.X_step[-1][0]
         cur_evolve_t = this_opt_state.X_step[-1][1]

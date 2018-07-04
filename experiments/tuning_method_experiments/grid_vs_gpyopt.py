@@ -1,4 +1,4 @@
-# update dynamically during tuning phase
+# simulate hand tuning process
 # compare best found by grid search with best found by gpyopt
 # both using similar computational resources
 # do the grid search first, then compute total computational resources used.
@@ -18,10 +18,15 @@
 # unit_e hmc (ep,t)
 # xhmc -  unit_e  (ep,delta)
 #
+#
+# experiment 1 (ep,L) Find best performance for max L (calculate accumulate best using grid)
+# compare with bayes opt when specifying constraint
+# experiment 2 (ep,t) Find best performance overall. See how bayes compare . overall,upto number leapfrog
 # performance assessement
 # objective function esjd/cost= number of gradients or esjd/seconds
 #  ess (min, max , median)
-
+#
+# observe grid results. record L at best performance
 #model vs integrator
 
 # supertransitions . given supertranstions = 10000 leapfrogs. for each L convert to number of transitions
@@ -62,7 +67,8 @@ num_repeats = 50
 num_grid_divides = 5
 
 ep_bounds = [1e-2,0.1]
-evolve_t_bounds = [0.15,5.]
+evolve_t_bounds = [0.15,50.]
+# add constraints such that L = round(evolove_t/ep) < 1024
 ep_list = list(numpy.linspace(ep_bounds[0],ep_bounds[1],num_grid_divides))
 evolve_t_list = list(numpy.linspace(evolve_t_bounds[0],evolve_t_bounds[1],num_grid_divides))
 v_fun_list = []
@@ -72,7 +78,7 @@ v_fun_list = []
 #for i in range(num_repeats):
 
 experiment_setting = experiment_setting_dict(chain_length=10000,num_chains_per_sampler=4,warm_up=1000,
-                                             tune_l=0,allow_restart=True,max_num_restarts=5)
+                                             tune_l=0,allow_restart=True,max_num_restarts=5,num_cpu_per_sampler=4)
 
 input_dict = {"v_fun":v_fun_list,"epsilon":ep_list,"second_order":[False],
               "evolve_t":evolve_t_list,"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
@@ -83,6 +89,7 @@ experiment_instance = experiment(input_object=input_object,experiment_setting=ex
 experiment_instance.run()
 
 result_grid= experiment_instance.experiment_result_grid_obj
+total_num_leapfrog = 1000
 
 
 
@@ -99,10 +106,13 @@ for i in range(num_repeats):
                                                          objective="esjd_normalized",input_dict=input_dict)
 
     #result = {"esjd_normalized":opt_experiment_result_esjd_normalized}
-
     result_opt_list[i] = opt_experiment_result_esjd_normalized
 
 
+# after getting results compute accumulative num_leapfrog_steps
+# get best performance attained first after exceeding total number of leapfrog in grid search
+# get best performance overall
+# get accumulative best performance
 out = {"grid_results":result_grid,"opt_results":result_opt_list}
 
 converted_to_np_results = convert_to_numpy_results(out)
