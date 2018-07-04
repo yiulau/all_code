@@ -1,4 +1,4 @@
-
+# update dynamically during tuning phase
 # compare best found by grid search with best found by gpyopt
 # both using similar computational resources
 # do the grid search first, then compute total computational resources used.
@@ -6,40 +6,23 @@
 # exceeded previous total computational resources
 #
 # repeat experiment 10-20 times on same model,same data,same integrator,
-# plot H,V,T to see if optimal t is roughly half-period , identify optimal t on graph for easy inspection
 # see if optimal from gpyopt is systematically better than grid search
 # find first point from gpyopt that beats grid search. and identify computational resources used up to that point
 # cost of bayesian optimization is insignificant cuz dimension is 2 , maybe 3 and each point is equivalent to many samples <=>
 # leapfrogs steps
 # sample models:
 # logistic (different data)
-# hierarchical logistic
-# funnel
-# 8 schools (ncp)
 # multivariate normal
-# banana
-# integrator
-# unit_e hmc (ep,t) windowed_option
-# dense_e , diag_e hmc (ep,t) adapting cov, or cov_diag at the same time windowed option
-# softabs - diag,outer_product,diag_outer_product static (ep,t,alpha)
-# xhmc - delta , unit_e, dense_e, diag_e, softabs (ep,delta) or (ep,delta,alpha)
+# neural network (normal prior scaled by number of incoming units)
+# integrator = leapfrog
+# unit_e hmc (ep,t)
+# xhmc -  unit_e  (ep,delta)
 #
 # performance assessement
 # objective function esjd/cost= number of gradients or esjd/seconds
 #  ess (min, max , median)
 
-
-# test for sensitivities to objective functions
-# change objective functions keep everything the same
-
 #model vs integrator
-
-# test for
-
-# experiment 3 variables (model,integrator,objective function)
-# 3 x 3 numpy matrix. storing experiment information. depending on volume store the chain or just the experiment output
-
-
 
 # supertransitions . given supertranstions = 10000 leapfrogs. for each L convert to number of transitions
 
@@ -76,7 +59,7 @@ numpy.random.seed(seed_id)
 
 save_address = "grid_experiment_outcome.npz"
 num_repeats = 50
-num_grid_divides = 20
+num_grid_divides = 5
 
 ep_bounds = [1e-2,0.1]
 evolve_t_bounds = [0.15,5.]
@@ -110,23 +93,14 @@ result_grid= experiment_instance.experiment_result_grid_obj
 
 result_opt_list = [None]*num_repeats
 for i in range(num_repeats):
-    opt_experiment_result_min_ess  = opt_experiment_ep_t(v_fun_list=v_fun_list,ep_list=ep_list,
-                                                         evolve_t_list=evolve_t_list,
-                                                         num_of_opt_steps=num_grid_divides*num_grid_divides,
-                                                         objective="min_ess",input_dict=input_dict)
-    opt_experiment_result_esjd = opt_experiment_ep_t(v_fun_list=v_fun_list,ep_list=ep_list,
-                                                         evolve_t_list=evolve_t_list,
-                                                         num_of_opt_steps=num_grid_divides*num_grid_divides,
-                                                         objective="esjd",input_dict=input_dict)
     opt_experiment_result_esjd_normalized = opt_experiment_ep_t(v_fun_list=v_fun_list,ep_list=ep_list,
                                                          evolve_t_list=evolve_t_list,
                                                          num_of_opt_steps=num_grid_divides*num_grid_divides,
                                                          objective="esjd_normalized",input_dict=input_dict)
 
-    result = {"min_ess":opt_experiment_result_min_ess,"esjd":opt_experiment_result_esjd,
-              "esjd_normalized":opt_experiment_result_esjd_normalized}
+    #result = {"esjd_normalized":opt_experiment_result_esjd_normalized}
 
-    result_opt_list[i] = result
+    result_opt_list[i] = opt_experiment_result_esjd_normalized
 
 
 out = {"grid_results":result_grid,"opt_results":result_opt_list}

@@ -2,6 +2,6 @@
 
 # gnuts vs xhmc
 
-# epsilon fixed 0.1*smallest sd
+# dual averaging epsilon, diag cov metric
 
 #

@@ -1,12 +1,12 @@
 # compare (ep,L) vs (ep,t)
-
+# compare ESS , ESS/num_L
+# model : logistic,neural network
 from experiments.experiment_obj import experiment_setting_dict,experiment
 from experiments.experiment_obj import tuneinput_class
 import numpy
 v_fun_list = []
 
-num_grid_divides = 20
-
+num_grid_divides = 5
 
 ep_bounds = (1e-2,0.1)
 

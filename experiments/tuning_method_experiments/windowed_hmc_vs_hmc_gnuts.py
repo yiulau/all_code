@@ -3,6 +3,7 @@ from experiments.tuning_method_experiments.util import choose_optimal_L,min_ess_
 import numpy, os
 v_fun_list = []
 # ep_list list of conservatively chosen epsilon for each model
+# compare models : logit,mvn,nn
 ep_list = []
 #num_repeats = 50
 num_of_L = 20
