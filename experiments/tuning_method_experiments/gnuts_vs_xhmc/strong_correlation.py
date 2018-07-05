@@ -19,6 +19,9 @@ from distributions.mvn import V_mvn
 #
 #wishart_for_cov(dim=50)
 
+# set up v_fun for each problem
+
+#
 
 
 
