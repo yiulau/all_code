@@ -19,7 +19,7 @@
 # xhmc -  unit_e  (ep,delta)
 #
 #
-# experiment 1 (ep,L) Find best performance for max L (calculate accumulate best using grid)
+# experiment 1 (ep,t) Find best performance . identify L (calculate accumulate best using grid)
 # compare with bayes opt when specifying constraint
 # experiment 2 (ep,t) Find best performance overall. See how bayes compare . overall,upto number leapfrog
 # performance assessement
@@ -66,8 +66,8 @@ save_address = "grid_experiment_outcome.npz"
 num_repeats = 50
 num_grid_divides = 5
 
-ep_bounds = [1e-2,0.1]
-evolve_t_bounds = [0.15,50.]
+ep_bounds = [1e-3,0.1]
+evolve_t_bounds = [0.15,100.]
 # add constraints such that L = round(evolove_t/ep) < 1024
 ep_list = list(numpy.linspace(ep_bounds[0],ep_bounds[1],num_grid_divides))
 evolve_t_list = list(numpy.linspace(evolve_t_bounds[0],evolve_t_bounds[1],num_grid_divides))

@@ -4,7 +4,7 @@
 
 # test classfication benchmark problems
 
-# use gnuts adapting epsilon and Cov
+# use gnuts adapting epsilon and Cov (diag)
 
 # care taken to use longer init_buffer in adapter
 
