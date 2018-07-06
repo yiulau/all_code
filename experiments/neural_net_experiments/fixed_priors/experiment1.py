@@ -14,7 +14,7 @@
 
 # get convergence dignostics Rhat, ess, bfmi-e , number of divergent transitions, percentage hit max tree depth
 
-# lp statistics
+# logposterior(lp) statistics
 
 # small data vs big data (not relative to model size)
 

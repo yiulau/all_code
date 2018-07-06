@@ -5,7 +5,7 @@ def default_par_type(name):
 
     return(default_dict[name])
 def dual_default_arguments(name):
-    output ={"name":name,"target":0.65,"gamma":0.05,"t_0":10,
+    output ={"name":name,"target":0.8,"gamma":0.05,"t_0":10,
              "kappa":0.75,"obj_fun":"accept_rate","par_type":default_par_type(name)}
 
     return(output)

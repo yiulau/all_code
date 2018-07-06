@@ -1,4 +1,4 @@
-from experiments.neural_net_experiments.sghmc_batchhmc import sghmc_sampler
+from experiments.neural_net_experiments.sghmc_vs_batch_hmc.sghmc_batchhmc import sghmc_sampler
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from abstract.metric import metric
 from input_data.convert_data_to_dict import get_data_dict

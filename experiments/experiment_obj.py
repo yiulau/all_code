@@ -1,5 +1,7 @@
 import abc, numpy, pickle, os,copy
 from abstract.mcmc_sampler import mcmc_sampler_settings_dict,mcmc_sampler
+from adapt_util.tune_param_classes.tune_param_setting_util import *
+
 def experiment_setting_dict(chain_length,save_name,
                             tune_l,warm_up,num_chains_per_sampler=1,num_cpu_per_sampler=1,
                             is_float=False,thin=1,allow_restart=False,max_num_restarts=5):
@@ -14,11 +16,35 @@ def experiment_setting_dict(chain_length,save_name,
 #     experiment_obj = pickle.load(open(save_name, 'rb'))
 #     experiment_obj.run()
 #     return()
+def get_tune_settings_dict(tune_dict):
+    v_fun = tune_dict["v_fun"]
+    ep_dual_metadata_argument = {"name": "epsilon", "target": 0.8, "gamma": 0.05, "t_0": 10,
+                                 "kappa": 0.75, "obj_fun": "accept_rate", "par_type": "fast"}
+    adapt_cov_arguments = [adapt_cov_default_arguments(par_type="slow", dim=v_fun(
+        precision_type="torch.DoubleTensor").get_model_dim())]
+
+    if "Cov" in tune_dict:
+        if "adapt"==tune_dict["Cov"]:
+            adapt_cov_arguments = adapt_cov_arguments
+        else:
+            adapt_cov_arguments = []
+    else:
+        adapt_cov_arguments = []
+
+    if tune_dict["epsilon"]=="dual":
+        dual_args_list = [ep_dual_metadata_argument]
+    else:
+        dual_args_list = []
+    other_arguments = other_default_arguments()
+
+    tune_settings_dict = tuning_settings(dual_arguments=dual_args_list,adapt_cov_arguments=adapt_cov_arguments,
+                                         other_arguments=other_arguments)
+    return(tune_settings_dict)
+
 class experiment(object):
     #__metaclass__ = abc.ABCMeta
-
     def __init__(self,input_object=None,experiment_setting=None,fun_per_sampler=None):
-
+        # fun per sampler process sampler to extract desired quantities
         self.fun_per_sampler = fun_per_sampler
         self.experiment_setting = experiment_setting
         self.input_object = input_object
@@ -44,8 +70,9 @@ class experiment(object):
                                                           is_float=self.experiment_setting["is_float"],
                                                           allow_restart=self.experiment_setting["allow_restart"],
                                                           max_num_restarts=self.experiment_setting["max_num_restarts"])
+            tune_settings_dict = get_tune_settings_dict(tune_dict)
             grid_pt_metadict = {"mcmc_id":cur,"started":False,"completed":False,"saved":False}
-            self.store_grid_obj[it.multi_index] = {"sampler":mcmc_sampler(tune_dict,sampling_metaobj),"metadata":grid_pt_metadict}
+            self.store_grid_obj[it.multi_index] = {"sampler":mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=sampling_metaobj,tune_settings_dict=tune_settings_dict),"metadata":grid_pt_metadict}
             self.experiment_result_grid_obj[it.multi_index] = {}
             it.iternext()
             cur +=1

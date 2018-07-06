@@ -6,11 +6,11 @@ from experiments.experiment_obj import tuneinput_class
 from post_processing.get_diagnostics import get_short_diagnostics
 from post_processing.ESS_nuts import diagnostics_stan
 def convergence_diagnostics(v_fun):
-    mcmc_meta_double = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=10000, num_chains=4, num_cpu=1, thin=1,
+    mcmc_meta_double = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=10000, num_chains=4, num_cpu=4, thin=1,
                                            tune_l_per_chain=1000,
                                            warmup_per_chain=1100, is_float=False, isstore_to_disk=False,
                                            allow_restart=True)
-    mcmc_meta_float = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=10000, num_chains=4, num_cpu=1, thin=1,
+    mcmc_meta_float = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=10000, num_chains=4, num_cpu=4, thin=1,
                                                   tune_l_per_chain=1000,
                                                   warmup_per_chain=1100, is_float=True, isstore_to_disk=False,
                                                   allow_restart=True)
@@ -18,7 +18,7 @@ def convergence_diagnostics(v_fun):
     input_dict = {"v_fun": [v_fun], "epsilon": ["dual"], "second_order": [False], "cov": ["adapt"],
                   "metric_name": ["dense_e"], "dynamic": [False], "windowed": [False],
                   "criterion": ["gnuts"]}
-    ep_dual_metadata_argument = {"name": "epsilon", "target": 0.65, "gamma": 0.05, "t_0": 10,
+    ep_dual_metadata_argument = {"name": "epsilon", "target": 0.8, "gamma": 0.05, "t_0": 10,
                                  "kappa": 0.75, "obj_fun": "accept_rate", "par_type": "fast"}
 
     dim = len(v_fun().flattened_tensor)

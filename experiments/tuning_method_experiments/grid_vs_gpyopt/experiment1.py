@@ -1,7 +1,7 @@
 import numpy
 from experiments.experiment_obj import experiment_setting_dict,experiment
 from experiments.experiment_obj import tuneinput_class
-from experiments.tuning_method_experiments.util import opt_experiment_ep_t
+from experiments.tuning_method_experiments.grid_vs_gpyopt.util import opt_experiment_ep_t
 from experiments.tuning_method_experiments.util import convert_to_numpy_results
 
 # experiment 1 (ep,L) Find best performance . identify L (calculate accumulate best using grid)
@@ -37,24 +37,25 @@ result_grid= experiment_instance.experiment_result_grid_obj
 optimal_L = 1024
 
 
-result_opt_list = [None]*num_repeats
+np_store_opt = numpy.zeros(num_repeats,30)
 for i in range(num_repeats):
     opt_experiment_result_esjd_normalized = opt_experiment_ep_t(v_fun_list=v_fun_list,ep_list=ep_list,
                                                          evolve_t_list=evolve_t_list,
                                                          num_of_opt_steps=num_grid_divides*num_grid_divides,
                                                          objective="esjd_normalized",input_dict=input_dict)
 
+    np_result = convert_to_numpy_results(opt_experiment_result_esjd_normalized)
     #result = {"esjd_normalized":opt_experiment_result_esjd_normalized}
-    result_opt_list[i] = opt_experiment_result_esjd_normalized
+    np_store_opt[i,:] = np_result
 
 
 # after getting results compute accumulative num_leapfrog_steps
 # get best performance attained first after exceeding total number of leapfrog in grid search
 # get best performance overall
 # get accumulative best performance
-out = {"grid_results":result_grid,"opt_results":result_opt_list}
+#out = {"grid_results":result_grid,"opt_results":result_opt_list}
 
-converted_to_np_results = convert_to_numpy_results(out)
+#converted_to_np_results = convert_to_numpy_results(out)
 
 numpy.savez(save_address,allow_pickle=False)
 

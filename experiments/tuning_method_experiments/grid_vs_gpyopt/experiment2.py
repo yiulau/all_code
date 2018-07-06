@@ -1,7 +1,7 @@
 import numpy
 from experiments.experiment_obj import experiment_setting_dict,experiment
 from experiments.experiment_obj import tuneinput_class
-from experiments.tuning_method_experiments.util import opt_experiment_ep_t
+from experiments.tuning_method_experiments.grid_vs_gpyopt.util import opt_experiment_ep_t
 from experiments.tuning_method_experiments.util import convert_to_numpy_results
 
 # experiment 2 (ep,t) Find best performance overall. See how bayes compare.

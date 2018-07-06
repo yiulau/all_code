@@ -52,7 +52,7 @@ def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu
 class mcmc_sampler(object):
     # may share experiment id with other sampling_objs
     # tune_settings_dict one object for all 4 (num = numchains) chains
-    def __init__(self,tune_dict,mcmc_settings_dict,tune_settings_dict,experiment_obj=None,init_q_point_list=None,adapter_setting=None):
+    def __init__(self,tune_dict,mcmc_settings_dict,tune_settings_dict=None,experiment_obj=None,init_q_point_list=None,adapter_setting=None):
         #for name, val in mcmc_meta_obj.__dict__.items():
          #   setattr(self,name,val)
         self.chains_ready = False

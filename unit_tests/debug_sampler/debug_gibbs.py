@@ -8,10 +8,10 @@ from abstract.metric import metric
 from abstract.abstract_class_Ham import Hamiltonian
 from abstract.abstract_class_point import point
 from explicit.general_util import logsumexp_torch
-from experiments.neural_net_experiments.gibbs_vs_together_hyperparam import update_param_and_hyperparam_one_step
+from experiments.neural_net_experiments.gibbs_vs_joint_sampling.gibbs_vs_together_hyperparam import update_param_and_hyperparam_one_step
 from abstract.mcmc_sampler import log_class
 from input_data.convert_data_to_dict import get_data_dict
-from post_processing.test_error import map_prediction,test_error
+from post_processing.test_error import test_error
 from abstract.abstract_nuts_util import abstract_GNUTS
 from general_util.pytorch_random import log_inv_gamma_density
 from post_processing.ESS_nuts import diagnostics_stan

@@ -20,10 +20,7 @@ tune_settings_dict = tuning_settings([],[],adapt_cov_arguments,[])
 
 tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 
-
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
-
-
 
 out = sampler1.start_sampling()
 
