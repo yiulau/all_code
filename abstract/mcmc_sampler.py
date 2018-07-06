@@ -15,6 +15,7 @@ from abstract.abstract_class_point import point
 from adapt_util.tune_param_classes.tune_param_class import tune_param_objs_creator
 from general_util.pytorch_util import convert_q_point_list
 import numpy,torch
+from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics
 # number of samples
 # thinning
 # warm up
