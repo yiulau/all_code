@@ -35,7 +35,7 @@ def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu
             seed = round(numpy.random.uniform(1,1e3))
         else:
             assert seed > 0
-            pass
+            seed = seed
 
         # mcmc_id should be a dictionary
         out = {}
@@ -69,6 +69,9 @@ class mcmc_sampler(object):
         else:
             self.precision_type = "torch.DoubleTensor"
         torch.set_default_tensor_type(self.precision_type)
+        self.seed = self.mcmc_settings_dict["seed"]
+        numpy.random.seed(self.seed)
+        torch.manual_seed(self.seed)
         if init_q_point_list is None:
             self.init_q_point_list = default_init_q_point_list(v_fun=self.tune_dict["v_fun"],
                                                                num_chains=self.num_chains,
@@ -91,7 +94,7 @@ class mcmc_sampler(object):
             self.sampler_id = 0
 
         self.metadata = sampler_metadata(mcmc_sampler_obj=self)
-        self.seed = self.mcmc_settings_dict["seed"]
+
         self.num_samples_per_chain = self.mcmc_settings_dict["num_samples_per_chain"]
         self.isstore_to_disk = self.mcmc_settings_dict["isstore_to_disk"]
         self.warmup_per_chain = self.mcmc_settings_dict["warmup_per_chain"]
@@ -144,6 +147,7 @@ class mcmc_sampler(object):
             #raise ValueError("run self.prepare_chains() firstf")
         #print("yes")
         #exit()
+        numpy.random.seed(self.seed)
         seed = numpy.random.uniform(1, 1e3)*self.seed
         torch.manual_seed(round(seed *(chain_id + 1)))
         numpy.random.seed(round(seed * (chain_id + 1)))
@@ -156,6 +160,7 @@ class mcmc_sampler(object):
         new_mcmc_settings_dict = copy.deepcopy(self.mcmc_settings_dict)
         new_mcmc_settings_dict.update({"num_chains": 1, "num_cpu": 1})
         def run_parallel_chain(chain_id):
+            numpy.random.seed(self.seed)
             seed = numpy.random.uniform(1, 1e3)*self.seed
             #print(seed*(chain_id+1))
             torch.manual_seed(round(seed*(chain_id+1)))
