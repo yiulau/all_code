@@ -27,27 +27,27 @@ v_fun_list = [V_mvn1,V_mvn2]
 target_fun = fun_extract_median_ess
 ####################################################################################################################################
 num_chains_per_sampler = 4
-np_store_gnuts = [None]*num_repeats
-np_diagnostics_gnuts = [None]*num_repeats
-for i in range(num_repeats):
-    experiment_setting_gnuts = experiment_setting_dict(chain_length=2000,num_chains_per_sampler=num_chains_per_sampler,warm_up=1500,
-                                                 tune_l=1000,allow_restart=True,max_num_restarts=5,num_cpu_per_sampler=4)
-
-    input_dict_gnuts = {"v_fun":v_fun_list,"epsilon":["dual"],"second_order":[False],"cov":["adapt"],
-                  "metric_name":["diag_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"]}
-
-    input_object_gnuts = tuneinput_class(input_dict_gnuts)
-    experiment_instance_gnuts = experiment(input_object=input_object_gnuts,experiment_setting=experiment_setting_gnuts,fun_per_sampler=target_fun)
-
-    experiment_instance_gnuts.run()
-
-    np_store,col_names,output_names = experiment_instance_gnuts.np_output()
-    np_store_diagnostics,diagnostics_names = experiment_instance_gnuts.np_diagnostics()
-    np_diagnostics_gnuts[i] = np_store_diagnostics
-    np_store_gnuts[i] = np_store
-
-np_store_gnuts = numpy.stack(np_store_gnuts,axis=0)
-np_diagnostics_gnuts = numpy.stack(np_diagnostics_gnuts,axis=0)
+# np_store_gnuts = [None]*num_repeats
+# np_diagnostics_gnuts = [None]*num_repeats
+# for i in range(num_repeats):
+#     experiment_setting_gnuts = experiment_setting_dict(chain_length=2000,num_chains_per_sampler=num_chains_per_sampler,warm_up=1500,
+#                                                  tune_l=1000,allow_restart=True,max_num_restarts=5,num_cpu_per_sampler=4)
+#
+#     input_dict_gnuts = {"v_fun":v_fun_list,"epsilon":["dual"],"second_order":[False],"cov":["adapt"],
+#                   "metric_name":["diag_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"]}
+#
+#     input_object_gnuts = tuneinput_class(input_dict_gnuts)
+#     experiment_instance_gnuts = experiment(input_object=input_object_gnuts,experiment_setting=experiment_setting_gnuts,fun_per_sampler=target_fun)
+#
+#     experiment_instance_gnuts.run()
+#
+#     np_store,col_names,output_names = experiment_instance_gnuts.np_output()
+#     np_store_diagnostics,diagnostics_names = experiment_instance_gnuts.np_diagnostics()
+#     np_diagnostics_gnuts[i] = np_store_diagnostics
+#     np_store_gnuts[i] = np_store
+#
+# np_store_gnuts = numpy.stack(np_store_gnuts,axis=0)
+# np_diagnostics_gnuts = numpy.stack(np_diagnostics_gnuts,axis=0)
 
 #######################################################################################################################################
 np_store_xhmc = [None]*num_repeats

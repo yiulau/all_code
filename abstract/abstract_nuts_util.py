@@ -354,12 +354,18 @@ def abstract_BuildTree_nuts_xhmc(q,p,v,j,epsilon,Ham,xhmc_delta,H_0,diagn_dict):
                 continue_divergence = False
                 num_div = 1
                 ave = None
+                log_w_prime = None
 
         else:
             continue_divergence = False
             num_div = 1
             ave = None
-        return q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(),p_prime.point_clone(), continue_divergence, log_w_prime, ave, num_div
+            log_w_prime = None
+        if not continue_divergence:
+            return None,None,None,None,None,None,continue_divergence,log_w_prime,ave,num_div
+        else:
+            return q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(), p_prime.point_clone(), q_prime.point_clone(), p_prime.point_clone(), continue_divergence, log_w_prime, ave, num_div
+
     else:
         # first half of subtree
         q_left, p_left, q_right, p_right, q_prime,p_prime, s_prime, log_w_prime, ave_prime,num_div_prime = abstract_BuildTree_nuts_xhmc(q, p, v, j - 1,
@@ -374,16 +380,19 @@ def abstract_BuildTree_nuts_xhmc(q,p,v,j,epsilon,Ham,xhmc_delta,H_0,diagn_dict):
             else:
                 _, _, q_right, p_right, q_dprime,p_dprime, s_dprime, log_w_dprime, ave_dprime,num_div_dprime = abstract_BuildTree_nuts_xhmc(q_right, p_right, v, j - 1, epsilon,
                                                                                  Ham,xhmc_delta,H_0,diagn_dict)
-            accept_rate = math.exp(min(0,(log_w_dprime-logsumexp(log_w_prime,log_w_dprime))))
-            u = numpy.random.rand(1)[0]
-            if u < accept_rate:
-                q_prime = q_dprime.point_clone()
-                p_prime = p_dprime.point_clone()
-            oo_ = stable_sum(ave_prime, log_w_prime, ave_dprime, log_w_prime)
-            ave_prime = oo_[0]
-            log_w_prime = oo_[1]
-            num_div_prime += num_div_dprime
-            s_prime = s_dprime and abstract_xhmc_criterion(ave_prime,xhmc_delta,math.pow(2,j))
+            if s_dprime:
+                accept_rate = math.exp(min(0,(log_w_dprime-logsumexp(log_w_prime,log_w_dprime))))
+                u = numpy.random.rand(1)[0]
+                if u < accept_rate:
+                    q_prime = q_dprime.point_clone()
+                    p_prime = p_dprime.point_clone()
+                oo_ = stable_sum(ave_prime, log_w_prime, ave_dprime, log_w_prime)
+                ave_prime = oo_[0]
+                log_w_prime = oo_[1]
+                num_div_prime += num_div_dprime
+                s_prime = s_dprime and abstract_xhmc_criterion(ave_prime,xhmc_delta,math.pow(2,j))
+            else:
+                s_prime = s_dprime and s_prime
 
         return q_left, p_left, q_right, p_right, q_prime, p_prime,s_prime,log_w_prime,ave_prime,num_div_prime
 
