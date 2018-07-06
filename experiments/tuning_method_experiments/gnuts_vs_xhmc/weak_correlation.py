@@ -20,7 +20,7 @@ from abstract.util import wrap_V_class_with_input_data
 # set up v_fun for each problem
 num_repeats = 2
 
-input_data = {"input":numpy.eye(5,5)}
+input_data = {"input":numpy.eye(20,20)}
 V_mvn1 = wrap_V_class_with_input_data(class_constructor=V_mvn,input_data=input_data)
 V_mvn2 = wrap_V_class_with_input_data(class_constructor=V_mvn,input_data=input_data)
 v_fun_list = [V_mvn1,V_mvn2]
