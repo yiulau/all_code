@@ -165,13 +165,12 @@ class experiment(object):
     #         pickle.dump(self, f)
     def np_diagnostics(self):
         it = numpy.nditer(self.store_grid_obj, flags=['multi_index', "refs_ok"])
-        output_shape = self.experiment_result_grid_obj[it.multi_index]["fun_output"].shape
-        np_diagnostics,diagnostics_name = self.experiment_result_grid_obj[it.multi_index]["sampler"].np_diagnostics()
-        store_shape = self.experiment_result_grid_obj.shape + np_diagnostics.shape
-        np_store = numpy.zeros(output_shape)
+        np_diagnostics,diagnostics_name = self.store_grid_obj[it.multi_index]["sampler"].np_diagnostics()
+        store_shape = self.store_grid_obj.shape + np_diagnostics.shape
+        np_store = numpy.zeros(store_shape)
         while not it.finished:
             # self.store_grid_obj[it.multi_index]["metadata"]
-            output,_ = self.experiment_result_grid_obj[it.multi_index]["sampler"].np_diagnostics()
+            output,_ = self.store_grid_obj[it.multi_index]["sampler"].np_diagnostics()
             new_index = list(it.multi_index) + [...]
             np_store[new_index] = output
             # self.saves_progress()
@@ -179,11 +178,11 @@ class experiment(object):
         return(np_store,diagnostics_name)
     def np_output(self):
         col_names = self.input_name_list
-        it = numpy.nditer(self.store_grid_obj, flags=['multi_index', "refs_ok"])
+        it = numpy.nditer(self.experiment_result_grid_obj, flags=['multi_index', "refs_ok"])
         output_dim = len(self.experiment_result_grid_obj[it.multi_index]["fun_output"])
         output_names = self.experiment_result_grid_obj[it.multi_index]["output_names"]
         col_names += ["output"]
-        store_shape = self.experiment_result_grid_obj.shape + [output_dim]
+        store_shape = list(self.experiment_result_grid_obj.shape) + [output_dim]
         np_store = numpy.zeros(store_shape)
         while not it.finished:
             # self.store_grid_obj[it.multi_index]["metadata"]

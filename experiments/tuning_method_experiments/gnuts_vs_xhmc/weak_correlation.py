@@ -30,7 +30,7 @@ num_chains_per_sampler = 4
 np_store_gnuts = [None]*num_repeats
 np_diagnostics_gnuts = [None]*num_repeats
 for i in range(num_repeats):
-    experiment_setting_gnuts = experiment_setting_dict(chain_length=5000,num_chains_per_sampler=4,warm_up=2000,
+    experiment_setting_gnuts = experiment_setting_dict(chain_length=2000,num_chains_per_sampler=num_chains_per_sampler,warm_up=1500,
                                                  tune_l=1000,allow_restart=True,max_num_restarts=5,num_cpu_per_sampler=4)
 
     input_dict_gnuts = {"v_fun":v_fun_list,"epsilon":["dual"],"second_order":[False],"cov":["adapt"],
@@ -48,12 +48,12 @@ for i in range(num_repeats):
 
 np_store_gnuts = numpy.stack(np_store_gnuts,axis=0)
 np_diagnostics_gnuts = numpy.stack(np_diagnostics_gnuts,axis=0)
-exit()
+
 #######################################################################################################################################
 np_store_xhmc = [None]*num_repeats
 np_diagnostics_xhmc = [None]*num_repeats
 for _ in range(num_repeats):
-    experiment_setting_xhmc = experiment_setting_dict(chain_length=10000,num_chains_per_sampler=4,warm_up=2000,
+    experiment_setting_xhmc = experiment_setting_dict(chain_length=10000,num_chains_per_sampler=num_chains_per_sampler,warm_up=2000,
                                                  tune_l=1000,allow_restart=True,max_num_restarts=5,num_cpu_per_sampler=4)
 
     input_dict_xhmc = {"v_fun":v_fun_list,"epsilon":["dual"],"second_order":[False],"cov":["adapt"],"xhmc_delta":[0.01,0.05,0.1],
@@ -74,4 +74,5 @@ np_diagnostics_xhmc = numpy.stack(np_diagnostics_xhmc,axis=0)
 
 result = {"gnuts":np_store_gnuts,"xhmc":np_store_xhmc,"gnuts_diagnostics":np_diagnostics_gnuts,"xhmc_diagnostics":np_diagnostics_xhmc}
 result.update({"diagnostics_names":diagnostics_names})
+
 
