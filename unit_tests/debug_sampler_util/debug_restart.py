@@ -9,7 +9,7 @@ from experiments.experiment_obj import tuneinput_class
 from distributions.two_d_normal import V_2dnormal
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from post_processing.ESS_nuts import ess_stan
-from post_processing.get_diagnostics import percent_diagnostics
+#from post_processing.get_diagnostics import percent_diagnostics
 seedid = 30
 numpy.random.seed(seedid)
 torch.manual_seed(seedid)
@@ -52,9 +52,9 @@ print(len(diagnostics))
 #         sum += diagnostics[i][j]["divergent"]
 #         total_terms +=1
 
-
-# print("percent divergent {}".format(sum/total_terms))
-print("percent divergent {}".format(percent_diagnostics(diagnostics,"divergent")))
-
-print("percent accepted {}".format(percent_diagnostics(diagnostics,"accepted")))
-
+# exit()
+# # print("percent divergent {}".format(sum/total_terms))
+# print("percent divergent {}".format(percent_diagnostics(diagnostics,"divergent")))
+#
+# print("percent accepted {}".format(percent_diagnostics(diagnostics,"accepted")))
+#

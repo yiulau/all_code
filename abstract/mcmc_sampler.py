@@ -31,7 +31,7 @@ import numpy,torch
 
 def mcmc_sampler_settings_dict(mcmc_id,samples_per_chain=10,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=None,warmup_per_chain=None,is_float=False,isstore_to_disk=False,same_init=False,allow_restart=True,max_num_restarts=10,restart_end_buffer=100,seed=None):
         if seed is None:
-            seed = round(numpy.random.uniform(1,1e6))
+            seed = round(numpy.random.uniform(1,1e3))
         else:
             assert seed > 0
             pass
@@ -95,6 +95,7 @@ class mcmc_sampler(object):
         self.isstore_to_disk = self.mcmc_settings_dict["isstore_to_disk"]
         self.warmup_per_chain = self.mcmc_settings_dict["warmup_per_chain"]
         self.tune_l_per_chain = self.mcmc_settings_dict["tune_l_per_chain"]
+
         self.allow_restart = self.mcmc_settings_dict["allow_restart"]
         if self.allow_restart:
             self.max_num_restarts = self.mcmc_settings_dict["max_num_restarts"]
@@ -142,9 +143,9 @@ class mcmc_sampler(object):
             #raise ValueError("run self.prepare_chains() firstf")
         #print("yes")
         #exit()
-        seed = numpy.random.uniform(1, 1e6)*self.seed
-        torch.manual_seed(round(seed) * (chain_id + 1))
-        numpy.random.seed(round(seed) * (chain_id + 1))
+        seed = numpy.random.uniform(1, 1e3)*self.seed
+        torch.manual_seed(round(seed *(chain_id + 1)))
+        numpy.random.seed(round(seed * (chain_id + 1)))
         (self.store_chains[chain_id]["chain_obj"]).run()
         #output = self.store_chains[chain_id]["chain_obj"].store_samples
         return()
@@ -154,9 +155,10 @@ class mcmc_sampler(object):
         new_mcmc_settings_dict = copy.deepcopy(self.mcmc_settings_dict)
         new_mcmc_settings_dict.update({"num_chains": 1, "num_cpu": 1})
         def run_parallel_chain(chain_id):
-            seed = numpy.random.uniform(1, 1e6)*self.seed
-            torch.manual_seed(round(seed)*(chain_id+1))
-            numpy.random.seed(round(seed)*(chain_id+1))
+            seed = numpy.random.uniform(1, 1e3)*self.seed
+            #print(seed*(chain_id+1))
+            torch.manual_seed(round(seed*(chain_id+1)))
+            numpy.random.seed(round(seed*(chain_id+1)))
             temp_mcmc_sampler = mcmc_sampler(tune_dict=self.tune_dict, mcmc_settings_dict=new_mcmc_settings_dict,
                                              tune_settings_dict=self.tune_settings_dict,
                                              adapter_setting=self.adapter_setting)
@@ -262,10 +264,11 @@ class mcmc_sampler(object):
         num_restart = []
         for i in range(self.num_chains):
             num_restart.append(self.store_chains[i]["chain_obj"].num_restarts)
+            self.metadata.num_restarts[i] = self.store_chains[i]["chain_obj"].num_restarts
             if not self.store_chains[i]["chain_obj"].enough_restarts:
                 success_indices.append(i)
 
-        self.metadata.num_restarts += sum(num_restart)
+        self.metadata.total_num_restarts += sum(num_restart)
         self.metadata.num_chains_removed = self.num_chains - len(success_indices)
         self.store_chains = self.store_chains[success_indices]
         self.num_chains = len(self.store_chains)
@@ -363,6 +366,40 @@ class mcmc_sampler(object):
 
         return(output)
 
+    def np_diagnostics(self):
+        feature_names = ["num_restarts", "num_divergent", "num_hit_max_tree_depth", "ave_num_transitions", "bfmi",
+                         "lp_ess", "lp_rhat", "difficulty"]
+        feature_names = ["num_chains_removed"]
+
+        self.remove_failed_chains()
+        out = self.get_diagnostics(permuted=False)
+        num_restarts = self.metadata.num_restarts
+        num_chains_removed = self.metadata.num_chains_removed
+        processed_diag = process_diagnostics(out, name_list=["divergent"])
+        num_divergent = processed_diag.sum(axis=1)
+        processed_diag = process_diagnostics(out, name_list=["hit_max_tree_depth"])
+        hix_max_tree_depth = processed_diag.sum(axis=1)
+        processed_diag = process_diagnostics(out, name_list=["num_transitions"])
+        ave_num_transitions = processed_diag.mean(axis=1)
+        energy_summary = energy_diagnostics(diagnostics_obj=out)
+        mixed_mcmc_tensor = self.get_samples(permuted=True)
+        mcmc_cov = numpy.cov(mixed_mcmc_tensor, rowvar=False)
+        mcmc_sd_vec = numpy.sqrt(numpy.diagonal(mcmc_cov))
+        difficulty = max(mcmc_sd_vec) / min(mcmc_sd_vec)
+        num_id = self.num_chains
+        output = numpy.zeros(num_id, len(feature_names))
+
+        output[:, 0] = num_restarts
+        output[:, 1] = num_divergent
+        output[:, 2] = hix_max_tree_depth
+        output[:, 3] = ave_num_transitions
+        output[:, 4] = energy_summary["bfmi_list"]
+        output[:, 5] = energy_summary["ess"]
+        output[:, 6] = energy_summary["rhat"]
+        output[:, 7] = difficulty
+        output[:, 8] = num_chains_removed
+        return()
+
 
 
 
@@ -372,7 +409,8 @@ class sampler_metadata(object):
         self.mcmc_sampler_obj = mcmc_sampler_obj
         self.total_time = 0
         self.num_chains_removed = 0
-        self.num_restarts = 0
+        self.num_restarts = [0]*mcmc_sampler_obj.num_chains
+        self.total_num_restarts = 0
     def store_to_disk(self):
         if self.store_address is None:
             self.store_address = "mcmc_sampler.pkl"

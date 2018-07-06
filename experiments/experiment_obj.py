@@ -2,7 +2,7 @@ import abc, numpy, pickle, os,copy
 from abstract.mcmc_sampler import mcmc_sampler_settings_dict,mcmc_sampler
 from adapt_util.tune_param_classes.tune_param_setting_util import *
 
-def experiment_setting_dict(chain_length,save_name,
+def experiment_setting_dict(chain_length,
                             tune_l,warm_up,num_chains_per_sampler=1,num_cpu_per_sampler=1,
                             is_float=False,thin=1,allow_restart=False,max_num_restarts=5):
     out = {"chain_length":chain_length}
@@ -23,8 +23,8 @@ def get_tune_settings_dict(tune_dict):
     adapt_cov_arguments = [adapt_cov_default_arguments(par_type="slow", dim=v_fun(
         precision_type="torch.DoubleTensor").get_model_dim())]
 
-    if "Cov" in tune_dict:
-        if "adapt"==tune_dict["Cov"]:
+    if "cov" in tune_dict:
+        if "adapt"==tune_dict["cov"]:
             adapt_cov_arguments = adapt_cov_arguments
         else:
             adapt_cov_arguments = []
@@ -37,7 +37,7 @@ def get_tune_settings_dict(tune_dict):
         dual_args_list = []
     other_arguments = other_default_arguments()
 
-    tune_settings_dict = tuning_settings(dual_arguments=dual_args_list,adapt_cov_arguments=adapt_cov_arguments,
+    tune_settings_dict = tuning_settings(dual_arguments=dual_args_list,opt_arguments=[],adapt_cov_arguments=adapt_cov_arguments,
                                          other_arguments=other_arguments)
     return(tune_settings_dict)
 
@@ -51,6 +51,7 @@ class experiment(object):
         self.tune_param_grid = self.input_object.tune_param_grid
         self.store_grid_obj = numpy.empty(self.input_object.grid_shape,dtype=object)
         self.experiment_result_grid_obj = numpy.empty(self.input_object.grid_shape,dtype=object)
+        self.input_name_list = self.input_object.param_name_list
         #loop through each point in the grid and initiate an sampling_object
         it = numpy.nditer(self.store_grid_obj, flags=['multi_index',"refs_ok"])
         cur = 0
@@ -62,6 +63,7 @@ class experiment(object):
             self.multi_index_to_id.update({it.multi_index: cur})
             tune_dict = self.tune_param_grid[it.multi_index]
             sampling_metaobj = mcmc_sampler_settings_dict(mcmc_id = cur,
+                                                          samples_per_chain= self.experiment_setting["chain_length"],
                                                           num_chains=self.experiment_setting["num_chains_per_sampler"],
                                                           num_cpu=self.experiment_setting["num_cpu_per_sampler"],
                                                           thin=self.experiment_setting["thin"],
@@ -116,8 +118,9 @@ class experiment(object):
             sampler = self.store_grid_obj[it.multi_index]["sampler"]
             self.store_grid_obj[it.multi_index]["metadata"].update({"started": True})
             sampler.start_sampling()
-            fun_output = self.fun_per_sampler(ran_sampler=sampler)
+            fun_output,output_names = self.fun_per_sampler(sampler)
             self.experiment_result_grid_obj[it.multi_index].update({"fun_output": fun_output})
+            self.experiment_result_grid_obj[it.multi_index].update({"output_names": output_names})
             self.store_grid_obj[it.multi_index]["metadata"].update({"completed": True,"saved":True})
             #self.saves_progress()
             it.iternext()
@@ -160,6 +163,37 @@ class experiment(object):
     #     save_name = self.experiment_setting["save_name"]
     #     with open(save_name, 'wb') as f:
     #         pickle.dump(self, f)
+    def np_diagnostics(self):
+        it = numpy.nditer(self.store_grid_obj, flags=['multi_index', "refs_ok"])
+        output_shape = self.experiment_result_grid_obj[it.multi_index]["fun_output"].shape
+        np_diagnostics,diagnostics_name = self.experiment_result_grid_obj[it.multi_index]["sampler"].np_diagnostics()
+        store_shape = self.experiment_result_grid_obj.shape + np_diagnostics.shape
+        np_store = numpy.zeros(output_shape)
+        while not it.finished:
+            # self.store_grid_obj[it.multi_index]["metadata"]
+            output,_ = self.experiment_result_grid_obj[it.multi_index]["sampler"].np_diagnostics()
+            new_index = list(it.multi_index) + [...]
+            np_store[new_index] = output
+            # self.saves_progress()
+            it.iternext()
+        return(np_store,diagnostics_name)
+    def np_output(self):
+        col_names = self.input_name_list
+        it = numpy.nditer(self.store_grid_obj, flags=['multi_index', "refs_ok"])
+        output_dim = len(self.experiment_result_grid_obj[it.multi_index]["fun_output"])
+        output_names = self.experiment_result_grid_obj[it.multi_index]["output_names"]
+        col_names += ["output"]
+        store_shape = self.experiment_result_grid_obj.shape + [output_dim]
+        np_store = numpy.zeros(store_shape)
+        while not it.finished:
+            # self.store_grid_obj[it.multi_index]["metadata"]
+            output = self.experiment_result_grid_obj[it.multi_index]["fun_output"]
+            new_index = list(it.multi_index) + [...]
+            np_store[new_index] = output
+
+            # self.saves_progress()
+            it.iternext()
+        return(np_store,col_names,output_names)
 
 
 
@@ -268,10 +302,10 @@ class tuneinput_class(object):
 
     def clone(self):
         input_dict = self.input_dict.copy()
-        if hasattr(self,"Cov"):
-            if not getattr(self,"Cov")=="adapt":
-                copy = getattr(self,"Cov")[0].clone()
-                input_dict["Cov"] = [copy]
+        if hasattr(self,"cov"):
+            if not getattr(self,"cov")=="adapt":
+                copy = getattr(self,"cov")[0].clone()
+                input_dict["cov"] = [copy]
 
         #print(input_dict)
 

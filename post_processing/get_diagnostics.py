@@ -81,11 +81,14 @@ def get_short_diagnostics(mcmc_samples_tensor):
 def get_params_mcmc_tensor(sampler):
     v_fun = sampler.v_fun
     v_obj = v_fun(precision_type="torch.DoubleTensor")
-    list_params = list(v_obj.dict_parameters.keys())
-    list_samples = []
-    concat_axis = len(sampler.get_samples_alt(prior_obj_name=list_params[0], permuted=False)["samples"].shape)
-    for i in range(len(list_params)):
-        list_samples.append(sampler.get_samples_alt(prior_obj_name=list_params[i], permuted=False)["samples"])
+    if hasattr(v_obj,"dict_parameters"):
+        list_params = list(v_obj.dict_parameters.keys())
+        list_samples = []
+        concat_axis = len(sampler.get_samples_alt(prior_obj_name=list_params[0], permuted=False)["samples"].shape)
+        for i in range(len(list_params)):
+            list_samples.append(sampler.get_samples_alt(prior_obj_name=list_params[i], permuted=False)["samples"])
 
-    out = numpy.concatenate(list_samples,axis=concat_axis-1)
+        out = numpy.concatenate(list_samples,axis=concat_axis-1)
+    else:
+        out = sampler.get_samples(permuted=False)
     return(out)
