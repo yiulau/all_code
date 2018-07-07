@@ -1,7 +1,7 @@
 import math
 import numpy
 from general_util.time_diagnostics import time_diagnositcs
-
+from explicit.general_util import logsumexp
 
 # all functions modify (q,p)
 
@@ -77,44 +77,71 @@ def windowerize(integrator):
         # evaluate H 1 time
         divergent = False
         v = numpy.random.choice([-1, 1])
+        try:
+            if v < 0:
+                q_left, p_left,stat = integrator(q_left, p_left, v * epsilon, Ham)
+                explode_grad = stat["explode_grad"]
+                if not explode_grad:
+                    logw_prop = -Ham.evaluate(q_left, p_left)["H"]
 
-        if v < 0:
-            q_left, p_left,stat = integrator(q_left, p_left, v * epsilon, Ham)
-            explode_grad = stat["explode_grad"]
-            if not explode_grad:
-                logw_prop = -Ham.evaluate(q_left, p_left)["H"]
+                else:
+                    logw_prop = None
+                    divergent = True
+
             else:
-                logw_prop = None
-                divergent = True
+                q_right, p_right,stat = integrator(q_right, p_right, v * epsilon, Ham)
+                explode_grad = stat["explode_grad"]
+                if not explode_grad:
+                    logw_prop = -Ham.evaluate(q_right, p_right)["H"]
+                else:
+                    logw_prop = None
+                    divergent = True
 
-        else:
-            q_right, p_right,stat = integrator(q_right, p_right, v * epsilon, Ham)
-            explode_grad = stat["explode_grad"]
-            if not explode_grad:
-                logw_prop = -Ham.evaluate(q_left, p_left)["H"]
+            if not divergent:
+                if (abs(logw_prop - logw_old) > 1000 or divergent):
+                    accept_rate = 0
+                    accepted = False
+                    qprop = None
+                    pprop = None
+                    divergent = True
+                else:
+                # uniform progressive sampling
+                    #accept_rate = math.exp(min(0, (logw_prop - logsumexp(logw_prop, logw_old))))
+                # baised progressive sampling
+                    accept_rate = math.exp(min(0, logw_prop - logw_old))
+                    u = numpy.random.rand(1)[0]
+                    if u < accept_rate:
+                        qprop = q_right
+                        pprop = p_right
+                        accepted = True
+                    else:
+                        qprop = qprop_old
+                        pprop = pprop_old
+                        logw_prop = logw_old
+                        accepted = False
             else:
+                q_left = None
+                p_left = None
+                q_right = None
+                p_right = None
+                qprop = None
+                pprop = None
                 logw_prop = None
-                divergent = True
-
-        if not logw_prop is None:
-            if (abs(logw_prop - logw_old) > 1000 or divergent):
+                accepted = False
                 accept_rate = 0
+                explode_grad = True
                 divergent = True
-            else:
-            # uniform progressive sampling
-            # accept_rate = math.exp(min(0, (logw_prop - logsumexp(logw_prop, logw_old))))
-            # baised progressive sampling
-                accept_rate = math.exp(min(0, logw_prop - logw_old))
-        u = numpy.random.rand(1)[0]
-        if u < accept_rate:
-            qprop = q_right
-            pprop = p_right
-            accepted = True
-        else:
-            qprop = qprop_old
-            pprop = pprop_old
-            logw_prop = logw_old
+        except:
+            q_left = None
+            p_left= None
+            q_right = None
+            p_right = None
+            qprop = None
+            pprop = None
+            logw_prop = None
             accepted = False
-
+            accept_rate = 0
+            explode_grad = True
+            divergent = True
         return (q_left, p_left, q_right, p_right, qprop, pprop, logw_prop, divergent,explode_grad, accepted, accept_rate)
     return(windowed_integrator)

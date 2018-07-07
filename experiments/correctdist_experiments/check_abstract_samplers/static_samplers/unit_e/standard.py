@@ -8,8 +8,8 @@ from input_data.convert_data_to_dict import get_data_dict
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from abstract.util import wrap_V_class_with_input_data
 
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=1000,num_chains=1,num_cpu=1,thin=1,tune_l_per_chain=500,
-                                   warmup_per_chain=600,is_float=False,isstore_to_disk=False,allow_restart=False,seed=1)
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=1000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=500,
+                                   warmup_per_chain=600,is_float=False,isstore_to_disk=False,allow_restart=False,seed=25)
 input_data = get_data_dict("pima_indian")
 V_pima_indian_logit = wrap_V_class_with_input_data(class_constructor=V_logistic_regression,input_data=input_data)
 
@@ -18,7 +18,6 @@ correct = pickle.load(open(address, 'rb'))
 correct_mean = correct["correct_mean"]
 correct_cov = correct["correct_cov"]
 correct_diag_cov = correct_cov.diagonal()
-
 
 input_dict = {"v_fun":[V_pima_indian_logit],"epsilon":["dual"],"second_order":[False],
               "evolve_t":[1.],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}

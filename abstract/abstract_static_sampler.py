@@ -3,7 +3,7 @@ import numpy
 
 from general_util.time_diagnostics import time_diagnositcs
 
-def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log_obj=None):
+def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log_obj=None,max_L=500):
     # Input:
     # current_q Pytorch Variable
     # H_fun(q,p,return_float) returns Pytorch Variable or float
@@ -25,6 +25,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     if not evolve_t is None:
         assert evolve_L is None
         evolve_L = round(evolve_t/epsilon)
+        evolve_L = min(evolve_L,max_L)
     careful = True
     Ham.diagnostics = time_diagnositcs()
     divergent = False
@@ -140,7 +141,7 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     return(return_q,return_p,init_p,return_H,accepted,accept_rate,divergent,num_transitions)
 
 
-def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_t=None,careful=True,log_obj=None):
+def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_t=None,careful=True,log_obj=None,max_L=500):
     # evaluate gradient 2*L times
     # evluate H function L times
 
@@ -151,6 +152,7 @@ def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_
     if not evolve_t is None:
         assert evolve_L is None
         evolve_L = round(evolve_t/epsilon)
+        evolve_L = min(max_L,evolve_L)
     Ham.diagnostics = time_diagnositcs()
     divergent = False
     explode_grad = False
@@ -171,18 +173,24 @@ def abstract_static_windowed_one_step(epsilon, init_q, Ham,evolve_L=None,evolve_
 
     for i in range(evolve_L):
         o = Ham.windowed_integrator(q_left, p_left,q_right,p_right,epsilon, Ham,logw_prop,q_prop,p_prop)
-        q_left,p_left,q_right,p_right = o[0:4]
-        q_prop, p_prop = o[4], o[5]
-        logw_prop = o[6]
         divergent = o[7]
-        explode_grad = o[8]
-        accepted = o[9] or accepted
-        accept_rate = o[10]
         if divergent:
             num_transitions = i
+            accept_rate = 0
+            accepted = False
+            q_prop = init_q
+            p_prop = None
+            log_wprop = -current_H
             break
         else:
-            num_transitions = evolve_L
+            q_left,p_left,q_right,p_right = o[0:4]
+            q_prop, p_prop = o[4], o[5]
+            logw_prop = o[6]
+            explode_grad = o[8]
+            accepted = o[9] or accepted
+            accept_rate = o[10]
+
+
         #print(o[7])
 
         #accep_rate_sum += o[5]

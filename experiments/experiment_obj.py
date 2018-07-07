@@ -228,7 +228,7 @@ class experiment(object):
 
 class tuneinput_class(object):
     permissible_var_names = ("v_fun", "dynamic", "windowed", "second_order", "criterion", "metric_name", "epsilon", "evolve_t",
-                             "evolve_L", "alpha", "xhmc_delta", "cov","max_tree_depth")
+                             "evolve_L", "alpha", "xhmc_delta", "cov","max_tree_depth","max_L")
 
     permissible_var_values = {"dynamic": (True, False)}
     permissible_var_values.update({"windowed":(True,False)})

@@ -162,9 +162,10 @@ class mcmc_sampler(object):
         def run_parallel_chain(chain_id):
             numpy.random.seed(self.seed)
             seed = numpy.random.uniform(1, 1e3)*self.seed
-            #print(seed*(chain_id+1))
-            torch.manual_seed(round(seed*(chain_id+1)))
-            numpy.random.seed(round(seed*(chain_id+1)))
+            seed = round((seed*(chain_id+1)))
+            new_mcmc_settings_dict.update({"seed":seed})
+            #torch.manual_seed(round(seed*(chain_id+1)))
+            #numpy.random.seed(round(seed*(chain_id+1)))
             temp_mcmc_sampler = mcmc_sampler(tune_dict=self.tune_dict, mcmc_settings_dict=new_mcmc_settings_dict,
                                              tune_settings_dict=self.tune_settings_dict,
                                              adapter_setting=self.adapter_setting)
@@ -679,6 +680,7 @@ class one_chain_obj(object):
                 print("effective L {}".format(round(t/ep)))
             print("number of leapfrog steps {}".format(self.log_obj.store["num_transitions"]))
             print("accept_rate {}".format(self.log_obj.store["accept_rate"]))
+            print("accepted {}".format(self.log_obj.store["accepted"]))
             print("divergent is {}".format(self.log_obj.store["divergent"]))
             print("H is {}".format(self.log_obj.store["prop_H"]))
             print("log_post is {}".format(self.log_obj.store["log_post"]))

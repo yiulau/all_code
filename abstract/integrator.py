@@ -32,6 +32,11 @@ class sampler_one_step(object):
 
             self.other_params.update({"max_tree_depth":self.max_tree_depth})
         else:
+            if "max_L" in tune_dict:
+                self.max_L = tune_dict["max_L"]
+            else:
+                self.max_L = 1024
+            self.other_params.update({"max_L":self.max_L})
             self.windowed = tune_dict["windowed"]
             assert self.windowed==True or self.windowed==False
         self.second_order = tune_dict["second_order"]
@@ -156,6 +161,8 @@ def wrap(raw_sampler_one_step,other_parameters):
         if "max_tree_depth" in other_parameters:
             tune_param_dict.update({"max_tree_depth":other_parameters["max_tree_depth"]})
 
+        if "max_L" in other_parameters:
+            tune_param_dict.update({"max_L": other_parameters["max_L"]})
         #print(tune_param_dict)
         #exit()
         #print(tune_param_dict)
