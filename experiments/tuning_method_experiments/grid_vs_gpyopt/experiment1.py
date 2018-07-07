@@ -15,7 +15,7 @@ num_repeats = 2
 num_grid_divides = 5
 
 ep_bounds = [1e-2,0.1]
-evolve_t_bounds = [0.15,15.]
+evolve_t_bounds = [0.15,50.]
 # add constraints such that L = round(evolove_t/ep) < 1024
 ep_list = list(numpy.linspace(ep_bounds[0],ep_bounds[1],num_grid_divides))
 evolve_t_list = list(numpy.linspace(evolve_t_bounds[0],evolve_t_bounds[1],num_grid_divides))
