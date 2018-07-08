@@ -75,7 +75,7 @@ class mcmc_sampler(object):
         if init_q_point_list is None:
             self.init_q_point_list = default_init_q_point_list(v_fun=self.tune_dict["v_fun"],
                                                                num_chains=self.num_chains,
-                                                               same_init=self.same_init,precision_type=self.precision_type)
+                                                               same_init=self.same_init,precision_type=self.precision_type,seed=self.seed)
         else:
             self.init_q_point_list= init_q_point_list
             convert_q_point_list(q_point_list=init_q_point_list,precision_type=self.precision_type)
@@ -147,8 +147,9 @@ class mcmc_sampler(object):
             #raise ValueError("run self.prepare_chains() firstf")
         #print("yes")
         #exit()
-        numpy.random.seed(self.seed)
-        seed = numpy.random.uniform(1, 1e3)*self.seed
+        #numpy.random.seed(self.seed)
+        #seed = numpy.random.uniform(1, 1e3)*self.seed
+        seed = self.seed
         torch.manual_seed(round(seed *(chain_id + 1)))
         numpy.random.seed(round(seed * (chain_id + 1)))
         (self.store_chains[chain_id]["chain_obj"]).run()
@@ -160,12 +161,13 @@ class mcmc_sampler(object):
         new_mcmc_settings_dict = copy.deepcopy(self.mcmc_settings_dict)
         new_mcmc_settings_dict.update({"num_chains": 1, "num_cpu": 1})
         def run_parallel_chain(chain_id):
-            numpy.random.seed(self.seed)
-            seed = numpy.random.uniform(1, 1e3)*self.seed
+            #numpy.random.seed(self.seed)
+            #seed = numpy.random.uniform(1, 1e3)*self.seed
+            seed = self.seed
             seed = round((seed*(chain_id+1)))
             new_mcmc_settings_dict.update({"seed":seed})
-            #torch.manual_seed(round(seed*(chain_id+1)))
-            #numpy.random.seed(round(seed*(chain_id+1)))
+            torch.manual_seed(round(seed*(chain_id+1)))
+            numpy.random.seed(round(seed*(chain_id+1)))
             temp_mcmc_sampler = mcmc_sampler(tune_dict=self.tune_dict, mcmc_settings_dict=new_mcmc_settings_dict,
                                              tune_settings_dict=self.tune_settings_dict,
                                              adapter_setting=self.adapter_setting)
@@ -805,9 +807,11 @@ def one_chain_settings_dict(sampler_id,chain_id,num_samples=10,thin=1,experiment
 
 
 
-def default_init_q_point_list(v_fun,num_chains,same_init=False,precision_type="torch.DoubleTensor"):
+def default_init_q_point_list(v_fun,num_chains,same_init=False,precision_type="torch.DoubleTensor",seed=None):
     v_obj = v_fun(precision_type=precision_type)
     init_q_point_list = [None]*num_chains
+    assert not seed is None
+    torch.manual_seed(seed)
     if same_init:
         #print("yes")
         temp_point = point(V=v_obj)

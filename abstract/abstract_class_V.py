@@ -72,6 +72,7 @@ class V(nn.Module):
             if explode_grad:
                 return(None,True)
         out = torch.zeros(len(q_flattened_tensor))
+
         cur = 0
         for i in range(self.num_var):
             out[cur:(cur + self.store_lens[i])] = g[i].data.view(self.store_lens[i])
