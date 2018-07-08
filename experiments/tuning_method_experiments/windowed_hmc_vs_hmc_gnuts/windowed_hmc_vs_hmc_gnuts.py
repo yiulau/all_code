@@ -1,4 +1,4 @@
-from experiments.tuning_method_experiments.windowed_hmc_vs_hmc_gnuts.util import choose_optimal_L,min_ess_gnuts
+from experiments.tuning_method_experiments.windowed_hmc_vs_hmc_gnuts.util import choose_optimal_L,min_ess_gnuts,convert_results_to_np
 
 import numpy, os
 v_fun_list = []
@@ -8,7 +8,7 @@ v_fun_list = []
 # unit_e
 ep_list = []
 #num_repeats = 50
-num_of_L = 20
+num_of_L = 2
 
 # for i in range(num_repeats):
 L_list = [round(a.item()) for a in list(numpy.linspace(5,1024,num_of_L))]
@@ -26,10 +26,10 @@ for j in range(len(v_fun_list)):
 
 
 
-converted_results = convert_results_experiment1(results_list)
+converted_results = convert_results_to_np(results_list)
 
 save_address = "temp.npz"
-numpy.savez(save_address,allow_pickle=False)
+numpy.savez(save_address,**converted_results)
 
 
 
