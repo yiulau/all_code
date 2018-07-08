@@ -1,17 +1,17 @@
-from experiments.tuning_method_experiments.util import choose_optimal_L,min_ess_gnuts
+from experiments.tuning_method_experiments.windowed_hmc_vs_hmc_gnuts.util import choose_optimal_L,min_ess_gnuts
 
 import numpy, os
 v_fun_list = []
 # ep_list list of conservatively chosen epsilon for each model
 # compare models : logit,mvn,nn
 # compare ess performance of hmc and windowed hmc with optimally chosen L to gnuts
-
+# unit_e
 ep_list = []
 #num_repeats = 50
 num_of_L = 20
 
 # for i in range(num_repeats):
-L_list = [round(a.item()) for a in list(numpy.linspace(1,1024,num_of_L))]
+L_list = [round(a.item()) for a in list(numpy.linspace(5,1024,num_of_L))]
 results_list = [None]*len(v_fun_list)
 for j in range(len(v_fun_list)):
     result_on_problem = {"hmc": None, "windowed_hmc": None, "gnuts": None}

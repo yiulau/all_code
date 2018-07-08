@@ -8,7 +8,7 @@ from experiments.tuning_method_experiments.util import convert_to_numpy_results
 # compare with bayes opt when specifying constraint (upper bound on L)
 # grid computed once. each with 4 chain
 # opt computed 20 times. process and compare with grid output each time. Random initialization in hyperparameter space
-
+# unit_e hmc
 
 
 num_repeats = 2

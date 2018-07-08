@@ -44,7 +44,7 @@ def generate_Hams(v_fun):
 
 
 def generate_q_p_list(v_fun,num_of_pts):
-
+    # extract number of (q,p) points given v_fun
     mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=10000, num_chains=4, num_cpu=1, thin=1,
                                            tune_l_per_chain=1000,
                                            warmup_per_chain=1100, is_float=False, isstore_to_disk=False,allow_restart=True)
