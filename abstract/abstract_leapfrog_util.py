@@ -46,7 +46,7 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
         #print("second H abstract {}".format(Ham.evaluate(q,p)))
         V_dq, explode_grad = Ham.V.dq(q.flattened_tensor)
         if explode_grad:
-            print("entered 2")
+            #print("entered 2")
             gleapfrog_stat_dict["explode_grad"] = True
             return (None, None, gleapfrog_stat_dict)
         p.flattened_tensor -= V_dq * 0.5 * epsilon
@@ -55,7 +55,7 @@ def abstract_leapfrog_ult(q,p,epsilon,Ham):
         p.load_flatten()
         q.load_flatten()
     except:
-        print("except entered")
+       # print("except entered")
         q=None
         p=None
         gleapfrog_stat_dict["explode_grad"] = True

@@ -88,9 +88,8 @@ def convert_mcmc_tensor_to_list_points(mcmc_tensor,v_obj):
 
 def esjd(mcmc_tensor):
     # if more than one chain, combine into one long chain
-    if len(mcmc_tensor.shape)>2:
-        combined_mcmc_tensor = combine_chains(mcmc_tensor)
-    else:
-        combined_mcmc_tensor = mcmc_tensor
+    # output of
+    return()
+
 
 
