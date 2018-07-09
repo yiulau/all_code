@@ -7,11 +7,10 @@ from distributions.neural_nets.priors.prior_util import prior_generator
 # hierarchical prior for input to hidden units, scale = sqrt(1/input_dim)
 #  normal prior for hidden to output units with variance 1/num_hidden_units
 
-class V_fc_model_1(bayes_model_class):
-    def __init__(self,input_data,precision_type,prior_dict,model_dict):
-        self.prior_dict = prior_dict
+class V_fc_scaled_model(bayes_model_class):
+    def __init__(self,input_data,precision_type,model_dict):
         self.model_dict = model_dict
-        super(V_fc_model_1, self).__init__(input_data=input_data,precision_type=precision_type)
+        super(V_fc_scaled_model, self).__init__(input_data=input_data,precision_type=precision_type)
     def V_setup(self):
         self.dim = self.input_data["input"].shape[1]
         self.num_ob = self.input_data["target"].shape[0]
@@ -19,7 +18,7 @@ class V_fc_model_1(bayes_model_class):
         self.explicit_gradient = True
         self.need_higherorderderiv = True
         self.num_units = self.model_dict["num_units"]
-        prior_hidden_fn = prior_generator(self.prior_dict["name"])
+        prior_hidden_fn = prior_generator("normal")
         prior_out_fn = prior_generator("normal")
         self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=math.sqrt(1/self.dim))
         self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(self.num_classes,self.num_units),global_scale=math.sqrt(1/self.num_units))

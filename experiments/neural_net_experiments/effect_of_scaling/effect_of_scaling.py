@@ -5,7 +5,7 @@
 
 # dual averaging gnuts diag_e
 
-# test error
+#compare test error
 
-#
+#compare diagnostics (difficulty of sampling)
 
