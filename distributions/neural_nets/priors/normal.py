@@ -2,6 +2,7 @@ from distributions.neural_nets.priors.base_class import base_prior_new
 import torch.nn as nn
 import torch,math
 from general_util.pytorch_random import log_student_t_density
+# ncp version
 
 class normal(base_prior_new):
     # fixed non-unity variance

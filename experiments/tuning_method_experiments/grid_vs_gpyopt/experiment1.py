@@ -9,7 +9,9 @@ from experiments.tuning_method_experiments.util import convert_to_numpy_results
 # grid computed once. each with 4 chain
 # opt computed 20 times. process and compare with grid output each time. Random initialization in hyperparameter space
 # unit_e hmc
-
+# make sure the chain is long enough to ensure consistent estimates of the ess say chain length = 20000
+# plot ess/L standard deviation as well
+# hmc need to add jitter (0.9 ep, 1.1 ep)
 
 num_repeats = 2
 num_grid_divides = 5
