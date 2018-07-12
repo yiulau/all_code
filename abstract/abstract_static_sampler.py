@@ -3,7 +3,7 @@ import numpy
 
 from general_util.time_diagnostics import time_diagnositcs
 
-def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log_obj=None,max_L=500):
+def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log_obj=None,max_L=500,stepsize_jitter=False):
     # Input:
     # current_q Pytorch Variable
     # H_fun(q,p,return_float) returns Pytorch Variable or float
@@ -60,6 +60,9 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print(q.flattened_tensor)
     #print(p.flattened_tensor)
     #print("epsilon is {}".format(epsilon))
+    if stepsize_jitter:
+        epsilon = numpy.random.uniform(low=0.9*epsilon,high=1.1*epsilon)
+    print("epsilon is {}".format(epsilon))
     for i in range(evolve_L):
 
         q, p, stat = Ham.integrator(q, p, epsilon, Ham)
