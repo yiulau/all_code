@@ -23,7 +23,7 @@ data_dict = get_data_dict("pima_indian")
 
 
 class V_hierarchical_logistic_gibbs(V):
-    def __init__(self,precision_type,gibbs):
+    def __init__(self,precision_type,gibbs=False):
         self.gibbs = gibbs
         super(V_hierarchical_logistic_gibbs, self).__init__(precision_type=precision_type)
     # def V_setup(self,y,X,lamb)
@@ -124,85 +124,52 @@ class V_hierarchical_logistic_gibbs(V):
         return()
 
 
-v_obj = V_hierarchical_logistic_gibbs(precision_type="torch.DoubleTensor",gibbs=True)
-metric_obj = metric(name="unit_e",V_instance=v_obj)
-Ham = Hamiltonian(v_obj,metric_obj)
 
-init_q_point = point(V=v_obj)
-init_hyperparam = [torch.abs(torch.randn(1))+3]
-log_obj = log_class()
+############################################################################################################################
+#input_data = get_data_dict("pima_indian",standardize_predictor=True)
 
-#print(init_q_point.flattened_tensor)
+import os, numpy,torch
+import dill as pickle
+from abstract.mcmc_sampler import mcmc_sampler, mcmc_sampler_settings_dict
+from adapt_util.tune_param_classes.tune_param_setting_util import *
+from experiments.experiment_obj import tuneinput_class
+from experiments.correctdist_experiments.prototype import check_mean_var_stan
+from post_processing.ESS_nuts import ess_stan,diagnostics_stan
+from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics,get_params_mcmc_tensor,get_short_diagnostics
+#prior_dict = {"name":"horseshoe_3"}
+#model_dict = {"num_units":10}
+# hyperparameter has about same ess across seeds
 
-num_samples = 1000
-dim = len(init_q_point.flattened_tensor)
-mcmc_samples_weight = torch.zeros(num_samples,dim)
-mcmc_samples_hyper = torch.zeros(num_samples)
-for i in range(num_samples):
-    outq,out_hyperparam = update_param_and_hyperparam_one_step(init_q_point,init_hyperparam,Ham,0.1,10,log_obj)
-    init_q_point.flattened_tensor.copy_(outq.flattened_tensor)
-    init_q_point.load_flatten()
-    init_hyperparam = out_hyperparam
-    mcmc_samples_weight[i,:] = outq.flattened_tensor.clone()
-    mcmc_samples_hyper[i:i+1] = out_hyperparam[0].clone()
-mcmc_samples_weight = mcmc_samples_weight.numpy()
-mcmc_samples_hyper = mcmc_samples_hyper.numpy()
-print(mcmc_samples_weight.shape)
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=4000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=1000,
+                                   warmup_per_chain=1100,is_float=False,isstore_to_disk=False,allow_restart=False,seed=58)
 
-print("sigma diagnostics gibbs")
-print(numpy.mean(mcmc_samples_hyper))
-print(numpy.var(mcmc_samples_hyper))
+# input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],
+#                "evolve_L":[10],"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
 
-print("weight diagnostics gibbs")
-print(numpy.mean(mcmc_samples_weight,axis=0))
+input_dict = {"v_fun":[V_hierarchical_logistic_gibbs],"epsilon":["dual"],"second_order":[False],"cov":["adapt"],"max_tree_depth":[8],
+               "metric_name":["diag_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"]}
+# input_dict = {"v_fun":[v_generator],"epsilon":[0.1],"second_order":[False],"evolve_L":[10],
+#               "metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
+ep_dual_metadata_argument = {"name":"epsilon","target":0.8,"gamma":0.05,"t_0":10,
+                         "kappa":0.75,"obj_fun":"accept_rate","par_type":"fast"}
+#
+adapt_cov_arguments = [adapt_cov_default_arguments(par_type="slow",dim=V_hierarchical_logistic_gibbs(precision_type="torch.DoubleTensor").get_model_dim())]
+dual_args_list = [ep_dual_metadata_argument]
+other_arguments = other_default_arguments()
+#tune_settings_dict = tuning_settings([],[],[],[])
+tune_settings_dict = tuning_settings(dual_args_list,[],adapt_cov_arguments,other_arguments)
+tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 
+sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
 
-v_obj2 = V_hierarchical_logistic_gibbs(precision_type="torch.DoubleTensor",gibbs=False)
-metric_obj = metric(name="unit_e",V_instance=v_obj2)
-Ham = Hamiltonian(v_obj2,metric_obj)
+sampler1.start_sampling()
 
-q_point = point(V=Ham.V)
-inputq = torch.randn(len(q_point.flattened_tensor))
-print(len(inputq))
+samples = sampler1.get_samples(permuted=False)
 
-q_point.flattened_tensor.copy_(inputq)
-q_point.load_flatten()
+transformed_samples = samples
+transformed_samples[:,:,7] = numpy.exp(samples[:,:,7])
+out = diagnostics_stan(mcmc_samples_tensor=transformed_samples)
 
-chain_l=1000
-store_samples = torch.zeros(1,chain_l,len(inputq))
-store_divergent = torch.zeros(chain_l)
-for i in range(chain_l):
-    out = abstract_GNUTS(init_q=q_point,epsilon=0.1,Ham=Ham,max_tree_depth=10)
-    store_samples[0,i,:] = out[0].flattened_tensor.clone()
-    q_point = out[0]
-    store_divergent[i] = out[6]
-
-print("num divergent {}".format(store_divergent.sum()))
-
-store_samples = store_samples[0,:,:].numpy()
-print(store_samples.shape)
-print("diagnostics full hmc")
-print(numpy.mean(store_samples,axis=0))
-print(numpy.var(store_samples,axis=0))
-
-print("diagnostics full hmc sigma2 ")
-print(numpy.mean(numpy.exp(store_samples[:,7])))
-print(numpy.var(numpy.exp(store_samples[:,7])))
-#print(store_samples)
-sigma2_tensor = numpy.zeros((1,store_samples.shape[0],store_samples.shape[1]))
-sigma2_tensor[0,:,:] = numpy.exp(store_samples)
-
-print(diagnostics_stan(mcmc_samples_tensor=sigma2_tensor))
-
-print("sigma diagnostics gibbs")
-print(numpy.mean(mcmc_samples_hyper))
-print(numpy.var(mcmc_samples_hyper))
-sigma2_tensor = numpy.zeros((1,len(mcmc_samples_hyper),1))
-sigma2_tensor[0,:,0] = mcmc_samples_hyper
-print(diagnostics_stan(mcmc_samples_tensor=sigma2_tensor))
-print("weight diagnostics gibbs")
-
-print(numpy.mean(mcmc_samples_weight,axis=0))
-weight_tensor = numpy.zeros((1,mcmc_samples_weight.shape[0],mcmc_samples_weight.shape[1]))
-weight_tensor[0,:,:] = mcmc_samples_weight
-print(diagnostics_stan(mcmc_samples_tensor=weight_tensor))
+print(numpy.mean(transformed_samples[:,:,7]))
+print(numpy.var(transformed_samples[:,:,7]))
+print(out)
