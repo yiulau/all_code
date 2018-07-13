@@ -11,9 +11,9 @@ def get_ess_and_esjds(ran_sampler):
                           "num_restarts":ran_sampler.metadata.num_restarts}
 
     if ran_sampler.metadata.num_chains_removed ==0:
-        #samples_combined = ran_sampler.get_samples(permuted=True)
-        # esjd  = ESJD(samples_combined)
-        # esjd_normalized = esjd/math.sqrt(ran_sampler.metadata.average_num_transitons)
+        samples_combined = ran_sampler.get_samples(permuted=True)
+        esjd  = ESJD(samples_combined)
+        esjd_normalized = esjd/math.sqrt(ran_sampler.metadata.average_num_transitons)
         ess = ess_stan(ran_sampler.get_samples(permuted=False))
         min_ess = min(ess)
         max_ess = max(ess)

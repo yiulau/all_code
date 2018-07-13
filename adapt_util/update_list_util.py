@@ -124,7 +124,8 @@ def fsf(window_size=25,ini_buffer=75,end_buffer=50,min_slow_updates=2,tune_l=250
     min_length = ini_buffer + end_buffer
     n = (2 ** (min_slow_updates + 1) - 1) * window_size
     min_length = min_length + n
-
+    print("tune l is {}".format(tune_l))
+    print("min l is {}".format(min_length))
     if tune_l < min_length:
         raise ValueError("warm up not long enough")
     else:

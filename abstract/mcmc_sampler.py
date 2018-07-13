@@ -376,7 +376,7 @@ class mcmc_sampler(object):
         return(output)
 
     def np_diagnostics(self):
-        feature_names = ["num_restarts", "num_divergent","hit_max_tree_depth","ave_num_transitions", "bfmi","lp_ess",
+        feature_names = ["num_restarts", "num_divergent","hit_max_tree_depth","ave_num_transitions","total_num_transitions","bfmi","lp_ess",
                          "lp_rhat", "difficulty","num_chains_removed"]
 
         self.remove_failed_chains()
@@ -392,6 +392,7 @@ class mcmc_sampler(object):
         num_divergent = numpy.squeeze(processed_diag.sum(axis=1))
 
         processed_diag = process_diagnostics(out, name_list=["num_transitions"])
+        total_num_transitions = numpy.sum(processed_diag)
         ave_num_transitions = numpy.squeeze(processed_diag.mean(axis=1))
         energy_summary = energy_diagnostics(diagnostics_obj=out)
         mixed_mcmc_tensor = self.get_samples(permuted=True)
@@ -405,11 +406,12 @@ class mcmc_sampler(object):
         output[:, 1] = num_divergent
         output[:, 2] = hit_max_tree_depth
         output[:, 3] = ave_num_transitions
-        output[:, 4] = energy_summary["bfmi_list"]
-        output[:, 5] = energy_summary["ess"]
-        output[:, 6] = energy_summary["rhat"]
-        output[:, 7] = difficulty
-        output[:, 8] = num_chains_removed
+        output[:, 4] = total_num_transitions
+        output[:, 5] = energy_summary["bfmi_list"]
+        output[:, 6] = energy_summary["ess"]
+        output[:, 7] = energy_summary["rhat"]
+        output[:, 8] = difficulty
+        output[:, 9] = num_chains_removed
         return(output,feature_names)
 
 

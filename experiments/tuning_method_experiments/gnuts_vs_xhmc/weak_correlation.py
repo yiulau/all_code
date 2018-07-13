@@ -18,10 +18,10 @@ from abstract.util import wrap_V_class_with_input_data
 #wishart_for_cov(dim=50)
 
 # set up v_fun for each problem
-num_repeats = 2
+num_repeats = 1
 
 #input_data = {"input":numpy.eye(250,250)}
-input_data = {"input":wishart_for_cov(dim=50)}
+input_data = {"input":wishart_for_cov(dim=10)}
 V_mvn1 = wrap_V_class_with_input_data(class_constructor=V_mvn,input_data=input_data)
 V_mvn2 = wrap_V_class_with_input_data(class_constructor=V_mvn,input_data=input_data)
 v_fun_list = [V_mvn1,V_mvn2]
@@ -31,8 +31,8 @@ num_chains_per_sampler = 4
 np_store_gnuts = [None]*num_repeats
 np_diagnostics_gnuts = [None]*num_repeats
 for i in range(num_repeats):
-    experiment_setting_gnuts = experiment_setting_dict(chain_length=1500,num_chains_per_sampler=num_chains_per_sampler,warm_up=1100,
-                                                 tune_l=1000,allow_restart=True,max_num_restarts=5,num_cpu_per_sampler=4)
+    experiment_setting_gnuts = experiment_setting_dict(chain_length=500,num_chains_per_sampler=num_chains_per_sampler,warm_up=300,
+                                                 tune_l=300,allow_restart=True,max_num_restarts=5,num_cpu_per_sampler=4)
 
     input_dict_gnuts = {"v_fun":v_fun_list,"epsilon":["dual"],"second_order":[False],"cov":["adapt"],
                   "metric_name":["diag_e"],"dynamic":[True],"windowed":[False],"criterion":["gnuts"],"max_tree_depth":[8]}
@@ -55,8 +55,8 @@ gnuts_output_names = output_names
 np_store_xhmc = [None]*num_repeats
 np_diagnostics_xhmc = [None]*num_repeats
 for i in range(num_repeats):
-    experiment_setting_xhmc = experiment_setting_dict(chain_length=1500,num_chains_per_sampler=num_chains_per_sampler,warm_up=1100,
-                                                 tune_l=1000,allow_restart=True,max_num_restarts=5,num_cpu_per_sampler=4)
+    experiment_setting_xhmc = experiment_setting_dict(chain_length=500,num_chains_per_sampler=num_chains_per_sampler,warm_up=300,
+                                                 tune_l=300,allow_restart=True,max_num_restarts=5,num_cpu_per_sampler=4)
 
     input_dict_xhmc = {"v_fun":v_fun_list,"epsilon":["dual"],"second_order":[False],"cov":["adapt"],"xhmc_delta":[0.01,0.05,0.1],
                   "metric_name":["diag_e"],"dynamic":[True],"windowed":[False],"criterion":["xhmc"],"max_tree_depth":[8]}
@@ -80,7 +80,7 @@ xhmc_output_names = output_names
 result = {"gnuts_result":np_store_gnuts,"xhmc_result":np_store_xhmc,"gnuts_diagnostics":np_diagnostics_gnuts,"xhmc_diagnostics":np_diagnostics_xhmc}
 result.update({"diagnostics_names":diagnostics_names})
 result.update({"gnuts_col_names":gnuts_col_names,"xhmc_col_names":xhmc_col_names})
-result.update({"xhmc_output_names":xhmc_output_names,"gnuts_col_names":gnuts_output_names})
+result.update({"xhmc_output_names":xhmc_output_names,"gnuts_output_names":gnuts_output_names})
 save_name = "weak_correlation.npz"
 numpy.savez(save_name,**result)
 

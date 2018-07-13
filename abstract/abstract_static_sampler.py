@@ -22,6 +22,8 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
         raise ValueError("L contradicts with evol_t")
     assert evolve_L is None or evolve_t is None
     assert not (evolve_L is None and evolve_t is None)
+    if stepsize_jitter:
+        epsilon = numpy.random.uniform(low=0.9*epsilon,high=1.1*epsilon)
     if not evolve_t is None:
         assert evolve_L is None
         evolve_L = round(evolve_t/epsilon)
@@ -60,9 +62,8 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #print(q.flattened_tensor)
     #print(p.flattened_tensor)
     #print("epsilon is {}".format(epsilon))
-    if stepsize_jitter:
-        epsilon = numpy.random.uniform(low=0.9*epsilon,high=1.1*epsilon)
-    print("epsilon is {}".format(epsilon))
+
+    #print("epsilon is {}".format(epsilon))
     for i in range(evolve_L):
 
         q, p, stat = Ham.integrator(q, p, epsilon, Ham)

@@ -94,6 +94,6 @@ def tuning_settings(dual_arguments,opt_arguments,adapt_cov_arguments,other_argum
     return(out)
 
 def default_adapter_setting():
-    out = {"ini_buffer":75,"end_buffer":50,"window_size":50,"min_medium_updates":10,"min_slow_updates":2}
+    out = {"ini_buffer":75,"end_buffer":50,"window_size":25,"min_medium_updates":10,"min_slow_updates":2}
     return(out)
     return()
