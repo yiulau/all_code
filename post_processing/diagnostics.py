@@ -33,7 +33,7 @@ def lpd(p_y_given_theta,posterior_samples,observed_data):
 #     return()
 def pwaic(log_p_y_given_theta,posterior_samples,observed_data):
     S = len(posterior_samples)
-    n = len(observed_data["input"].shape[0])
+    n = observed_data["input"].shape[0]
     torch_input = torch.from_numpy(observed_data["input"])
     torch_target = torch.from_numpy(observed_data["target"])
     out = 0
@@ -52,6 +52,9 @@ def WAIC(posterior_samples,observed_data,V):
     out = -2*elpd
     return(out)
 
+def psis(posterior_samples,observed_data,V):
+
+    return()
 
 def elpd_waic_vec(posterior_samples,observed_data,V):
     n = len(observed_data["input"].shape[0])

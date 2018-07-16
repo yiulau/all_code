@@ -127,6 +127,8 @@ def abstract_static_one_step(epsilon, init_q,Ham,evolve_L=None,evolve_t=None,log
     #endH = Ham.evaluate(q,p)
     #accept_rate = math.exp(min(0, current_H - endH))
     #print("accept_rate {}".format(accept_rate))
+    print("accept rate {}".format(accept_rate))
+    print("accepted {}".format(accepted))
     print("divergent inside {}".format(divergent))
     print("explode grad {}".format(explode_grad))
     if not divergent and not explode_grad:

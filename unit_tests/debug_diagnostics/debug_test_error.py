@@ -19,7 +19,7 @@ torch.manual_seed(seedid)
 input_data = get_data_dict("pima_indian")
 v_generator = wrap_V_class_with_input_data(class_constructor=V_logistic_regression,input_data=input_data)
 
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=1000,num_chains=4,num_cpu=1,thin=1,tune_l_per_chain=0,
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=1000,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=0,
                                    warmup_per_chain=200,is_float=False,isstore_to_disk=False,allow_restart=True)
 
 # input_dict = {"v_fun":[V_pima_inidan_logit],"epsilon":[0.1],"second_order":[False],
@@ -34,7 +34,7 @@ tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
 
-sampled = True
+sampled = False
 address = "debug_test_error_mcmc.pkl"
 if sampled:
     with open(address, 'rb') as f:

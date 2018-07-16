@@ -1,4 +1,4 @@
-from post_processing.diagnostics import WAIC,convert_mcmc_tensor_to_list_points
+from post_processing.diagnostics import WAIC,convert_mcmc_tensor_to_list_points,psis
 import pickle,torch
 from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from input_data.convert_data_to_dict import get_data_dict
@@ -38,5 +38,3 @@ list_mcmc_point = convert_mcmc_tensor_to_list_points(chains_combined_mcmc_tensor
 out_waic = WAIC(list_mcmc_point,train_data,v_obj)
 
 print(out_waic)
-
-# need to specify likelihood including the normalizing constant

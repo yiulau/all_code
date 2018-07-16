@@ -2,6 +2,22 @@ import numpy
 from post_processing.variances import marginal_var
 from scipy.signal import fftconvolve
 
+def ESJD(mcmc_samples):
+    # assume mcmc_samples has combined all chains
+    num_samples = mcmc_samples.shape[0]
+    tensor_dim = mcmc_samples.shape[1]
+
+    diff_square_store = [None]*(num_samples - 1)
+    for i in range(num_samples - 1):
+        q_next_flattened_tensor = mcmc_samples[i + 1,:]
+        q_current_flattened_tensor = mcmc_samples[i,:]
+        diff_squared = (q_next_flattened_tensor - q_current_flattened_tensor)
+        diff_squared = numpy.dot(diff_squared, diff_squared)
+        diff_square_store[i] = diff_squared
+
+    esjd = numpy.asscalar(numpy.mean(diff_square_store))
+    return(esjd)
+
 def ess_nuts(mcmc_samples,correct_samples):
     correct_mean = numpy.mean(correct_samples,axis=0)
     correct_var = numpy.cov(correct_samples,rowvar=False).diagonal()

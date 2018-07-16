@@ -497,7 +497,8 @@ class sampler_metadata(object):
 class one_chain_sample_meta(object):
     def __init__(self,one_chain_obj):
         self.num_restart = 0
-
+        self.total_num_transitions = 0
+        self.average_num_transitions = 0
     def load(self,sample_meta):
         pass
 
@@ -672,6 +673,7 @@ class one_chain_obj(object):
 
             #print("tune_l is {}".format(self.chain_setting["tune_l"]))
             #print(out)
+
             print(out.flattened_tensor)
             print("iter is {}".format(counter))
             ep= self.tune_param_objs_dict["epsilon"].get_val()

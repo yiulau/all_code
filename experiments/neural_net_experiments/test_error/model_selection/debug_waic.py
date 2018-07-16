@@ -1,18 +1,27 @@
 from post_processing.diagnostics import WAIC,convert_mcmc_tensor_to_list_points
 import pickle,torch
-from distributions.logistic_regressions.pima_indian_logisitic_regression import V_pima_inidan_logit
 from input_data.convert_data_to_dict import get_data_dict
+from distributions.neural_nets.fc_V_model_1 import V_fc_model_1
+from abstract.util import wrap_V_class_with_input_data
 
-
-with open("debug_test_error_mcmc.pkl", 'rb') as f:
+with open("debug_waic_fc1_sampler.pkl", 'rb') as f:
     sampler = pickle.load(f)
+
+
+samples = sampler.get_samples(permuted=True)
 
 #print(mcmc_samples["samples"].shape)
 #print(mcmc_samples["samples"])
 #exit()
-train_data = get_data_dict("pima_indian")
+#train_data = get_data_dict("8x8mnist")
+train_data = get_data_dict("8x8mnist",standardize_predictor=True)
 
-v_obj = V_pima_inidan_logit(precision_type="torch.DoubleTensor")
+train_data = {"input":train_data["input"][:500,:],"target":train_data["target"][:500]}
+
+prior_dict = {"name":"normal"}
+model_dict = {"num_units":15}
+v_fun = wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=train_data,prior_dict=prior_dict,model_dict=model_dict)
+v_obj = v_fun(precision_type="torch.DoubleTensor")
 
 #print(v_obj.beta)
 #exit()
@@ -26,13 +35,11 @@ v_obj = V_pima_inidan_logit(precision_type="torch.DoubleTensor")
 # print(out0)
 # exit()
 
-
 #mcmc_tensor = torch.from_numpy(mcmc_samples["samples"])
 #print(mcmc_tensor.shape)
 #print(mcmc_tensor.view(-1,7).shape)
 #exit()
-mcmc_tensor = torch.from_numpy(sampler.get_samples(permuted=True))
-chains_combined_mcmc_tensor = mcmc_tensor
+chains_combined_mcmc_tensor = torch.from_numpy(samples)
 list_mcmc_point = convert_mcmc_tensor_to_list_points(chains_combined_mcmc_tensor,v_obj)
 
 out_waic = WAIC(list_mcmc_point,train_data,v_obj)

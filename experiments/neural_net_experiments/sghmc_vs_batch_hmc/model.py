@@ -35,9 +35,15 @@ class V_fc_model_1(bayes_model_class):
 
         return()
 
-    def forward(self):
+    def forward(self,input=None):
+        if input is None:
+            X = self.X
+            y = self.y
+        else:
+            X = Variable(input["input"],requires_grad=False).type(self.precision_type)
+            y = Variable(input["target"],requires_grad=False).type("torch.LongTensor")
 
-        hidden_units = torch.tanh((self.hidden_in.get_val().mm(self.X.t())))
+        hidden_units = torch.tanh((self.hidden_in.get_val().mm(X.t())))
         out_units = self.hidden_out.get_val().mm(hidden_units).t()
         #print(out_units.shape)
         #print(out_units)
@@ -46,7 +52,7 @@ class V_fc_model_1(bayes_model_class):
         criterion = nn.CrossEntropyLoss()
         #print(self.y)
         #exit()
-        neg_log_likelihood = criterion(out_units,self.y)
+        neg_log_likelihood = criterion(out_units,y)
 
         hidden_in_out = self.hidden_in.get_out()
         hidden_out_out = self.hidden_out.get_out()
@@ -78,11 +84,11 @@ class V_fc_model_1(bayes_model_class):
 
     def log_p_y_given_theta(self, observed_point, posterior_point):
         self.load_point(posterior_point)
-        X = Variable(observed_point["input"]).type(self.precision_type)
-        y = Variable(observed_point["target"]).type("torch.LongTensor")
+        X = observed_point["input"]
+        y = observed_point["target"]
         hidden_units = torch.tanh((self.hidden_in.get_val().mm(X.t())))
         out_units = self.hidden_out.get_val().mm(hidden_units).t()
         criterion = nn.CrossEntropyLoss()
-        neg_log_likelihood = criterion(out_units, y)
+        neg_log_likelihood = criterion(out_units, self.y)
         out = -neg_log_likelihood
         return(out)

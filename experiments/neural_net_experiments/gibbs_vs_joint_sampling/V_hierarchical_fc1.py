@@ -1,17 +1,33 @@
+from abstract.abstract_class_V import V
+from input_data.convert_data_to_dict import get_data_dict
+import torch.nn as nn
+from abstract.abstract_class_V import V
+from torch.autograd import Variable
+from general_util.pytorch_random import generate_gamma
+from abstract.metric import metric
+from abstract.abstract_class_Ham import Hamiltonian
+from abstract.abstract_class_point import point
+from explicit.general_util import logsumexp_torch
+from experiments.neural_net_experiments.gibbs_vs_joint_sampling.gibbs_vs_together_hyperparam import update_param_and_hyperparam_one_step
+from abstract.mcmc_sampler import log_class
+from input_data.convert_data_to_dict import get_data_dict
+from post_processing.test_error import test_error
+from abstract.abstract_nuts_util import abstract_GNUTS
+from general_util.pytorch_random import log_inv_gamma_density
+from post_processing.ESS_nuts import diagnostics_stan
+
 import torch,numpy,os,math
 import torch.nn as nn
 from distributions.bayes_model_class import bayes_model_class
 from torch.autograd import Variable
 from distributions.neural_nets.priors.prior_util import prior_generator
 
-# hierarchical prior for input to hidden units, scale = sqrt(1/input_dim)
-#  normal prior for hidden to output units with variance 1/num_hidden_units
 
-class V_fc_model_1(bayes_model_class):
-    def __init__(self,input_data,precision_type,prior_dict,model_dict):
-        self.prior_dict = prior_dict
+class V_fc_gibbs_model_1(bayes_model_class):
+    def __init__(self,input_data,precision_type,model_dict,gibbs=False):
+        self.gibbs = gibbs
         self.model_dict = model_dict
-        super(V_fc_model_1, self).__init__(input_data=input_data,precision_type=precision_type)
+        super(V_fc_gibbs_model_1, self).__init__(input_data=input_data,precision_type=precision_type)
     def V_setup(self):
         self.dim = self.input_data["input"].shape[1]
         self.num_ob = self.input_data["target"].shape[0]
@@ -19,10 +35,19 @@ class V_fc_model_1(bayes_model_class):
         self.explicit_gradient = True
         self.need_higherorderderiv = True
         self.num_units = self.model_dict["num_units"]
-        prior_hidden_fn = prior_generator(self.prior_dict["name"])
+        prior_hidden_fn = prior_generator("gaussian_inv_gamma_1")
+
         prior_out_fn = prior_generator("normal")
-        self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=math.sqrt(1/self.dim))
-        self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(self.num_classes,self.num_units),global_scale=math.sqrt(1/self.num_units))
+        self.hidden_out = prior_out_fn(obj=self, name="hidden_out", shape=(self.num_classes, self.num_units),
+                                       global_scale=math.sqrt(1 / self.num_units))
+
+        if self.gibbs:
+            self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=math.sqrt(1/self.dim),gibbs=True)
+
+        else:
+
+            self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=math.sqrt(1/self.dim),gibbs=False)
+
 
         #self.hidden_in_z = nn.Parameter(torch.zeros(self.num_units, self.dim), requires_grad=True)
         #self.hidden_out_z = nn.Parameter(torch.zeros(2,self.num_units),requires_grad=True)
@@ -67,7 +92,27 @@ class V_fc_model_1(bayes_model_class):
         # print("sigma out {}".format(self.hidden_out.get_val()))
         # print("sigma in {}".format(self.hidden_out.get_val()))
         return(out)
+    def load_hyperparam(self,hyperparam_val):
+        # input needs to be list of tensors
+        self.hidden_in.sigma2_obj.data[0:1] = hyperparam_val
 
+        return()
+
+    def get_hyperparam(self):
+
+        out = self.hidden_in.sigma2_obj.data[0]
+        return(out)
+
+    def update_hyperparam(self):
+        alpha = torch.zeros(1)
+        beta = torch.zeros(1)
+        n = len(self.hidden_in.w_obj.data.view(-1))
+        norm = ((self.hidden_in.w_obj.data)*(self.hidden_in.w_obj.data)).sum()
+        alpha[0] = n*0.5 + 0.5
+        beta[0] = norm *0.5 + 0.5
+        new_hyperparam_val = 1/generate_gamma(alpha=alpha,beta=beta)
+        self.hidden_in.sigma2_obj.data[0:1] = new_hyperparam_val
+        return()
     def predict(self,inputX):
         X = Variable(torch.from_numpy(inputX),requires_grad=False).type(self.precision_type)
         hidden_units = torch.tanh((self.hidden_in.get_val().mm(X.t())))
@@ -78,11 +123,11 @@ class V_fc_model_1(bayes_model_class):
 
     def log_p_y_given_theta(self, observed_point, posterior_point):
         self.load_point(posterior_point)
-        X = Variable(observed_point["input"]).type(self.precision_type)
-        y = Variable(observed_point["target"]).type("torch.LongTensor")
+        X = observed_point["input"]
+        y = observed_point["target"]
         hidden_units = torch.tanh((self.hidden_in.get_val().mm(X.t())))
         out_units = self.hidden_out.get_val().mm(hidden_units).t()
         criterion = nn.CrossEntropyLoss()
-        neg_log_likelihood = criterion(out_units, y)
+        neg_log_likelihood = criterion(out_units, self.y)
         out = -neg_log_likelihood
         return(out)

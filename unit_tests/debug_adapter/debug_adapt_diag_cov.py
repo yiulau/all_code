@@ -28,3 +28,6 @@ sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_se
 
 
 out = sampler1.start_sampling()
+
+
+#print(sampler1.metadata.average_num_transitons)

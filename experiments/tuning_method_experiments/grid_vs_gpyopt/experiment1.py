@@ -19,9 +19,9 @@ from experiments.experiment_util import wishart_for_cov
 num_repeats = 2
 num_grid_divides = 3
 
-ep_bounds = [1e-2,0.1]
+ep_bounds = [1e-3,0.2]
 evolve_t_bounds = [0.15,50.]
-evolve_L_bounds = [5,100]
+evolve_L_bounds = [5,1000]
 # add constraints such that L = round(evolove_t/ep) < 1024
 ep_list = list(numpy.linspace(ep_bounds[0],ep_bounds[1],num_grid_divides))
 evolve_t_list = list(numpy.linspace(evolve_t_bounds[0],evolve_t_bounds[1],num_grid_divides))
@@ -37,7 +37,7 @@ v_fun_list = [V_mvn1,V_mvn2]
 #                                              tune_l=0,allow_restart=True,max_num_restarts=5,num_cpu_per_sampler=4)
 #
 input_dict = {"v_fun":v_fun_list[0:1],"epsilon":ep_list,"second_order":[False],"stepsize_jitter":[True],
-              "evolve_t":evolve_t_list,"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
+              "evolve_L":evolve_L_list,"metric_name":["unit_e"],"dynamic":[False],"windowed":[False],"criterion":[None]}
 #
 # input_object = tuneinput_class(input_dict)
 # experiment_instance = experiment(input_object=input_object,experiment_setting=experiment_setting,fun_per_sampler=target_fun)
@@ -49,22 +49,28 @@ input_dict = {"v_fun":v_fun_list[0:1],"epsilon":ep_list,"second_order":[False],"
 # np_diagnostics_gnuts = grid_diagnostics
 #
 
-# find best ess/L . identify L
+# find best ess/total_num_transitions . identify L
 optimal_L = 102
 
 
+result_list = []
 #np_store_opt = numpy.zeros(num_repeats,2)
 for i in range(num_repeats):
     opt_experiment_result_median_ess = opt_experiment_ep_t(v_fun_list=v_fun_list,ep_list=ep_list,
-                                                         evolve_t_list=evolve_t_list,
+                                                         evolve_L_list=evolve_L_list,
                                                          num_of_opt_steps=num_grid_divides*num_grid_divides,
-                                                         objective="median_ess",input_dict=input_dict)
+                                                         objective="median_ess_normalized",input_dict=input_dict,max_L=optimal_L)
 
+    result_list.append(opt_experiment_result_median_ess)
     #np_result = convert_to_numpy_results(opt_experiment_result_median_ess)
     #result = {"esjd_normalized":opt_experiment_result_esjd_normalized}
     #np_store_opt[i,:] = np_result
 
 
+print(result_list[0].X_step)
+print(result_list[0].Y_step)
+print(result_list[1].X_step)
+print(result_list[1].Y_step)
 # after getting results compute accumulative num_leapfrog_steps
 # get best performance attained first after exceeding total number of leapfrog in grid search
 # get best performance overall
