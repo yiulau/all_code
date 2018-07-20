@@ -10,7 +10,7 @@ test_set = {"input":input_data["input"][-500:,:],"target":input_data["target"][-
 save_name = "num_layers_results.npz"
 
 
-num_layers_list = [2]
+num_layers_list = [2,3,4]
 
 setup_num_layers_experiment(num_layers_list=num_layers_list,train_set=train_set,test_set=test_set,
                                save_name=save_name,seed=seed)

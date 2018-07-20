@@ -11,8 +11,8 @@ from abstract.metric import metric
 from abstract.abstract_class_Ham import Hamiltonian
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-from experiments.neural_net_experiments.sghmc_vs_batch_hmc.sghmc_batchhmc import sghmc_sampler
 from post_processing.ESS_nuts import diagnostics_stan
+from final_experiments.sghmc_vs_fulldata.util import sghmc_sampler
 
 def setup_sghmc_experiment(ep_list,L_list,eta_list,train_set,test_set,save_name,seed=1):
     output_names = ["train_error", "test_error","train_error_sd","test_error_sd"]
@@ -34,8 +34,8 @@ def setup_sghmc_experiment(ep_list,L_list,eta_list,train_set,test_set,save_name,
 
                 full_data = train_set
                 init_q_point = point(V=v_obj)
-                out = sghmc_sampler(init_q_point=init_q_point, epsilon=1e-4, L=2, Ham=Ham, alpha=0.01, eta=1e-5,
-                                    betahat=0, full_data=full_data, num_samples=10000, thin=0, burn_in=200,
+                out = sghmc_sampler(init_q_point=init_q_point, epsilon=ep_list[i], L=L_list[j], Ham=Ham, alpha=0.01, eta=eta_list[k],
+                                    betahat=0, full_data=full_data, num_samples=2000, thin=0, burn_in=1000,
                                     batch_size=25)
                 store = out[0]
                 v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_1, input_data=train_set,
@@ -60,7 +60,7 @@ def setup_sghmc_experiment(ep_list,L_list,eta_list,train_set,test_set,save_name,
 
 
 
-    to_store = {"diagnostics":diagnostics_store,"output":output_store,"output_names":output_names}
+    to_store = {"diagnostics":diagnostics_store,"output":output_store,"output_names":output_names,"seed":seed}
 
     numpy.savez(save_name,**to_store)
 

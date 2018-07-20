@@ -10,9 +10,9 @@ test_set = {"input":input_data["input"][-500:,:],"target":input_data["target"][-
 save_name = "sghmc_results.npz"
 
 
-ep_list = [0.1]
-L_list = [10]
-eta_list = [1e-4]
+ep_list = [1e-1,1e-2,1e-3,1e-4]
+L_list = [10,50,100,200]
+eta_list = [1e-1,1e-2,1e-3,1e-4]
 
 setup_sghmc_experiment(ep_list=ep_list,L_list=L_list,eta_list=eta_list,train_set=train_set,test_set=test_set,
                                save_name=save_name,seed=seed)

@@ -9,6 +9,5 @@ test_set = {"input":input_data["input"][-500:,:],"target":input_data["target"][-
 
 save_name = "xhmc_gnuts_results.npz"
 
-#setup_scale_experiment(num_unit_list=[20],scaled=False,train_set=train_set,test_set=test_set,save_name=save_name_unscaled,seed=seed)
-
+xhmc_delta_list = [0.01,0.05,0.1,0.2]
 setup_xhmc_gnuts_experiment(xhmc_delta_list=[0.05],train_set=train_set,test_set=test_set,save_name=save_name,seed=seed)

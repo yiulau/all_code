@@ -17,17 +17,17 @@ def setup_effects_prior_experiment(priors_list,train_set,test_set,save_name,seed
         v_fun = V_fc_model_4
 
         prior_dict = {"name":priors_list[i]}
-        model_dict = {"num_units":15}
+        model_dict = {"num_units":50}
         v_generator = wrap_V_class_with_input_data(class_constructor=v_fun, input_data=train_set,prior_dict=prior_dict,
                                                    model_dict=model_dict)
-        mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=1500, num_chains=4, num_cpu=4, thin=1,
-                                               tune_l_per_chain=800,
-                                               warmup_per_chain=900, is_float=False, isstore_to_disk=False,
+        mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=2000, num_chains=4, num_cpu=4, thin=1,
+                                               tune_l_per_chain=900,
+                                               warmup_per_chain=1000, is_float=False, isstore_to_disk=False,
                                                allow_restart=True,seed=seed+i+1)
 
 
         input_dict = {"v_fun": [v_generator], "epsilon": ["dual"], "second_order": [False], "cov": ["adapt"],
-                      "max_tree_depth": [6],
+                      "max_tree_depth": [8],
                       "metric_name": ["diag_e"], "dynamic": [True], "windowed": [False], "criterion": ["xhmc"],"xhmc_delta":[0.1]}
 
         ep_dual_metadata_argument = {"name": "epsilon", "target": 0.9, "gamma": 0.05, "t_0": 10,
@@ -63,7 +63,7 @@ def setup_effects_prior_experiment(priors_list,train_set,test_set,save_name,seed
 
 
 
-    to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,"output_names":output_names}
+    to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,"output_names":output_names,"priors_list":priors_list}
 
     numpy.savez(save_name,**to_store)
 
