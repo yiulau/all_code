@@ -36,10 +36,14 @@ def get_ess_and_esjds(ran_sampler):
 
 
 
-def wishart_for_cov(dim):
+def wishart_for_cov(dim,seed=None):
     # returns positive definite matrix for dimension dim generated from the wishart distribution with designated
     #  degreee of freedom and identity scale matrix. recommend degree of freedom = dimension of matrix
     #
+    if not seed is None:
+        numpy.random.seed(seed)
+    else:
+        pass
     wishart_obj = wishart()
     out = wishart.rvs(df=dim,scale=numpy.eye(dim),size=1)
     return(out)

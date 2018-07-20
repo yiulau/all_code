@@ -1,4 +1,4 @@
-import torch,numpy
+import torch,numpy,math
 def posterior_predictive_dist(target_dataset,v_nn_obj,mcmc_samples,type):
     # output store_dist [input_sample i , class probability j , mcmc sample k ] for classification case
     # output store_dist [input_sample i , predicted y , mcmc sample k ]
@@ -129,6 +129,9 @@ def test_error(target_dataset,v_obj,mcmc_samples,type,memory_efficient=False):
 
     if type=="classification":
         error = sum(predicted!=correct_target)/len(predicted)
+        error_sd = numpy.std(predicted!=correct_target)
     else:
-        error = sum((predicted - correct_target)*(predicted - correct_target))/len(predicted)
-    return(error,predicted)
+        error = math.sqrt(sum((predicted - correct_target)*(predicted - correct_target))/len(predicted)-1)
+        error_sd = math.sqrt(numpy.std((predicted - correct_target)*(predicted - correct_target)))
+
+    return(error,predicted,error_sd)

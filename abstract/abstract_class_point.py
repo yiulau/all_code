@@ -26,6 +26,7 @@ class point(object):
             self.need_flatten = target_fun_obj.need_flatten
             self.num_var = target_fun_obj.num_var
             source_list_tensor = target_fun_obj.list_tensor
+
         elif not T is None:
             self.pointtype = "p"
             target_fun_obj = T
@@ -55,6 +56,7 @@ class point(object):
         self.list_tensor = numpy.empty(len(source_list_tensor),dtype=type(source_list_tensor[0]))
         for i in range(len(source_list_tensor)):
             self.list_tensor[i] = source_list_tensor[i].clone()
+            #print(self.list_tensor[i])
         self.store_lens = []
         self.store_shapes = []
         for i in range(len(self.list_tensor)):
@@ -63,9 +65,12 @@ class point(object):
             self.store_shapes.append(shape)
             self.store_lens.append(length)
         self.dim = sum(self.store_lens)
-        #print(self.need_flatten)
+        #print("need flatten {}".format(self.need_flatten))
+        #print(precision_type)
         if self.need_flatten:
-            self.flattened_tensor = torch.zeros(self.dim)
+            self.flattened_tensor = torch.zeros(self.dim).type(self.list_tensor[0].type())
+            #print("init {}".format(self.flattened_tensor.type()))
+            #print(self.list_tensor)
             self.load_param_to_flatten()
         else:
             assert len(self.list_tensor[0])==self.dim

@@ -36,6 +36,7 @@ class V_fc_model_1(bayes_model_class):
         return()
 
     def forward(self):
+        #print(self.hidden_in.get_val())
 
         hidden_units = torch.tanh((self.hidden_in.get_val().mm(self.X.t())))
         out_units = self.hidden_out.get_val().mm(hidden_units).t()
@@ -54,8 +55,8 @@ class V_fc_model_1(bayes_model_class):
       #  out_sigma_out = gamma_density(out_sigma,1,1)
         #print("likelihood {}".format(likelihood))
         #print("hidden_in_out {}".format(hidden_in_out))
-        # print("hidden_out_out {}".format(hidden_out_out))
-        # print("in sigma out {}".format(in_sigma_out))
+        #print("hidden_out_out {}".format(hidden_out_out))
+        #print("in sigma out {}".format(in_sigma_out))
         # print("out sigma {}".format(out_sigma_out))
         prior = hidden_in_out + hidden_out_out #+ in_sigma_out + out_sigma_out
         #print("prior {}".format(prior))
@@ -69,7 +70,9 @@ class V_fc_model_1(bayes_model_class):
         return(out)
 
     def predict(self,inputX):
+
         X = Variable(torch.from_numpy(inputX),requires_grad=False).type(self.precision_type)
+
         hidden_units = torch.tanh((self.hidden_in.get_val().mm(X.t())))
         out_units = self.hidden_out.get_val().mm(hidden_units).t()
         softmax = nn.Softmax(dim=-1)

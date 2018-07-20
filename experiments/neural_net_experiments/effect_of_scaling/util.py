@@ -52,4 +52,15 @@ def run_nn_experiment(list_num_units,input_data,v_fun,test_set,type_problem):
         te = test_error(target_dataset=test_set,v_obj=v_generator("torch.DoubleTensor"),mcmc_samples=samples_mixed,type=type_problem)
 
         out = {"test_error":te,"diagnostics":diagnostics_np}
-    return(out)
+        out_list.append(out)
+
+    te_store = numpy.zeros(len(out_list))
+    diagnostics_store = numpy.zeros(shape=[len(out_list)] + list(diagnostics_np.shape))
+    for i in range(len(out_list)):
+        te_store[i] = out_list[i]["test_error"]
+        diagnostics_store[i, ...] = out_list[i]["diagnostics"]
+
+    output_store = {"test_error": te_store, "diagnostics": diagnostics_store}
+    save_name = "effects_scale_8x8mnist.npz"
+    numpy.savez(save_name, **output_store)
+    return(save_name)

@@ -65,6 +65,8 @@ def prior_generator(name,**kwargs):
 
     elif name=="normal":
         out = normal
+    else:
+        raise ValueError(name)
     return(out)
 
 

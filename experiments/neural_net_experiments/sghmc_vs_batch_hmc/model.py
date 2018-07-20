@@ -21,8 +21,8 @@ class V_fc_model_1(bayes_model_class):
         self.num_units = self.model_dict["num_units"]
         prior_hidden_fn = prior_generator(self.prior_dict["name"])
         prior_out_fn = prior_generator("normal")
-        self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=math.sqrt(1/self.dim))
-        self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(self.num_classes,self.num_units),global_scale=math.sqrt(1/self.num_units))
+        self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=1)
+        self.hidden_out = prior_out_fn(obj=self,name="hidden_out",shape=(self.num_classes,self.num_units),global_scale=1)
 
         #self.hidden_in_z = nn.Parameter(torch.zeros(self.num_units, self.dim), requires_grad=True)
         #self.hidden_out_z = nn.Parameter(torch.zeros(2,self.num_units),requires_grad=True)

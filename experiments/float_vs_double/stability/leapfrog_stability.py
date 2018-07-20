@@ -8,18 +8,26 @@ from abstract.abstract_class_point import point
 import numpy,torch
 # assume unit_e metric
 def leapfrog_stability_test(Ham,epsilon,L,list_q,list_p,precision_type):
+    #print(list_q[0].flattened_tensor)
+    #print(list_p[0].flattened_tensor)
+
     torch.set_default_tensor_type(precision_type)
     out = [None]*len(list_q)
     for i in range(len(list_q)):
+        #print(q)
+
         q = list_q[i]
         p = list_p[i]
         Ham.V.load_point(q)
         Ham.T.load_point(p)
         begin_H = Ham.evaluate(q,p)["H"]
         print(begin_H)
+        print(q.flattened_tensor)
+        print(p.flattened_tensor)
+
         for cur in range(L):
             out_q,out_p,stat = abstract_leapfrog_ult(q,p,epsilon,Ham)
-            #print(out_q.flattened_tensor)
+            print(out_q.flattened_tensor)
             if stat["explode_grad"]:
                 out[i]="divergent"
                 break
@@ -49,22 +57,22 @@ def generate_Hams(v_fun):
 
 def generate_q_list(v_fun,num_of_pts):
     # extract number of (q,p) points given v_fun
-    mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=2000, num_chains=4, num_cpu=4, thin=1,
-                                           tune_l_per_chain=1000,
-                                           warmup_per_chain=1100, is_float=False, isstore_to_disk=False,allow_restart=True)
-    input_dict = {"v_fun": [v_fun], "epsilon": ["dual"], "second_order": [False], "cov": ["adapt"],
-                  "metric_name": ["dense_e"], "dynamic": [True], "windowed": [False],
-                  "criterion": ["gnuts"]}
+    mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=200, num_chains=4, num_cpu=4, thin=1,
+                                           tune_l_per_chain=100,
+                                           warmup_per_chain=110, is_float=False, isstore_to_disk=False,allow_restart=True)
+    input_dict = {"v_fun": [v_fun], "epsilon": ["dual"], "second_order": [False],
+                  "metric_name": ["unit_e"], "dynamic": [True], "windowed": [False],"max_tree_depth":[6],
+                  "criterion": ["xhmc"],"xhmc_delta":[0.1]}
 
     ep_dual_metadata_argument = {"name": "epsilon", "target": 0.65, "gamma": 0.05, "t_0": 10,
                                  "kappa": 0.75, "obj_fun": "accept_rate", "par_type": "fast"}
 
     dim = len(v_fun(precision_type="torch.DoubleTensor").flattened_tensor)
-    adapt_cov_arguments = [adapt_cov_default_arguments(par_type="slow", dim=dim)]
+    #adapt_cov_arguments = [adapt_cov_default_arguments(par_type="slow", dim=dim)]
     dual_args_list = [ep_dual_metadata_argument]
     other_arguments = other_default_arguments()
 
-    tune_settings_dict = tuning_settings(dual_args_list, [], adapt_cov_arguments, other_arguments)
+    tune_settings_dict = tuning_settings(dual_args_list, [], [], other_arguments)
 
     tune_dict = tuneinput_class(input_dict).singleton_tune_dict()
 

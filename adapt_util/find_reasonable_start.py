@@ -5,6 +5,8 @@ def find_reasonable_ep(Ham):
     counter = 0
     #q,p = one_chain_obj.cur_q,one_chain_obj.cur_p
     q = point(V=Ham.V)
+    #print(q.flattened_tensor)
+    #exit()
     p = Ham.T.generate_momentum(q)
 
     integrator = Ham.integrator

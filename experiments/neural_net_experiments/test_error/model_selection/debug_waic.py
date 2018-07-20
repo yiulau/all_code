@@ -1,10 +1,10 @@
 from post_processing.diagnostics import WAIC,convert_mcmc_tensor_to_list_points
 import pickle,torch
 from input_data.convert_data_to_dict import get_data_dict
-from distributions.neural_nets.fc_V_model_1 import V_fc_model_1
+from distributions.neural_nets.fc_V_model_4 import V_fc_model_4
 from abstract.util import wrap_V_class_with_input_data
 
-with open("debug_waic_fc1_sampler.pkl", 'rb') as f:
+with open("55_debug_waic_fc1_sampler.pkl", 'rb') as f:
     sampler = pickle.load(f)
 
 
@@ -19,8 +19,8 @@ train_data = get_data_dict("8x8mnist",standardize_predictor=True)
 train_data = {"input":train_data["input"][:500,:],"target":train_data["target"][:500]}
 
 prior_dict = {"name":"normal"}
-model_dict = {"num_units":15}
-v_fun = wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=train_data,prior_dict=prior_dict,model_dict=model_dict)
+model_dict = {"num_units":55}
+v_fun = wrap_V_class_with_input_data(class_constructor=V_fc_model_4,input_data=train_data,prior_dict=prior_dict,model_dict=model_dict)
 v_obj = v_fun(precision_type="torch.DoubleTensor")
 
 #print(v_obj.beta)

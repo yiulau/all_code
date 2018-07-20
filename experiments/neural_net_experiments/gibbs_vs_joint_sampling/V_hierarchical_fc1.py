@@ -42,11 +42,11 @@ class V_fc_gibbs_model_1(bayes_model_class):
                                        global_scale=math.sqrt(1 / self.num_units))
 
         if self.gibbs:
-            self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=math.sqrt(1/self.dim),gibbs=True)
+            self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=1,gibbs=True)
 
         else:
 
-            self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=math.sqrt(1/self.dim),gibbs=False)
+            self.hidden_in = prior_hidden_fn(obj=self,name="hidden_in",shape=(self.num_units,self.dim),global_scale=1,gibbs=False)
 
 
         #self.hidden_in_z = nn.Parameter(torch.zeros(self.num_units, self.dim), requires_grad=True)

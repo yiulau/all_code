@@ -19,6 +19,7 @@ class normal(base_prior_new):
         return(w_obj)
 
     def get_out(self):
+
         z_out = -(self.z_obj*self.z_obj).sum()*0.5
         out = z_out
         return(out)

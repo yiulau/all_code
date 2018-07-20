@@ -22,6 +22,7 @@ num_repeats = 1
 
 #input_data = {"input":numpy.eye(250,250)}
 input_data = {"input":wishart_for_cov(dim=10)}
+
 V_mvn1 = wrap_V_class_with_input_data(class_constructor=V_mvn,input_data=input_data)
 V_mvn2 = wrap_V_class_with_input_data(class_constructor=V_mvn,input_data=input_data)
 v_fun_list = [V_mvn1,V_mvn2]

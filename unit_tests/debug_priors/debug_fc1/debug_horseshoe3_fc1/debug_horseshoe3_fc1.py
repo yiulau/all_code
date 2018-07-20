@@ -21,7 +21,7 @@ input_data = get_data_dict("pima_indian",standardize_predictor=True)
 
 
 prior_dict = {"name":"horseshoe_3"}
-model_dict = {"num_units":10}
+model_dict = {"num_units":25}
 
 v_generator =wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=input_data,prior_dict=prior_dict,model_dict=model_dict)
 

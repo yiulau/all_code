@@ -17,11 +17,13 @@ seed = 1
 numpy.random.seed(seed)
 torch.manual_seed(seed)
 
-input_data = get_data_dict("pima_indian",standardize_predictor=True)
+input_data = get_data_dict("8x8mnist",standardize_predictor=True)
 
+input_data = {"input":input_data["input"][:500,],"target":input_data["target"][:500]}
+test_set = {"input":input_data["input"][:-500,],"target":input_data["target"][:-500]}
 
 prior_dict = {"name":"rhorseshoe_ard"}
-model_dict = {"num_units":10}
+model_dict = {"num_units":40}
 
 v_generator =wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=input_data,prior_dict=prior_dict,model_dict=model_dict)
 
@@ -48,7 +50,7 @@ tune_dict  = tuneinput_class(input_dict).singleton_tune_dict()
 sampler1 = mcmc_sampler(tune_dict=tune_dict,mcmc_settings_dict=mcmc_meta,tune_settings_dict=tune_settings_dict)
 
 
-store_name = 'hs_ard_fc1_sampler.pkl'
+store_name = 'rhs_ard_fc1_sampler.pkl'
 sampled = True
 if sampled:
     sampler1 = pickle.load(open(store_name, 'rb'))
@@ -67,6 +69,7 @@ mcmc_samples_hidden_out = sampler1.get_samples_alt(prior_obj_name="hidden_out",p
 
 samples = mcmc_samples_hidden_in["samples"]
 hidden_in_tau_indices = mcmc_samples_hidden_in["indices_dict"]["tau"]
+hidden_in_c_indices = mcmc_samples_hidden_in["indices_dict"]["c"]
 hidden_in_w_indices = mcmc_samples_hidden_in["indices_dict"]["w"]
 hidden_out_w_indices = mcmc_samples_hidden_out["indices_dict"]["w"]
 
@@ -83,6 +86,15 @@ print(diagnostics_stan(samples[:,:,hidden_in_tau_indices]))
 
 print("posterior mean tau {}".format(posterior_mean_hidden_in_tau))
 
+print('diagnostics for c')
+
+
+print(diagnostics_stan(samples[:,:,hidden_in_c_indices]))
+
+
+posterior_mean_hidden_in_c = numpy.mean(samples[:,:,hidden_in_c_indices].reshape(-1,len(hidden_in_c_indices)),axis=0)
+
+print("posterior mean c {}".format(posterior_mean_hidden_in_c))
 
 print("overall diagnostics")
 full_mcmc_tensor = get_params_mcmc_tensor(sampler=sampler1)
@@ -113,8 +125,7 @@ print("energy diagnostics")
 print(energy_diagnostics(diagnostics_obj=out))
 
 mcmc_samples_mixed = sampler1.get_samples(permuted=True)
-target_dataset = get_data_dict("pima_indian")
-
+target_dataset = {"input":input_data["input"][:500,],"target":input_data["target"][:500]}
 v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=input_data,prior_dict=prior_dict,model_dict=model_dict)
 precision_type = "torch.DoubleTensor"
 

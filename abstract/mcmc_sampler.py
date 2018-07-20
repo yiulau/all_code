@@ -16,6 +16,8 @@ from adapt_util.tune_param_classes.tune_param_class import tune_param_objs_creat
 from general_util.pytorch_util import convert_q_point_list
 import numpy,torch
 from post_processing.get_diagnostics import energy_diagnostics,process_diagnostics
+from post_processing.ESS_nuts import diagnostics_stan
+
 # number of samples
 # thinning
 # warm up
@@ -377,7 +379,7 @@ class mcmc_sampler(object):
 
     def np_diagnostics(self):
         feature_names = ["num_restarts", "num_divergent","hit_max_tree_depth","ave_num_transitions","total_num_transitions","bfmi","lp_ess",
-                         "lp_rhat", "difficulty","num_chains_removed"]
+                         "lp_rhat", "difficulty","num_chains_removed","min_ess","median_ess","percent_rhat"]
 
         self.remove_failed_chains()
         out = self.get_diagnostics(permuted=False)
@@ -399,6 +401,11 @@ class mcmc_sampler(object):
         mcmc_cov = numpy.cov(mixed_mcmc_tensor, rowvar=False)
         mcmc_sd_vec = numpy.sqrt(numpy.diagonal(mcmc_cov))
         difficulty = max(mcmc_sd_vec) / min(mcmc_sd_vec)
+        mcmc_samples = self.get_samples(permuted=False)
+        out_dict = diagnostics_stan(mcmc_samples)
+        min_ess = min(out_dict["ess"])
+        median_ess = numpy.median(out_dict["ess"])
+        percent_rhat = sum(out_dict["rhat"]<1.05)/len(out_dict["rhat"])
         num_id = self.num_chains
         output = numpy.zeros((num_id, len(feature_names)))
 
@@ -412,6 +419,9 @@ class mcmc_sampler(object):
         output[:, 7] = energy_summary["rhat"]
         output[:, 8] = difficulty
         output[:, 9] = num_chains_removed
+        output[:,10] = min_ess
+        output[:,11] = median_ess
+        output[:,12] = percent_rhat
         return(output,feature_names)
 
 
@@ -673,7 +683,7 @@ class one_chain_obj(object):
 
             #print("tune_l is {}".format(self.chain_setting["tune_l"]))
             #print(out)
-
+            #print(self.precision_type)
             print(out.flattened_tensor)
             print("iter is {}".format(counter))
             ep= self.tune_param_objs_dict["epsilon"].get_val()

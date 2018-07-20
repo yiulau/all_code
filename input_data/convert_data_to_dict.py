@@ -4,7 +4,7 @@ import torchvision.transforms as transforms
 from sklearn import preprocessing
 def get_data_dict(dataset_name,standardize_predictor=True):
     permissible_vals = ["pima_indian","boston","subset_mnist","subset_cifar10","logistic_mnist","logistic_cifar10","logistic_8x8mnist"]
-    permissible_vals += ["australian","german","heart","diabetes","breast","8x8mnist","sp500","1-PL"]
+    permissible_vals += ["australian","german","heart","diabetes","breast","8x8mnist","sp500","1-PL","mnist","cifar10"]
 
     assert dataset_name in permissible_vals
 
@@ -103,6 +103,47 @@ def get_data_dict(dataset_name,standardize_predictor=True):
 
             X = subset_data["input"]
             y = subset_data["target"]
+    elif dataset_name=="mnist":
+
+        # first check if data exists
+        abs_address = os.environ["PYTHONPATH"] + "/data/"
+        train_dataset = torchvision.datasets.MNIST(root=abs_address,
+                                                   train=True,
+                                                   transform=transforms.ToTensor(),
+                                                   download=True)
+        train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
+                                                   batch_size=60000,
+                                                   shuffle=True)
+        for i, (images, labels) in enumerate(train_loader):
+            raw_train_X, raw_train_target = images, labels
+
+        dataset = {"input": raw_train_X, "target": raw_train_target}
+
+
+        X = (raw_train_X.contiguous().view(60000,28*28)).numpy()
+        y = (raw_train_target).numpy()
+
+
+
+    elif dataset_name == "cifar10":
+
+        # first check if data exists
+        abs_address = os.environ["PYTHONPATH"] + "/data/"
+        train_dataset = torchvision.datasets.CIFAR10(root=abs_address,
+                                                   train=True,
+                                                   transform=transforms.ToTensor(),
+                                                   download=True)
+        train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
+                                                   batch_size=60000,
+                                                   shuffle=True)
+        for i, (images, labels) in enumerate(train_loader):
+            raw_train_X, raw_train_target = images, labels
+
+        dataset = {"input": raw_train_X, "target": raw_train_target}
+
+        X = raw_train_X[:,0,:,:]
+        X = (X.contiguous().view(50000,32*32)).numpy()
+        y = raw_train_target.numpy()
 
     elif dataset_name == "logistic_mnist":
         subset_mnist_dict = get_data_dict("subset_mnist")

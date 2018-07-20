@@ -6,10 +6,11 @@ from distributions.neural_nets.fc_V_model_1 import V_fc_model_1
 from unit_tests.debug_optimization.debug_optimization import gradient_descent
 import torch
 
-input_data = get_data_dict("8x8mnist") # 0.866
+input_data = get_data_dict("mnist") # 0.866 when num_units = 10
+input_data = {"input":input_data["input"][:5000,:],"target":input_data["target"][:5000]}
 #input_data = get_data_dict("mnist")
 prior_dict = {"name":"normal"}
-model_dict = {"num_units":10}
+model_dict = {"num_units":300}
 
 v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_1,input_data=input_data,prior_dict=prior_dict,model_dict=model_dict)
 
