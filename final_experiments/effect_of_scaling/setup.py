@@ -62,7 +62,7 @@ def setup_scale_experiment(num_unit_list,scaled,train_set,test_set,save_name,see
 
 
 
-    to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,"output_names":output_names,"num_unit_list":num_unit_list,"seed":seed}
+    to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,"output_names":output_names,"num_unit_list":num_unit_list,"seed":seed,"num_unit_list":num_unit_list}
 
     numpy.savez(save_name,**to_store)
 

@@ -60,7 +60,9 @@ def setup_sghmc_experiment(ep_list,L_list,eta_list,train_set,test_set,save_name,
 
 
 
-    to_store = {"diagnostics":diagnostics_store,"output":output_store,"output_names":output_names,"seed":seed}
+    to_store = {"diagnostics":diagnostics_store,"output":output_store,"output_names":output_names,"seed":seed,
+                "ep_list":ep_list,"L_list":L_list,"eta_list":eta_list,"num_units":prior_dict["num_units"],
+                "prior":prior_dict["name"]}
 
     numpy.savez(save_name,**to_store)
 

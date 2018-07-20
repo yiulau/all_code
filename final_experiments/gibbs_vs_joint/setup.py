@@ -148,7 +148,7 @@ def setup_gibbs_v_joint_experiment(num_units_list,train_set,test_set,num_samples
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
-                "output_names":output_names,"seed":seed}
+                "output_names":output_names,"seed":seed,"num_units_list":num_units_list}
 
     numpy.savez(save_name,**to_store)
 

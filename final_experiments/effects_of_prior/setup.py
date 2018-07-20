@@ -63,7 +63,8 @@ def setup_effects_prior_experiment(priors_list,train_set,test_set,save_name,seed
 
 
 
-    to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,"output_names":output_names,"priors_list":priors_list}
+    to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
+                "output_names":output_names,"priors_list":priors_list,"num_units":model_dict["num_units"]}
 
     numpy.savez(save_name,**to_store)
 

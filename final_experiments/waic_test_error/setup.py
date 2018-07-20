@@ -11,12 +11,12 @@ def setup_waic_experiment(num_units_list,train_set,test_set,save_name,seed=1):
     output_store = numpy.zeros((len(num_units_list), len(output_names)))
 
     diagnostics_store = numpy.zeros(shape=[len(num_units_list)]+[4,13])
-
+    prior_dict = {"name": "normal"}
     for i in range(len(num_units_list)):
 
 
 
-        prior_dict = {"name":"normal"}
+
         model_dict = {"num_units":num_units_list[i]}
         v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_4, input_data=train_set,prior_dict=prior_dict,
                                                    model_dict=model_dict)
@@ -73,7 +73,8 @@ def setup_waic_experiment(num_units_list,train_set,test_set,save_name,seed=1):
 
 
 
-    to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,"output_names":output_names,"seed":seed}
+    to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
+                "output_names":output_names,"seed":seed,"num_units_list":num_units_list,"prior":prior_dict["name"]}
 
     numpy.savez(save_name,**to_store)
 

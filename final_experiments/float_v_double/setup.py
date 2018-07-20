@@ -15,13 +15,13 @@ def setup_float_v_double_experiment(priors_list,train_set,test_set,save_name,see
     output_store = numpy.zeros((len(priors_list), 2,len(output_names)))
 
     diagnostics_store = numpy.zeros(shape=[len(priors_list),2]+[4,13])
-
+    model_dict = {"num_units": 50}
     for i in range(len(priors_list)):
         for j in range(2):
             v_fun = V_fc_model_4
 
             prior_dict = {"name":priors_list[i]}
-            model_dict = {"num_units":25}
+
             v_generator = wrap_V_class_with_input_data(class_constructor=v_fun, input_data=train_set,prior_dict=prior_dict,
                                                    model_dict=model_dict)
 
@@ -74,7 +74,7 @@ def setup_float_v_double_experiment(priors_list,train_set,test_set,save_name,see
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
-                "output_names":output_names,"priors_list":priors_list,"seed":seed}
+                "output_names":output_names,"priors_list":priors_list,"seed":seed,"num_units":model_dict["num_units"]}
 
     numpy.savez(save_name,**to_store)
 

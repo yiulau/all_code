@@ -12,13 +12,13 @@ def setup_xhmc_gnuts_experiment(xhmc_delta_list,train_set,test_set,save_name,see
     output_store = numpy.zeros((len(xhmc_delta_list), len(output_names)))
 
     diagnostics_store = numpy.zeros(shape=[len(xhmc_delta_list)]+[4,13])
-
+    prior_dict = {"name": "normal"}
+    model_dict = {"num_units": 50}
     for i in range(len(xhmc_delta_list)):
 
         v_fun = V_fc_model_4
 
-        prior_dict = {"name":"normal"}
-        model_dict = {"num_units":50}
+
         v_generator = wrap_V_class_with_input_data(class_constructor=v_fun, input_data=train_set,prior_dict=prior_dict,
                                                    model_dict=model_dict)
         mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=2000, num_chains=4, num_cpu=4, thin=1,
@@ -70,7 +70,8 @@ def setup_xhmc_gnuts_experiment(xhmc_delta_list,train_set,test_set,save_name,see
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
-                "output_names":output_names,"seed":seed}
+                "output_names":output_names,"seed":seed,"xhmc_delta_list":xhmc_delta_list,"prior":prior_dict["name"],
+                "num_units":model_dict["num_units"]}
 
     numpy.savez(save_name,**to_store)
 
