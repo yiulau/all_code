@@ -3,10 +3,7 @@ from input_data.convert_data_to_dict import get_data_dict
 from abstract.util import wrap_V_class_with_input_data
 from distributions.logistic_regressions.logistic_regression import V_logistic_regression
 def gradient_descent(number_of_iter,lr,v_obj):
-    #dim = v_obj.dim
     # random initialization
-    #v_obj.flattened_tensor.normal_()
-    #v_obj.load_flattened_to_param()
     init_point = point(V=v_obj)
     init_point.flattened_tensor.normal_()
     init_point.load_flatten()

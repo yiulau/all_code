@@ -184,7 +184,7 @@ class mcmc_sampler(object):
         return()
     def start_sampling(self):
         self.num_cpu = self.mcmc_settings_dict["num_cpu"]
-
+        #print("reached here")
         if self.num_cpu>1:
             self.parallel_sampling()
             #out = result_parallel

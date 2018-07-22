@@ -7,4 +7,7 @@ out = numpy.load(results)
 
 print(out.keys())
 
+print(out["output"].shape)
+
+
 print(out["output"])

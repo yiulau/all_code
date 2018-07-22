@@ -58,7 +58,7 @@ def generate_q_list(v_fun,num_of_pts):
     mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=2000, num_chains=4, num_cpu=4, thin=1,
                                            tune_l_per_chain=900,
                                            warmup_per_chain=1000, is_float=False, isstore_to_disk=False,allow_restart=True)
-    input_dict = {"v_fun": [v_fun], "epsilon": ["dual"], "second_order": [False],"cov":["diag_e"],
+    input_dict = {"v_fun": [v_fun], "epsilon": ["dual"], "second_order": [False],"cov":["adapt"],
                   "metric_name": ["diag_e"], "dynamic": [True], "windowed": [False],"max_tree_depth":[8],
                   "criterion": ["xhmc"],"xhmc_delta":[0.1]}
 
