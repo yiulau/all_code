@@ -31,7 +31,7 @@ def setup_hmc_windowed_experiment(L_list,train_set,test_set,save_name,seed=1):
 
 
             mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=2000, num_chains=4, num_cpu=4, thin=1,
-                                                   tune_l_per_chain=0,
+                                                   tune_l_per_chain=900,
                                                    warmup_per_chain=1000, is_float=False, isstore_to_disk=False,
                                                    allow_restart=True, seed=seed + i + 1)
 
