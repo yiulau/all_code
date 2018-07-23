@@ -11,7 +11,7 @@ def setup_adapt_cov_experiment(priors_list,train_set,test_set,save_name,seed=1):
     output_names = ["train_error", "test_error","test_error_sd","test_error_sd","min_ess","median_ess"]
     output_store = numpy.zeros((len(priors_list),3, len(output_names)))
     diagnostics_store = numpy.zeros(shape=[len(priors_list),3]+[4,13])
-    model_dict = {"num_units": 15}
+    model_dict = {"num_units": 35}
 
     for i in range(len(priors_list)):
 

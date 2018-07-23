@@ -33,7 +33,7 @@ def setup_gibbs_v_joint_experiment(num_units_list,train_set,test_set,num_samples
                                                    tune_l_per_chain=900,
                                                    warmup_per_chain=1000, is_float=False, isstore_to_disk=False,
                                                    allow_restart=True, seed=seed + i + 1)
-            if j==0:
+            if j==2:
                 v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_gibbs_model_1, input_data=train_set,model_dict=model_dict)
                 v_obj = v_generator(precision_type="torch.DoubleTensor", gibbs=True)
                 metric_obj = metric(name="unit_e", V_instance=v_obj)
@@ -86,18 +86,18 @@ def setup_gibbs_v_joint_experiment(num_units_list,train_set,test_set,num_samples
                 output_store[i, j, 7] = min_ess
                 output_store[i, j, 8] = median_ess
 
-            elif j==1:
+            elif j==0:
                 prior_dict = {"name":"gaussian_inv_gamma_1"}
-                v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_4,input_data=train_set,prior_dict=prior_dict,model_dict=model_dict)
+                v_generator = wrap_V_class_with_input_data(class_constructor=v_fun,input_data=train_set,prior_dict=prior_dict,model_dict=model_dict)
 
-            else:
+            elif j==1:
                 prior_dict = {"name": "gaussian_inv_gamma_2"}
-                v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_4,input_data=train_set,prior_dict=prior_dict,model_dict=model_dict)
+                v_generator = wrap_V_class_with_input_data(class_constructor=v_fun,input_data=train_set,prior_dict=prior_dict,model_dict=model_dict)
 
 
 
 
-            if j > 0:
+            if j == 0 or j==1:
                 input_dict = {"v_fun": [v_generator], "epsilon": ["dual"], "second_order": [False],
                               "max_tree_depth": [8],
                               "metric_name": ["unit_e"], "dynamic": [True], "windowed": [False], "criterion": ["xhmc"],

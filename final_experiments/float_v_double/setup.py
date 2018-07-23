@@ -15,7 +15,7 @@ def setup_float_v_double_experiment(priors_list,train_set,test_set,save_name,see
     output_store = numpy.zeros((len(priors_list), 2,len(output_names)))
 
     diagnostics_store = numpy.zeros(shape=[len(priors_list),2]+[4,13])
-    model_dict = {"num_units": 50}
+    model_dict = {"num_units": 35}
     for i in range(len(priors_list)):
         for j in range(2):
             v_fun = V_fc_model_4
@@ -90,7 +90,7 @@ def stability_experiment(priors_list,input_data,num_of_pts,save_name,seed=1):
 
     stored = True
     for i in range(len(priors_list)):
-        model_dict = {"num_units":50}
+        model_dict = {"num_units":35}
         prior_dict = {"name":priors_list[i]}
         v_fun = wrap_V_class_with_input_data(class_constructor=V_fc_model_4,prior_dict=prior_dict,model_dict=model_dict,
                                              input_data=input_data)

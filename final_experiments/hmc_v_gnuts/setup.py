@@ -19,7 +19,7 @@ def setup_hmc_windowed_experiment(L_list,train_set,test_set,save_name,seed=1):
     output_store = numpy.zeros((len(L_list), 2,len(output_names)))
 
     diagnostics_store = numpy.zeros(shape=[len(L_list),2]+[4,13])
-    model_dict = {"num_units":50}
+    model_dict = {"num_units":35}
     prior_dict = {"name":"normal"}
 
 
@@ -41,7 +41,7 @@ def setup_hmc_windowed_experiment(L_list,train_set,test_set,save_name,seed=1):
             else:
                 input_dict = {"v_fun": [v_generator], "epsilon": ["dual"], "evolve_L": [L_list[i]],"cov":["adapt"],
                               "second_order": [False],
-                              "metric_name": ["diag_e"], "dynamic": [False], "windowed": [False], "criterion": [None]}
+                              "metric_name": ["diag_e"], "dynamic": [False], "windowed": [False], "criterion": [None],"stepsize_jitter":[True]}
             ep_dual_metadata_argument = {"name": "epsilon", "target": 0.9, "gamma": 0.05, "t_0": 10,
                                          "kappa": 0.75, "obj_fun": "accept_rate", "par_type": "fast"}
             # #
@@ -81,7 +81,7 @@ def setup_hmc_windowed_experiment(L_list,train_set,test_set,save_name,seed=1):
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"output_names":output_names,"seed":seed,
-                "L_list":L_list,"num_units":prior_dict["num_units"],
+                "L_list":L_list,"num_units":model_dict["num_units"],
                 "prior":prior_dict["name"]}
 
     numpy.savez(save_name,**to_store)

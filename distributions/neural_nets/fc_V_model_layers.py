@@ -18,7 +18,7 @@ class V_fc_model_layers(bayes_model_class):
         self.num_classes = len(numpy.unique(self.input_data["target"]))
         self.explicit_gradient = True
         self.need_higherorderderiv = True
-        self.num_units = 20
+        self.num_units = 35
         self.num_layers = self.model_dict["num_layers"]
         prior_fn = prior_generator("normal")
         self.hidden_in = prior_fn(obj=self, name="hidden_in", shape=(self.num_units, self.dim), global_scale=1)

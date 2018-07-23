@@ -13,7 +13,7 @@ def setup_xhmc_gnuts_experiment(xhmc_delta_list,train_set,test_set,save_name,see
 
     diagnostics_store = numpy.zeros(shape=[len(xhmc_delta_list)]+[4,13])
     prior_dict = {"name": "normal"}
-    model_dict = {"num_units": 50}
+    model_dict = {"num_units": 35}
     for i in range(len(xhmc_delta_list)):
 
         v_fun = V_fc_model_4
