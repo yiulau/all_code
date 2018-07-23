@@ -14,5 +14,5 @@ import final_experiments.waic_test_error.run_experiment
 import final_experiments.xhmc_gnuts.run_experiment
 
 total_time = time.time() - start_time()
-
+print(total_time)
 numpy.savez("run_time.npz",total_time)
