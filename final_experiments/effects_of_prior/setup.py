@@ -17,7 +17,7 @@ def setup_effects_prior_experiment(priors_list,train_set,test_set,save_name,seed
         v_fun = V_fc_model_4
 
         prior_dict = {"name":priors_list[i]}
-        model_dict = {"num_units":50}
+        model_dict = {"num_units":35}
         v_generator = wrap_V_class_with_input_data(class_constructor=v_fun, input_data=train_set,prior_dict=prior_dict,
                                                    model_dict=model_dict)
         mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=2000, num_chains=4, num_cpu=4, thin=1,

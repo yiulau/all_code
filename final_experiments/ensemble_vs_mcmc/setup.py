@@ -37,7 +37,7 @@ def setup_ensemble_experiment(num_unit_list,list_num_ensemble_pts,train_set,vali
             for j in range(num_ensemble_pts):
 
 
-                out, explode_grad = gradient_descent(number_of_iter=1000, lr=0.0051,validation_set=validate_set,
+                out, explode_grad = gradient_descent(number_of_iter=2000, lr=0.001,validation_set=validate_set,
                                                      v_obj=v_generator(precision_type="torch.DoubleTensor"))
                 if explode_grad:
                     num_diver+= 1
