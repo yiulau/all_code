@@ -6,3 +6,6 @@ out = numpy.load(unscaled_name)
 print(out.keys())
 
 print(out["output"])
+
+
+print(out["time_list"])

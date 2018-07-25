@@ -59,8 +59,8 @@ def setup_effects_prior_experiment(priors_list,train_set,test_set,save_name,seed
 
 
         diagnostics_store[i,:,:] = np_diagnostics
-        output_store[i,2] = np_diagnostics[0,10]
-        output_store[i,3] = np_diagnostics[0,11]
+        output_store[i,4] = np_diagnostics[0,10]
+        output_store[i,5] = np_diagnostics[0,11]
 
         time_list.append(total_time)
 

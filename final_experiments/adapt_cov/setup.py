@@ -28,7 +28,7 @@ def setup_adapt_cov_experiment(priors_list,train_set,test_set,save_name,seed=1):
             mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=2000, num_chains=4, num_cpu=4, thin=1,
                                                    tune_l_per_chain=900,
                                                    warmup_per_chain=1000, is_float=False, isstore_to_disk=False,
-                                                   allow_restart=False, seed=seed + i +j+ 1)
+                                                   allow_restart=True, seed=seed + i +j+ 1)
             if j==0:
                 input_dict = {"v_fun": [v_generator], "epsilon": ["dual"], "second_order": [False], "cov": ["adapt"],
                               "max_tree_depth": [8],

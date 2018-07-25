@@ -34,7 +34,7 @@ metric_obj = metric(name="unit_e",V_instance=v_obj)
 Ham = Hamiltonian(v_obj,metric_obj)
 
 init_q_point = point(V=v_obj)
-init_hyperparam = torch.abs(torch.randn(1))+3
+init_hyperparam = torch.abs(torch.randn(1))
 log_obj = log_class()
 
 #print(init_q_point.flattened_tensor)
@@ -46,7 +46,7 @@ mcmc_samples_hyper = torch.zeros(1,num_samples,1)
 for i in range(num_samples):
     print("loop {}".format(i))
     #outq,out_hyperparam = update_param_and_hyperparam_one_step(init_q_point,init_hyperparam,Ham,0.1,60,log_obj)
-    outq, out_hyperparam = update_param_and_hyperparam_dynamic_one_step(init_q_point, init_hyperparam, Ham, 0.01, log_obj)
+    outq, out_hyperparam = update_param_and_hyperparam_dynamic_one_step(init_q_point, init_hyperparam, Ham, 0.0001, log_obj)
     init_q_point.flattened_tensor.copy_(outq.flattened_tensor)
     init_q_point.load_flatten()
     init_hyperparam = out_hyperparam
