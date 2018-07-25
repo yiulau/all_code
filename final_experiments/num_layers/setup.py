@@ -4,7 +4,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-import numpy
+import numpy,time
 
 def setup_num_layers_experiment(num_layers_list,train_set,test_set,save_name,seed=1):
     output_names = ["train_error", "test_error","train_error_sd","test_error_sd","min_ess","median_ess"]
@@ -12,9 +12,10 @@ def setup_num_layers_experiment(num_layers_list,train_set,test_set,save_name,see
 
     diagnostics_store = numpy.zeros(shape=[len(num_layers_list)]+[4,13])
     prior_dict = {"name": "normal"}
+    time_list = []
     for i in range(len(num_layers_list)):
 
-
+        start_time = time.time()
 
         model_dict = {"num_layers":num_layers_list[i]}
         v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_layers, input_data=train_set,prior_dict=prior_dict,
@@ -42,6 +43,7 @@ def setup_num_layers_experiment(num_layers_list,train_set,test_set,save_name,see
         sampler1 = mcmc_sampler(tune_dict=tune_dict, mcmc_settings_dict=mcmc_meta, tune_settings_dict=tune_settings_dict)
 
         sampler1.start_sampling()
+        total_time = time.time() - start_time
         np_diagnostics,feature_names = sampler1.np_diagnostics()
 
         mcmc_samples_mixed = sampler1.get_samples(permuted=True)
@@ -60,11 +62,13 @@ def setup_num_layers_experiment(num_layers_list,train_set,test_set,save_name,see
         diagnostics_store[i,:,:] = np_diagnostics
         output_store[i,4] = np_diagnostics[0,10]
         output_store[i,5] = np_diagnostics[0,11]
+        time_list.append(total_time)
 
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
-                "output_names":output_names,"seed":seed,"num_layers_list":num_layers_list,"prior":prior_dict["name"]}
+                "output_names":output_names,"seed":seed,"num_layers_list":num_layers_list,"prior":prior_dict["name"],
+                "time_list":time_list}
 
     numpy.savez(save_name,**to_store)
 

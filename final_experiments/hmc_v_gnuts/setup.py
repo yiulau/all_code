@@ -4,7 +4,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-import numpy,torch
+import numpy,torch,time
 from post_processing.diagnostics import WAIC,convert_mcmc_tensor_to_list_points
 from abstract.abstract_class_point import point
 from abstract.metric import metric
@@ -21,10 +21,11 @@ def setup_hmc_windowed_experiment(L_list,train_set,test_set,save_name,seed=1):
     diagnostics_store = numpy.zeros(shape=[len(L_list),2]+[4,13])
     model_dict = {"num_units":35}
     prior_dict = {"name":"normal"}
-
+    time_store = numpy.zeros(shape=[len(L_list),2])
 
     for i in range(len(L_list)):
         for j in range(2):
+            start_time = time.time()
             v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_4, input_data=train_set,
                                                        prior_dict=prior_dict, model_dict=model_dict)
 
@@ -56,6 +57,7 @@ def setup_hmc_windowed_experiment(L_list,train_set,test_set,save_name,seed=1):
                                     tune_settings_dict=tune_settings_dict)
 
             sampler1.start_sampling()
+            total_time = time.time() - start_time
             np_diagnostics, feature_names = sampler1.np_diagnostics()
 
             mcmc_samples_mixed = sampler1.get_samples(permuted=True)
@@ -76,12 +78,12 @@ def setup_hmc_windowed_experiment(L_list,train_set,test_set,save_name,seed=1):
             diagnostics_store[i, :, :] = np_diagnostics
             output_store[i,j,4] = np_diagnostics[0, 10]
             output_store[i,j,5] = np_diagnostics[0, 11]
-
+            time_store[i,j] = total_time
 
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"output_names":output_names,"seed":seed,
-                "L_list":L_list,"num_units":model_dict["num_units"],
+                "L_list":L_list,"num_units":model_dict["num_units"],"time_store":time_store,
                 "prior":prior_dict["name"]}
 
     numpy.savez(save_name,**to_store)
