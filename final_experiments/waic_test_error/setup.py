@@ -4,7 +4,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-import numpy,torch
+import numpy,torch,time
 from post_processing.diagnostics import WAIC,convert_mcmc_tensor_to_list_points
 def setup_waic_experiment(num_units_list,train_set,test_set,save_name,seed=1):
     output_names = ["train_error", "test_error","train_error_sd","test_error_sd","waic","min_ess","median_ess"]
@@ -12,9 +12,10 @@ def setup_waic_experiment(num_units_list,train_set,test_set,save_name,seed=1):
 
     diagnostics_store = numpy.zeros(shape=[len(num_units_list)]+[4,13])
     prior_dict = {"name": "normal"}
+    time_list = []
     for i in range(len(num_units_list)):
 
-
+        start_time = time.time()
 
 
         model_dict = {"num_units":num_units_list[i]}
@@ -43,6 +44,7 @@ def setup_waic_experiment(num_units_list,train_set,test_set,save_name,seed=1):
         sampler1 = mcmc_sampler(tune_dict=tune_dict, mcmc_settings_dict=mcmc_meta, tune_settings_dict=tune_settings_dict)
 
         sampler1.start_sampling()
+
         np_diagnostics,feature_names = sampler1.np_diagnostics()
 
         mcmc_samples_mixed = sampler1.get_samples(permuted=True)
@@ -57,6 +59,8 @@ def setup_waic_experiment(num_units_list,train_set,test_set,save_name,seed=1):
         list_mcmc_point = convert_mcmc_tensor_to_list_points(chains_combined_mcmc_tensor, v_obj)
 
         waic = WAIC(posterior_samples=list_mcmc_point,observed_data=train_set,V=v_obj)
+
+        total_time = time.time() - start_time
         output_store[i,0] = train_error
         output_store[i,1] = te
         output_store[i,2] = train_error_sd
@@ -71,10 +75,10 @@ def setup_waic_experiment(num_units_list,train_set,test_set,save_name,seed=1):
         output_store[i,5] = np_diagnostics[0,10]
         output_store[i,6] = np_diagnostics[0,11]
 
-
+        time_list.append(total_time)
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
-                "output_names":output_names,"seed":seed,"num_units_list":num_units_list,"prior":prior_dict["name"]}
+                "output_names":output_names,"seed":seed,"num_units_list":num_units_list,"prior":prior_dict["name"],"time_list":time_list}
 
     numpy.savez(save_name,**to_store)
 

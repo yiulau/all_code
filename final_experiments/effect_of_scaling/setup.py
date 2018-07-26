@@ -5,15 +5,16 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-import numpy
+import numpy,time
 
 def setup_scale_experiment(num_unit_list,scaled,train_set,test_set,save_name,seed=1):
 
     output_names = ["train_error", "test_error","train_error_sd","test_error_sd"]
     output_store = numpy.zeros((len(num_unit_list), len(output_names)))
     diagnostics_store = numpy.zeros(shape=[len(num_unit_list)]+[4,13])
+    time_list = []
     for i in range(len(num_unit_list)):
-
+        start_time = time.time()
         if scaled:
             v_fun = V_fc_model_1
         else:
@@ -45,6 +46,7 @@ def setup_scale_experiment(num_unit_list,scaled,train_set,test_set,save_name,see
         sampler1 = mcmc_sampler(tune_dict=tune_dict, mcmc_settings_dict=mcmc_meta, tune_settings_dict=tune_settings_dict)
 
         sampler1.start_sampling()
+        total_time = time.time() - start_time
         np_diagnostics,feature_names = sampler1.np_diagnostics()
 
         mcmc_samples_mixed = sampler1.get_samples(permuted=True)
@@ -58,6 +60,9 @@ def setup_scale_experiment(num_unit_list,scaled,train_set,test_set,save_name,see
         output_store[i,2] = train_error_sd
         output_store[i,3] = te_sd
         diagnostics_store[i,:,:] = np_diagnostics
+
+        time_list.append(total_time)
+
 
 
 

@@ -5,7 +5,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-import numpy,torch
+import numpy,torch,time
 from abstract.abstract_class_point import point
 from experiments.float_vs_double.stability.leapfrog_stability import generate_q_list, generate_Hams, \
         leapfrog_stability_test
@@ -22,9 +22,10 @@ def setup_gibbs_v_joint_experiment(num_units_list,train_set,test_set,num_samples
     output_store = numpy.zeros((len(num_units_list), 3,len(output_names)))
 
     diagnostics_store = numpy.zeros(shape=[len(num_units_list),3]+[4,13])
-
+    time_store = numpy.zeros(shape=[len(num_units_list),3])
     for i in range(len(num_units_list)):
         for j in range(3):
+            start_time = time.time()
             v_fun = V_fc_model_4
 
             model_dict = {"num_units":num_units_list[i]}
@@ -33,7 +34,7 @@ def setup_gibbs_v_joint_experiment(num_units_list,train_set,test_set,num_samples
                                                    tune_l_per_chain=900,
                                                    warmup_per_chain=1000, is_float=False, isstore_to_disk=False,
                                                    allow_restart=True, seed=seed + i + 1)
-            if j==0:
+            if j==2:
                 v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_gibbs_model_1, input_data=train_set,model_dict=model_dict)
                 v_obj = v_generator(precision_type="torch.DoubleTensor", gibbs=True)
                 metric_obj = metric(name="unit_e", V_instance=v_obj)
@@ -86,18 +87,18 @@ def setup_gibbs_v_joint_experiment(num_units_list,train_set,test_set,num_samples
                 output_store[i, j, 7] = min_ess
                 output_store[i, j, 8] = median_ess
 
-            elif j==1:
+            elif j==0:
                 prior_dict = {"name":"gaussian_inv_gamma_1"}
-                v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_4,input_data=train_set,prior_dict=prior_dict,model_dict=model_dict)
+                v_generator = wrap_V_class_with_input_data(class_constructor=v_fun,input_data=train_set,prior_dict=prior_dict,model_dict=model_dict)
 
-            else:
+            elif j==1:
                 prior_dict = {"name": "gaussian_inv_gamma_2"}
-                v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_4,input_data=train_set,prior_dict=prior_dict,model_dict=model_dict)
+                v_generator = wrap_V_class_with_input_data(class_constructor=v_fun,input_data=train_set,prior_dict=prior_dict,model_dict=model_dict)
 
 
 
 
-            if j > 0:
+            if j == 0 or j==1:
                 input_dict = {"v_fun": [v_generator], "epsilon": ["dual"], "second_order": [False],
                               "max_tree_depth": [8],
                               "metric_name": ["unit_e"], "dynamic": [True], "windowed": [False], "criterion": ["xhmc"],
@@ -145,10 +146,13 @@ def setup_gibbs_v_joint_experiment(num_units_list,train_set,test_set,num_samples
                 output_store[i,j,7] = np_diagnostics[0,10]
                 output_store[i,j,8] = np_diagnostics[0,11]
 
+            total_time = time.time() - start_time()
+            time_store[i,j] = total_time
+
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
-                "output_names":output_names,"seed":seed,"num_units_list":num_units_list}
+                "output_names":output_names,"seed":seed,"num_units_list":num_units_list,"time_store":time_store}
 
     numpy.savez(save_name,**to_store)
 

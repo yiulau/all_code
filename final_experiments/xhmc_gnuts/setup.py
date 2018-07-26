@@ -4,7 +4,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-import numpy
+import numpy,time
 
 def setup_xhmc_gnuts_experiment(xhmc_delta_list,train_set,test_set,save_name,seed=1):
     xhmc_delta_list.append(0)
@@ -13,9 +13,10 @@ def setup_xhmc_gnuts_experiment(xhmc_delta_list,train_set,test_set,save_name,see
 
     diagnostics_store = numpy.zeros(shape=[len(xhmc_delta_list)]+[4,13])
     prior_dict = {"name": "normal"}
-    model_dict = {"num_units": 50}
+    model_dict = {"num_units": 35}
+    time_list = []
     for i in range(len(xhmc_delta_list)):
-
+        start_time = time.time()
         v_fun = V_fc_model_4
 
 
@@ -48,6 +49,7 @@ def setup_xhmc_gnuts_experiment(xhmc_delta_list,train_set,test_set,save_name,see
         sampler1 = mcmc_sampler(tune_dict=tune_dict, mcmc_settings_dict=mcmc_meta, tune_settings_dict=tune_settings_dict)
 
         sampler1.start_sampling()
+        total_time = time.time() - start_time
         np_diagnostics,feature_names = sampler1.np_diagnostics()
 
         mcmc_samples_mixed = sampler1.get_samples(permuted=True)
@@ -66,12 +68,13 @@ def setup_xhmc_gnuts_experiment(xhmc_delta_list,train_set,test_set,save_name,see
         diagnostics_store[i,:,:] = np_diagnostics
         output_store[i,4] = np_diagnostics[0,10]
         output_store[i,5] = np_diagnostics[0,11]
+        time_list.append(total_time)
 
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
                 "output_names":output_names,"seed":seed,"xhmc_delta_list":xhmc_delta_list,"prior":prior_dict["name"],
-                "num_units":model_dict["num_units"]}
+                "num_units":model_dict["num_units"],"time_list":time_list}
 
     numpy.savez(save_name,**to_store)
 

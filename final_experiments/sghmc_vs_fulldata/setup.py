@@ -4,7 +4,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-import numpy,torch
+import numpy,torch,time
 from post_processing.diagnostics import WAIC,convert_mcmc_tensor_to_list_points
 from abstract.abstract_class_point import point
 from abstract.metric import metric
@@ -21,10 +21,11 @@ def setup_sghmc_experiment(ep_list,L_list,eta_list,train_set,test_set,save_name,
     diagnostics_store = numpy.zeros(shape=[len(ep_list),len(L_list),len(eta_list)]+[4,13])
     model_dict = {"num_units":35}
     prior_dict = {"name":"normal"}
-
+    time_store = numpy.zeros(shape=[len(ep_list),len(L_list),len(eta_list)])
     for i in range(len(ep_list)):
         for j in range(len(L_list)):
             for k in range(len(eta_list)):
+                start_time = time.time()
                 v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_1, input_data=train_set,
                                                            prior_dict=prior_dict, model_dict=model_dict)
 
@@ -34,35 +35,43 @@ def setup_sghmc_experiment(ep_list,L_list,eta_list,train_set,test_set,save_name,
 
                 full_data = train_set
                 init_q_point = point(V=v_obj)
-                out = sghmc_sampler(init_q_point=init_q_point, epsilon=ep_list[i], L=L_list[j], Ham=Ham, alpha=0.01, eta=eta_list[k],
+                store,explode_grad = sghmc_sampler(init_q_point=init_q_point, epsilon=ep_list[i], L=L_list[j], Ham=Ham, alpha=0.01, eta=eta_list[k],
                                     betahat=0, full_data=full_data, num_samples=2000, thin=0, burn_in=1000,
                                     batch_size=25)
-                store = out[0]
-                v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_1, input_data=train_set,
-                                                           prior_dict=prior_dict, model_dict=model_dict)
-                test_mcmc_samples = store.numpy()
 
-                te1, predicted1,te_sd = test_error(test_set, v_obj=v_generator(precision_type="torch.DoubleTensor"),
-                                             mcmc_samples=test_mcmc_samples, type="classification",
-                                             memory_efficient=False)
+                total_time = time.time() - start_time
+                if not explode_grad:
 
-                train_error, predicted1, train_error_sd = test_error(train_set, v_obj=v_generator(precision_type="torch.DoubleTensor"),
-                                                    mcmc_samples=test_mcmc_samples, type="classification",
-                                                    memory_efficient=False)
+                    v_generator = wrap_V_class_with_input_data(class_constructor=V_fc_model_1, input_data=train_set,
+                                                               prior_dict=prior_dict, model_dict=model_dict)
+                    test_mcmc_samples = store.numpy()
 
+                    te1, predicted1,te_sd = test_error(test_set, v_obj=v_generator(precision_type="torch.DoubleTensor"),
+                                                 mcmc_samples=test_mcmc_samples, type="classification",
+                                                 memory_efficient=False)
+
+                    train_error, predicted1, train_error_sd = test_error(train_set, v_obj=v_generator(precision_type="torch.DoubleTensor"),
+                                                        mcmc_samples=test_mcmc_samples, type="classification",
+                                                        memory_efficient=False)
+                else:
+                    train_error = 2
+                    te1 = 2
+                    train_error_sd = 2
+                    te_sd = 2
 
                 output_store[i,j,k,0] = train_error
                 output_store[i,j,k,1] = te1
                 output_store[i,j,k,2] = train_error_sd
                 output_store[i,j,k,3] = te_sd
+                time_store[i,j,k] = total_time
 
 
 
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"output_names":output_names,"seed":seed,
-                "ep_list":ep_list,"L_list":L_list,"eta_list":eta_list,"num_units":prior_dict["num_units"],
-                "prior":prior_dict["name"]}
+                "ep_list":ep_list,"L_list":L_list,"eta_list":eta_list,"num_units":model_dict["num_units"],
+                "prior":prior_dict["name"],"total_store":time_store}
 
     numpy.savez(save_name,**to_store)
 

@@ -4,7 +4,7 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-import numpy,torch
+import numpy,torch,time
 from abstract.abstract_class_point import point
 from final_experiments.float_v_double.util import generate_q_list, generate_Hams, \
         leapfrog_stability_test
@@ -15,9 +15,11 @@ def setup_float_v_double_experiment(priors_list,train_set,test_set,save_name,see
     output_store = numpy.zeros((len(priors_list), 2,len(output_names)))
 
     diagnostics_store = numpy.zeros(shape=[len(priors_list),2]+[4,13])
-    model_dict = {"num_units": 50}
+    model_dict = {"num_units": 35}
+    time_store = numpy.zeros(shape=(len(priors_list,2)))
     for i in range(len(priors_list)):
         for j in range(2):
+            start_time = time.time()
             v_fun = V_fc_model_4
 
             prior_dict = {"name":priors_list[i]}
@@ -54,6 +56,7 @@ def setup_float_v_double_experiment(priors_list,train_set,test_set,save_name,see
             sampler1 = mcmc_sampler(tune_dict=tune_dict, mcmc_settings_dict=mcmc_meta, tune_settings_dict=tune_settings_dict)
 
             sampler1.start_sampling()
+            total_time = time.time() - start_time
             np_diagnostics,feature_names = sampler1.np_diagnostics()
 
             mcmc_samples_mixed = sampler1.get_samples(permuted=True)
@@ -71,10 +74,12 @@ def setup_float_v_double_experiment(priors_list,train_set,test_set,save_name,see
             output_store[i,j,4] = np_diagnostics[0,10]
             output_store[i,j,5] = np_diagnostics[0,11]
 
+            time_store[i,j] = total_time
+
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
-                "output_names":output_names,"priors_list":priors_list,"seed":seed,"num_units":model_dict["num_units"]}
+                "output_names":output_names,"priors_list":priors_list,"seed":seed,"num_units":model_dict["num_units"],"total_time":time_store}
 
     numpy.savez(save_name,**to_store)
 
@@ -90,7 +95,7 @@ def stability_experiment(priors_list,input_data,num_of_pts,save_name,seed=1):
 
     stored = True
     for i in range(len(priors_list)):
-        model_dict = {"num_units":50}
+        model_dict = {"num_units":35}
         prior_dict = {"name":priors_list[i]}
         v_fun = wrap_V_class_with_input_data(class_constructor=V_fc_model_4,prior_dict=prior_dict,model_dict=model_dict,
                                              input_data=input_data)

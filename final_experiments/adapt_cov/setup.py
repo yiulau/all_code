@@ -4,29 +4,31 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-import numpy
+import numpy,time
 
 def setup_adapt_cov_experiment(priors_list,train_set,test_set,save_name,seed=1):
 
     output_names = ["train_error", "test_error","test_error_sd","test_error_sd","min_ess","median_ess"]
     output_store = numpy.zeros((len(priors_list),3, len(output_names)))
     diagnostics_store = numpy.zeros(shape=[len(priors_list),3]+[4,13])
-    model_dict = {"num_units": 15}
+    model_dict = {"num_units": 35}
 
+    time_store = numpy.zeros(shape=[len(priors_list),3])
     for i in range(len(priors_list)):
 
-        v_fun = V_fc_model_4
-
-        prior_dict = {"name":priors_list[i]}
-
-        v_generator = wrap_V_class_with_input_data(class_constructor=v_fun, input_data=train_set,prior_dict=prior_dict,
-                                                   model_dict=model_dict)
-        mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=2000, num_chains=4, num_cpu=4, thin=1,
-                                               tune_l_per_chain=900,
-                                               warmup_per_chain=1000, is_float=False, isstore_to_disk=False,
-                                               allow_restart=True,seed=seed+i+1)
-
         for j in range(3):
+            start_time = time.time()
+            v_fun = V_fc_model_4
+
+            prior_dict = {"name": priors_list[i]}
+
+            v_generator = wrap_V_class_with_input_data(class_constructor=v_fun, input_data=train_set,
+                                                       prior_dict=prior_dict,
+                                                       model_dict=model_dict)
+            mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=2000, num_chains=4, num_cpu=4, thin=1,
+                                                   tune_l_per_chain=900,
+                                                   warmup_per_chain=1000, is_float=False, isstore_to_disk=False,
+                                                   allow_restart=True, seed=seed + i +j+ 1)
             if j==0:
                 input_dict = {"v_fun": [v_generator], "epsilon": ["dual"], "second_order": [False], "cov": ["adapt"],
                               "max_tree_depth": [8],
@@ -58,6 +60,7 @@ def setup_adapt_cov_experiment(priors_list,train_set,test_set,save_name,seed=1):
             sampler1 = mcmc_sampler(tune_dict=tune_dict, mcmc_settings_dict=mcmc_meta, tune_settings_dict=tune_settings_dict)
 
             sampler1.start_sampling()
+            total_time = time.time() - start_time
             np_diagnostics,feature_names = sampler1.np_diagnostics()
 
             mcmc_samples_mixed = sampler1.get_samples(permuted=True)
@@ -76,10 +79,13 @@ def setup_adapt_cov_experiment(priors_list,train_set,test_set,save_name,seed=1):
             output_store[i,j,4] = np_diagnostics[0,10]
             output_store[i,j,5] = np_diagnostics[0,11]
 
+            time_store[i,j] = total_time
+
+
 
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
-                "output_names":output_names,"priors_list":priors_list,"num_units":model_dict["num_units"]}
+                "output_names":output_names,"priors_list":priors_list,"num_units":model_dict["num_units"],"time_store":time_store}
 
     numpy.savez(save_name,**to_store)
 

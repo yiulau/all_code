@@ -92,21 +92,24 @@ def sghmc_one_step(init_q_point,epsilon,L,Ham,alpha,eta,betahat,input_data,adjus
     dim = len(init_q_point.flattened_tensor)
     v.flattened_tensor.copy_(torch.randn(dim)*epsilon)
     explode_grad = False
-
-    for i in range(L):
-        q.flattened_tensor += v.flattened_tensor
-        q.load_flatten()
-        noise = torch.randn(dim)
-        grad,explode_grad = Ham.V.dq(q_flattened_tensor=q.flattened_tensor,input_data=input_data)
-        v_val = Ham.V.forward()
-        #print("v {}".format(v_val))
-        if not explode_grad:
-            grad = grad*adjust_factor
-            delta_v = -eta*grad - alpha * v.flattened_tensor + math.sqrt(2*(alpha-betahat))*noise
-            v.flattened_tensor += delta_v
-            v.load_flatten()
-        else:
-            break
+    try:
+        for i in range(L):
+            q.flattened_tensor += v.flattened_tensor
+            q.load_flatten()
+            noise = torch.randn(dim)
+            grad,explode_grad = Ham.V.dq(q_flattened_tensor=q.flattened_tensor,input_data=input_data)
+            v_val = Ham.V.forward()
+            #print("v {}".format(v_val))
+            if not explode_grad:
+                grad = grad*adjust_factor
+                delta_v = -eta*grad - alpha * v.flattened_tensor + math.sqrt(2*(alpha-betahat))*noise
+                v.flattened_tensor += delta_v
+                v.load_flatten()
+            else:
+                break
+    except:
+        q = None
+        explode_grad = True
 
     return(q,explode_grad)
 
@@ -127,8 +130,9 @@ def sghmc_sampler(init_q_point,epsilon,L,Ham,alpha,eta,betahat,full_data,num_sam
     for i in range(num_samples):
         input_data = subset_data(full_data=full_data,batch_size=batch_size)
         q,explode_grad = sghmc_one_step(q,epsilon,L,Ham,alpha,eta,betahat,input_data,full_data_size/batch_size)
-        print(q.flattened_tensor)
+        #print(q.flattened_tensor)
         if not explode_grad:
+            print(q.flattened_tensor)
             if i >= burn_in:
                 cur -= 1
                 if not cur > 0.1:

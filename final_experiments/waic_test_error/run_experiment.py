@@ -10,7 +10,7 @@ test_set = {"input":input_data["input"][-500:,:],"target":input_data["target"][-
 save_name = "waic_results.npz"
 
 
-num_units_list = [25,50,75,100]
+num_units_list = [35,50,75,90]
 
 setup_waic_experiment(num_units_list=num_units_list,train_set=train_set,test_set=test_set,
                                save_name=save_name,seed=seed)

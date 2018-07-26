@@ -4,20 +4,20 @@ from adapt_util.tune_param_classes.tune_param_setting_util import *
 from experiments.experiment_obj import tuneinput_class
 from abstract.util import wrap_V_class_with_input_data
 from post_processing.test_error import test_error
-import numpy
+import numpy,time
 
 def setup_effects_prior_experiment(priors_list,train_set,test_set,save_name,seed=1):
 
     output_names = ["train_error", "test_error","test_error_sd","test_error_sd","min_ess","median_ess"]
     output_store = numpy.zeros((len(priors_list), len(output_names)))
     diagnostics_store = numpy.zeros(shape=[len(priors_list)]+[4,13])
-
+    time_list = []
     for i in range(len(priors_list)):
-
+        start_time = time.time()
         v_fun = V_fc_model_4
 
         prior_dict = {"name":priors_list[i]}
-        model_dict = {"num_units":50}
+        model_dict = {"num_units":35}
         v_generator = wrap_V_class_with_input_data(class_constructor=v_fun, input_data=train_set,prior_dict=prior_dict,
                                                    model_dict=model_dict)
         mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=2000, num_chains=4, num_cpu=4, thin=1,
@@ -43,6 +43,7 @@ def setup_effects_prior_experiment(priors_list,train_set,test_set,save_name,seed
         sampler1 = mcmc_sampler(tune_dict=tune_dict, mcmc_settings_dict=mcmc_meta, tune_settings_dict=tune_settings_dict)
 
         sampler1.start_sampling()
+        total_time = time.time() - start_time
         np_diagnostics,feature_names = sampler1.np_diagnostics()
 
         mcmc_samples_mixed = sampler1.get_samples(permuted=True)
@@ -58,13 +59,13 @@ def setup_effects_prior_experiment(priors_list,train_set,test_set,save_name,seed
 
 
         diagnostics_store[i,:,:] = np_diagnostics
-        output_store[i,2] = np_diagnostics[0,10]
-        output_store[i,3] = np_diagnostics[0,11]
+        output_store[i,4] = np_diagnostics[0,10]
+        output_store[i,5] = np_diagnostics[0,11]
 
-
+        time_list.append(total_time)
 
     to_store = {"diagnostics":diagnostics_store,"output":output_store,"diagnostics_names":feature_names,
-                "output_names":output_names,"priors_list":priors_list,"num_units":model_dict["num_units"]}
+                "output_names":output_names,"priors_list":priors_list,"num_units":model_dict["num_units"],"time_list":time_list}
 
     numpy.savez(save_name,**to_store)
 
