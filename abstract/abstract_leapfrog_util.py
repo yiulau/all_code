@@ -115,8 +115,12 @@ def windowerize(integrator):
                     accept_rate = math.exp(min(0, logw_prop - logw_old))
                     u = numpy.random.rand(1)[0]
                     if u < accept_rate:
-                        qprop = q_right
-                        pprop = p_right
+                        if v <0:
+                            qprop = q_left
+                            pprop = p_left
+                        else:
+                            qprop = q_right
+                            pprop = p_right
                         accepted = True
                     else:
                         qprop = qprop_old
