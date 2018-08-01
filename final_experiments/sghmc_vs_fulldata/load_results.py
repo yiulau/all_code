@@ -9,5 +9,5 @@ print(out.keys())
 
 print(out["output"].shape)
 
-print(out["output"])
-print(out["output"][0,1,0,:])
+#print(out["output"])
+print(out["output"][3,3,:,:])

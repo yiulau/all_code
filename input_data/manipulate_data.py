@@ -4,21 +4,29 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.datasets import load_diabetes
 from sklearn.datasets import load_digits
 
+from input_data.convert_data_to_dict import get_data_dict
+
+input_data = get_data_dict("8x8mnist")
+
+X = input_data["input"][0,:]
 # digits 8 x 8 classification (10 classes)
 #(1797,64)
-#digits = load_digits()
-#print(digits.data.shape)
+digits = load_digits()
+
+print(digits.images[0].shape)
 #X = digits["data"]
 #y = digits["target"]
 
 #print(X.shape)
 #print(y.shape)
-
-#import matplotlib.pyplot as plt
-#plt.gray()
-#plt.matshow(digits.images[0])
+print(digits["target"][14])
+import matplotlib.pyplot as plt
+plt.gray()
+#plt.matshow(X.reshape(8,8))
+plt.matshow(digits.images[14])
 #plt.show()
-#exit()
+plt.savefig("mnist1.png")
+exit()
 #########################################################################################################
 # diabetes regression
 # (442,10)

@@ -27,7 +27,6 @@ def setup_gibbs_v_joint_experiment(num_units_list,train_set,test_set,num_samples
         for j in range(3):
             start_time = time.time()
             v_fun = V_fc_model_4
-
             model_dict = {"num_units":num_units_list[i]}
 
             mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0, samples_per_chain=1000+num_samples, num_chains=4, num_cpu=4, thin=1,

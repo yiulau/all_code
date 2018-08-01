@@ -9,3 +9,7 @@ print(out["output"])
 
 
 print(out["time_list"])
+
+print(out["diagnostics"].shape)
+
+print(out["diagnostics"][:,:,:4])

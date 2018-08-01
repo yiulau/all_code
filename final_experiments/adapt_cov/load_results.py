@@ -5,4 +5,6 @@ out = numpy.load(unscaled_name)
 
 print(out.keys())
 
-print(out["output"])
+print(out["output"][1,:,:])
+
+#print(out["time_store"][2,:])

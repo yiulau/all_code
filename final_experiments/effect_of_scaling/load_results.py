@@ -14,6 +14,6 @@ print(out_scaled["diagnostics"].shape)
 
 print(out_scaled["diagnostics_names"])
 
-print(out_scaled["diagnostics"][0,0,10:])
+print(out_scaled["diagnostics"][2,0,10:])
 
-print(out_unscaled["diagnostics"][0,0,10:])
+print(out_unscaled["diagnostics"][2,0,10:])
