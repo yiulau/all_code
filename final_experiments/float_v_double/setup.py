@@ -16,7 +16,7 @@ def setup_float_v_double_experiment(priors_list,train_set,test_set,save_name,see
 
     diagnostics_store = numpy.zeros(shape=[len(priors_list),2]+[4,13])
     model_dict = {"num_units": 35}
-    time_store = numpy.zeros(shape=(len(priors_list,2)))
+    time_store = numpy.zeros(shape=(len(priors_list),2))
     for i in range(len(priors_list)):
         for j in range(2):
             start_time = time.time()
