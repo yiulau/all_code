@@ -83,7 +83,7 @@ def windowerize(integrator):
         v = numpy.random.choice([-1, 1])
         try:
             if v < 0:
-                q_left, p_left,stat = integrator(q_left, p_left, v * epsilon, Ham)
+                q_left, p_left,stat = integrator(q_left, p_left, - epsilon, Ham)
                 explode_grad = stat["explode_grad"]
                 if not explode_grad:
                     logw_prop = -Ham.evaluate(q_left, p_left)["H"]
@@ -93,7 +93,7 @@ def windowerize(integrator):
                     divergent = True
 
             else:
-                q_right, p_right,stat = integrator(q_right, p_right, v * epsilon, Ham)
+                q_right, p_right,stat = integrator(q_right, p_right,  epsilon, Ham)
                 explode_grad = stat["explode_grad"]
                 if not explode_grad:
                     logw_prop = -Ham.evaluate(q_right, p_right)["H"]

@@ -8,8 +8,8 @@ from input_data.convert_data_to_dict import get_data_dict
 from experiments.correctdist_experiments.prototype import check_mean_var_stan
 from abstract.util import wrap_V_class_with_input_data
 
-mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2500,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=1500,
-                                   warmup_per_chain=1600,is_float=False,isstore_to_disk=False,allow_restart=False,seed=25)
+mcmc_meta = mcmc_sampler_settings_dict(mcmc_id=0,samples_per_chain=2500,num_chains=4,num_cpu=4,thin=1,tune_l_per_chain=100,
+                                   warmup_per_chain=500,is_float=False,isstore_to_disk=False,allow_restart=False,seed=25)
 input_data = get_data_dict("pima_indian")
 V_pima_indian_logit = wrap_V_class_with_input_data(class_constructor=V_logistic_regression,input_data=input_data)
 

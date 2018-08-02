@@ -1,7 +1,7 @@
 from final_experiments.num_layers.setup import setup_num_layers_experiment
 from input_data.convert_data_to_dict import get_data_dict
 
-seed = 12
+seed = 120
 input_data = get_data_dict("8x8mnist")
 train_set = {"input":input_data["input"][:500,:],"target":input_data["target"][:500]}
 test_set = {"input":input_data["input"][-500:,:],"target":input_data["target"][-500:]}
