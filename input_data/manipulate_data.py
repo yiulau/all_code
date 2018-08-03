@@ -6,6 +6,19 @@ from sklearn.datasets import load_digits
 
 from input_data.convert_data_to_dict import get_data_dict
 
+input_data = get_data_dict("mnist")
+digits = input_data["input"]
+target = input_data["target"]
+
+print(target[10])
+
+import matplotlib.pyplot as plt
+plt.gray()
+plt.matshow(digits[10,:].reshape(28,28))
+plt.savefig("full_mnist5.png")
+exit()
+
+
 input_data = get_data_dict("8x8mnist")
 
 X = input_data["input"][0,:]
@@ -19,13 +32,13 @@ print(digits.images[0].shape)
 
 #print(X.shape)
 #print(y.shape)
-print(digits["target"][14])
+print(digits["target"][18])
 import matplotlib.pyplot as plt
 plt.gray()
 #plt.matshow(X.reshape(8,8))
-plt.matshow(digits.images[14])
+plt.matshow(digits.images[18])
 #plt.show()
-plt.savefig("mnist1.png")
+plt.savefig("mnist5.png")
 exit()
 #########################################################################################################
 # diabetes regression
